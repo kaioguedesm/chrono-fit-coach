@@ -1,11 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/layout/Navigation";
 import { Dashboard } from "@/pages/Dashboard";
+import Profile from "./Profile";
+import Workout from "./Workout";
+import Schedule from "./Schedule";
+import Nutrition from "./Nutrition";
+import Progress from "./Progress";
+import Settings from "./Settings";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
 
   const handleActionClick = (action: string) => {
     switch (action) {
@@ -43,21 +59,25 @@ const Index = () => {
       case "dashboard":
         return <Dashboard onActionClick={handleActionClick} />;
       case "profile":
-        return <div className="p-4 pb-20">Em breve: Perfil do usuário</div>;
+        return <Profile />;
       case "workout":
-        return <div className="p-4 pb-20">Em breve: Fichas de treino</div>;
+        return <Workout />;
       case "schedule":
-        return <div className="p-4 pb-20">Em breve: Agenda de treinos</div>;
+        return <Schedule />;
       case "nutrition":
-        return <div className="p-4 pb-20">Em breve: Plano alimentar</div>;
+        return <Nutrition />;
       case "progress":
-        return <div className="p-4 pb-20">Em breve: Monitoramento corporal</div>;
+        return <Progress />;
       case "settings":
-        return <div className="p-4 pb-20">Em breve: Configurações</div>;
+        return <Settings />;
       default:
         return <Dashboard onActionClick={handleActionClick} />;
     }
   };
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
