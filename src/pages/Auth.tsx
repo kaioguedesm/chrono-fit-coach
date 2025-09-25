@@ -136,6 +136,16 @@ export default function Auth() {
               {isLogin ? 'Entrar' : 'Criar conta'}
             </Button>
             
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mt-2"
+              onClick={() => navigate('/')}
+              disabled={loading}
+            >
+              🚀 Acesso Demo
+            </Button>
+            
             <div className="text-center">
               <Button
                 type="button"

@@ -18,7 +18,8 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!loading && !user) {
+    // Permite acesso demo (sem autenticação)
+    if (!loading && !user && window.location.pathname !== '/') {
       navigate('/auth');
     }
   }, [user, loading, navigate]);
