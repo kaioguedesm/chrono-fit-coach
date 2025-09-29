@@ -7,7 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Play, Plus, Clock, Weight, RotateCcw } from 'lucide-react';
+import { Play, Plus, Weight, RotateCcw, TrendingUp } from 'lucide-react';
+import { ActiveWorkoutSession } from '@/components/workout/ActiveWorkoutSession';
+import { WorkoutHistory } from '@/components/workout/WorkoutHistory';
+import { CreateWorkoutForm } from '@/components/workout/CreateWorkoutForm';
 
 interface WorkoutPlan {
   id: string;
@@ -35,6 +38,11 @@ export default function Workout() {
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('plans');
+  const [activeSession, setActiveSession] = useState<{
+    sessionId: string;
+    planName: string;
+    exercises: Exercise[];
+  } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -70,7 +78,7 @@ export default function Workout() {
     }
   };
 
-  const startWorkout = async (planId: string) => {
+  const startWorkout = async (plan: WorkoutPlan) => {
     if (!user) return;
 
     try {
@@ -78,7 +86,7 @@ export default function Workout() {
         .from('workout_sessions')
         .insert({
           user_id: user.id,
-          workout_plan_id: planId,
+          workout_plan_id: plan.id,
           started_at: new Date().toISOString()
         })
         .select()
@@ -86,12 +94,16 @@ export default function Workout() {
 
       if (error) throw error;
 
+      setActiveSession({
+        sessionId: data.id,
+        planName: plan.name,
+        exercises: plan.exercises.sort((a, b) => a.order_in_workout - b.order_in_workout)
+      });
+
       toast({
         title: "Treino iniciado!",
         description: "Boa sorte com seu treino 💪"
       });
-      
-      // TODO: Navigate to workout execution screen
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -99,6 +111,23 @@ export default function Workout() {
         variant: "destructive"
       });
     }
+  };
+
+  const handleWorkoutComplete = () => {
+    setActiveSession(null);
+    fetchWorkoutPlans();
+    setActiveTab('history');
+  };
+
+  const handleWorkoutCancel = async () => {
+    if (activeSession) {
+      // Delete incomplete session
+      await supabase
+        .from('workout_sessions')
+        .delete()
+        .eq('id', activeSession.sessionId);
+    }
+    setActiveSession(null);
   };
 
   const samplePlans: WorkoutPlan[] = [
@@ -195,6 +224,24 @@ export default function Workout() {
     );
   }
 
+  // If there's an active session, show the workout interface
+  if (activeSession) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+        <Header title="Treino em Andamento" />
+        <div className="container mx-auto px-4 py-6 pb-20">
+          <ActiveWorkoutSession
+            sessionId={activeSession.sessionId}
+            planName={activeSession.planName}
+            exercises={activeSession.exercises}
+            onComplete={handleWorkoutComplete}
+            onCancel={handleWorkoutCancel}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Treinos" />
@@ -202,101 +249,111 @@ export default function Workout() {
       <div className="container mx-auto px-4 py-6 pb-20">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="plans">Fichas</TabsTrigger>
-            <TabsTrigger value="history">Histórico</TabsTrigger>
-            <TabsTrigger value="create">Criar</TabsTrigger>
+            <TabsTrigger value="plans">
+              <Play className="w-4 h-4 mr-1" />
+              Fichas
+            </TabsTrigger>
+            <TabsTrigger value="history">
+              <TrendingUp className="w-4 h-4 mr-1" />
+              Histórico
+            </TabsTrigger>
+            <TabsTrigger value="create">
+              <Plus className="w-4 h-4 mr-1" />
+              Criar
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="plans" className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Seus Treinos</h2>
-              <Button size="sm">
+              <div>
+                <h2 className="text-xl font-bold">Seus Treinos</h2>
+                <p className="text-sm text-muted-foreground">Escolha um treino para começar</p>
+              </div>
+              <Button size="sm" onClick={() => setActiveTab('create')}>
                 <Plus className="w-4 h-4 mr-2" />
-                Novo Treino
+                Novo
               </Button>
             </div>
 
-            <div className="space-y-4">
-              {displayPlans.map((plan) => (
-                <Card key={plan.id}>
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-lg">{plan.name}</CardTitle>
-                        <Badge variant={plan.created_by === 'ai' ? 'default' : 'secondary'}>
-                          {plan.created_by === 'ai' ? 'IA' : 'Personalizado'}
-                        </Badge>
-                      </div>
-                      <Badge variant="outline">Treino {plan.type}</Badge>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      {plan.exercises.slice(0, 3).map((exercise) => (
-                        <div key={exercise.id} className="flex justify-between items-center text-sm">
-                          <span>{exercise.name}</span>
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <span>{exercise.sets}x{exercise.reps}</span>
-                            {exercise.weight && (
-                              <span className="flex items-center gap-1">
-                                <Weight className="w-3 h-3" />
-                                {exercise.weight}kg
-                              </span>
-                            )}
+            {displayPlans.length === 0 ? (
+              <Card className="border-dashed">
+                <CardContent className="text-center py-12">
+                  <Play className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Nenhum treino criado</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Crie seu primeiro treino personalizado ou use a IA
+                  </p>
+                  <Button onClick={() => setActiveTab('create')}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Criar Primeiro Treino
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {displayPlans.map((plan) => (
+                  <Card key={plan.id} className="hover:shadow-lg transition-shadow">
+                    <CardHeader className="pb-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <CardTitle className="text-lg">{plan.name}</CardTitle>
+                            <Badge variant={plan.created_by === 'ai' ? 'default' : 'secondary'}>
+                              {plan.created_by === 'ai' ? '🤖 IA' : '👤 Custom'}
+                            </Badge>
                           </div>
+                          <Badge variant="outline">Treino {plan.type}</Badge>
                         </div>
-                      ))}
-                      {plan.exercises.length > 3 && (
-                        <div className="text-sm text-muted-foreground">
-                          +{plan.exercises.length - 3} exercícios
-                        </div>
-                      )}
-                    </div>
+                      </div>
+                    </CardHeader>
+                    
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        {plan.exercises.slice(0, 4).map((exercise) => (
+                          <div key={exercise.id} className="flex justify-between items-center text-sm bg-muted/50 p-2 rounded">
+                            <span className="font-medium">{exercise.name}</span>
+                            <div className="flex items-center gap-2 text-muted-foreground">
+                              <span>{exercise.sets}×{exercise.reps}</span>
+                              {exercise.weight && (
+                                <Badge variant="secondary" className="text-xs">
+                                  <Weight className="w-3 h-3 mr-1" />
+                                  {exercise.weight}kg
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                        {plan.exercises.length > 4 && (
+                          <div className="text-sm text-muted-foreground text-center">
+                            +{plan.exercises.length - 4} exercícios
+                          </div>
+                        )}
+                      </div>
 
-                    <div className="flex gap-2">
                       <Button 
-                        className="flex-1"
-                        onClick={() => startWorkout(plan.id)}
+                        className="w-full" 
+                        size="lg"
+                        onClick={() => startWorkout(plan)}
                       >
-                        <Play className="w-4 h-4 mr-2" />
+                        <Play className="w-5 h-5 mr-2" />
                         Iniciar Treino
                       </Button>
-                      <Button variant="outline" size="icon">
-                        <RotateCcw className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
-          <TabsContent value="history" className="space-y-4">
-            <div className="text-center py-8">
-              <Clock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Histórico de Treinos</h3>
-              <p className="text-muted-foreground mb-4">
-                Seus treinos concluídos aparecerão aqui
-              </p>
-            </div>
+          <TabsContent value="history">
+            <WorkoutHistory />
           </TabsContent>
 
-          <TabsContent value="create" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Criar Novo Treino</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Button className="w-full" variant="outline">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Criar Treino Personalizado
-                </Button>
-                <Button className="w-full">
-                  🤖 Gerar com IA Personal Trainer
-                </Button>
-              </CardContent>
-            </Card>
+          <TabsContent value="create">
+            <CreateWorkoutForm onSuccess={() => {
+              fetchWorkoutPlans();
+              setActiveTab('plans');
+            }} />
           </TabsContent>
         </Tabs>
       </div>
