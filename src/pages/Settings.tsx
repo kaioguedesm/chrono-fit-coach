@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import {
 export default function Settings() {
   const { signOut, user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState({
     workoutReminders: true,
     nutritionReminders: true,
@@ -32,16 +34,17 @@ export default function Settings() {
   });
 
   const handleSignOut = async () => {
-    try {
-      await signOut();
+    const { error } = await signOut();
+    if (!error) {
       toast({
-        title: "Logout realizado",
-        description: "Você foi desconectado com sucesso."
+        title: "Desconectado",
+        description: "Até logo! 👋"
       });
-    } catch (error) {
+      navigate('/auth');
+    } else {
       toast({
         title: "Erro",
-        description: "Não foi possível fazer logout.",
+        description: "Não foi possível desconectar.",
         variant: "destructive"
       });
     }
