@@ -49,15 +49,11 @@ export default function Auth() {
           variant: "destructive"
         });
       } else {
-        if (isLogin) {
-          navigate('/');
-        } else {
-          toast({
-            title: "Conta criada!",
-            description: "Verifique seu email para confirmar a conta."
-          });
-          setIsLogin(true);
-        }
+        toast({
+          title: isLogin ? "Login realizado!" : "Conta criada!",
+          description: isLogin ? "Bem-vindo de volta! 🎉" : "Conta criada com sucesso! 🎉"
+        });
+        navigate('/');
       }
     } catch (error: any) {
       toast({

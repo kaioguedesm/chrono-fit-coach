@@ -3,7 +3,10 @@ import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, Clock, CheckCircle2, LogIn } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const upcomingWorkouts = [
   {
@@ -31,13 +34,35 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onActionClick }: DashboardProps) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <div className="pb-20">
       <Header title="Meta Fit" />
       
       <main className="container px-4 py-6 space-y-6">
+        {!user && (
+          <Card className="border-primary/50 bg-gradient-to-br from-primary/10 to-transparent">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold mb-1">Faça login para acessar todos os recursos!</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Crie sua conta e personalize seu treino
+                  </p>
+                </div>
+                <Button onClick={() => navigate('/auth')} className="ml-4">
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Entrar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold">Olá, João! 👋</h2>
+          <h2 className="text-2xl font-bold">Olá{user ? ', ' + (user.user_metadata?.name || 'Atleta') : ''}! 👋</h2>
           <p className="text-muted-foreground">Vamos continuar sua jornada fitness hoje?</p>
         </div>
 
