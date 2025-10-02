@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CalendarDays, Check, Plus, TrendingUp } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { FrequencyReport } from '@/components/schedule/FrequencyReport';
 
 interface ScheduledWorkout {
   id: string;
@@ -30,6 +31,7 @@ export default function Schedule() {
   const [scheduledWorkouts, setScheduledWorkouts] = useState<ScheduledWorkout[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekStats, setWeekStats] = useState({ completed: 0, total: 0 });
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -110,6 +112,7 @@ export default function Schedule() {
 
       fetchScheduledWorkouts();
       fetchWeekStats();
+      setRefreshKey(prev => prev + 1);
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -154,6 +157,9 @@ export default function Schedule() {
       
       <div className="container mx-auto px-4 py-6 pb-20">
         <div className="space-y-6">
+          {/* Frequency Report */}
+          <FrequencyReport key={refreshKey} />
+
           {/* Week Stats */}
           <Card>
             <CardHeader>

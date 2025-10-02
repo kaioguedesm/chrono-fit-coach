@@ -8,10 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, Scale, Ruler, Camera, Plus } from 'lucide-react';
+import { TrendingUp, Scale, Ruler, Plus } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { PhotoUpload } from '@/components/progress/PhotoUpload';
+import { PhotoGallery } from '@/components/progress/PhotoGallery';
 
 interface BodyMeasurement {
   id: string;
@@ -43,6 +45,7 @@ export default function Progress() {
   const [measurements, setMeasurements] = useState<BodyMeasurement[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('charts');
+  const [refreshPhotos, setRefreshPhotos] = useState(0);
   const [newMeasurement, setNewMeasurement] = useState<NewMeasurement>({
     weight: '',
     bodyFat: '',
@@ -400,24 +403,10 @@ export default function Progress() {
           </TabsContent>
 
           <TabsContent value="photos" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Fotos de Progresso</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Camera className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Registre sua evolução</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Tire fotos mensais para acompanhar visualmente seu progresso
-                  </p>
-                  <Button>
-                    <Camera className="w-4 h-4 mr-2" />
-                    Adicionar Foto
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <PhotoUpload onSuccess={() => setRefreshPhotos(prev => prev + 1)} />
+            <div key={refreshPhotos}>
+              <PhotoGallery />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

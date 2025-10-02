@@ -11,6 +11,7 @@ import { Play, Plus, Weight, RotateCcw, TrendingUp } from 'lucide-react';
 import { ActiveWorkoutSession } from '@/components/workout/ActiveWorkoutSession';
 import { WorkoutHistory } from '@/components/workout/WorkoutHistory';
 import { CreateWorkoutForm } from '@/components/workout/CreateWorkoutForm';
+import { AIWorkoutGenerator } from '@/components/workout/AIWorkoutGenerator';
 
 interface WorkoutPlan {
   id: string;
@@ -264,6 +265,10 @@ export default function Workout() {
           </TabsList>
 
           <TabsContent value="plans" className="space-y-4">
+            {/* AI Workout Generator */}
+            <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />
+
+            {/* My Workouts Section */}
             <div className="flex justify-between items-center">
               <div>
                 <h2 className="text-xl font-bold">Seus Treinos</h2>
