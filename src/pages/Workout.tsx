@@ -48,6 +48,9 @@ export default function Workout() {
   useEffect(() => {
     if (user) {
       fetchWorkoutPlans();
+    } else {
+      // Se não houver usuário (modo demo), apenas seta loading como false
+      setLoading(false);
     }
   }, [user]);
 
