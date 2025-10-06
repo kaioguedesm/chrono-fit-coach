@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Apple, Upload, Bot, BookOpen, Plus } from 'lucide-react';
+import { AINutritionGenerator } from '@/components/nutrition/AINutritionGenerator';
 
 interface NutritionPlan {
   id: string;
@@ -276,50 +277,27 @@ export default function Nutrition() {
           </TabsContent>
 
           <TabsContent value="create" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Upload de Dieta</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                    <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Clique para fazer upload
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      PDF, DOC, DOCX até 10MB
-                    </p>
-                  </div>
-                  <Button className="w-full" variant="outline">
-                    Selecionar Arquivo
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bot className="w-5 h-5" />
-                    IA Nutricional
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Objetivo</Label>
-                    <select className="w-full p-2 border rounded-md">
-                      <option>Emagrecimento</option>
-                      <option>Ganho de massa</option>
-                      <option>Manutenção</option>
-                      <option>Definição</option>
-                    </select>
-                  </div>
-                  <Button className="w-full">
-                    🤖 Gerar Plano com IA
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+            <AINutritionGenerator onSuccess={fetchNutritionPlans} />
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Upload de Dieta</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+                  <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Clique para fazer upload
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    PDF, DOC, DOCX até 10MB
+                  </p>
+                </div>
+                <Button className="w-full" variant="outline">
+                  Selecionar Arquivo
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

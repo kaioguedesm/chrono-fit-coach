@@ -1,0 +1,214 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { 
+      dietType, 
+      dietDescription,
+      mealsPerDay, 
+      restrictions, 
+      userProfile 
+    } = await req.json();
+    
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured');
+    }
+
+    // Calculate recommended calories based on profile
+    let recommendedCalories = 2000; // Default
+    if (userProfile.weight && userProfile.height && userProfile.age) {
+      // Harris-Benedict equation for BMR
+      let bmr;
+      if (userProfile.gender === 'masculino') {
+        bmr = 88.362 + (13.397 * userProfile.weight) + (4.799 * userProfile.height) - (5.677 * userProfile.age);
+      } else {
+        bmr = 447.593 + (9.247 * userProfile.weight) + (3.098 * userProfile.height) - (4.330 * userProfile.age);
+      }
+      
+      // Apply activity factor (moderate activity)
+      let tdee = bmr * 1.55;
+      
+      // Adjust based on goal
+      if (dietType === 'emagrecimento') {
+        recommendedCalories = Math.round(tdee * 0.8); // 20% deficit
+      } else if (dietType === 'hipertrofia') {
+        recommendedCalories = Math.round(tdee * 1.15); // 15% surplus
+      } else if (dietType === 'definicao') {
+        recommendedCalories = Math.round(tdee * 0.9); // 10% deficit
+      } else {
+        recommendedCalories = Math.round(tdee);
+      }
+    }
+
+    const systemPrompt = `Você é um nutricionista experiente e certificado, especializado em criar planos alimentares personalizados e cientificamente embasados.
+
+CRÍTICO: Retorne APENAS um objeto JSON válido com a estrutura exata abaixo, sem nenhum texto adicional:
+
+{
+  "planName": "Nome criativo e motivador do plano alimentar",
+  "description": "Breve descrição do plano e seus benefícios",
+  "meals": [
+    {
+      "meal_type": "tipo_refeicao",
+      "name": "Nome da refeição",
+      "ingredients": ["ingrediente 1", "ingrediente 2"],
+      "calories": calorias_totais,
+      "protein": gramas_proteina,
+      "carbs": gramas_carboidratos,
+      "fat": gramas_gordura,
+      "instructions": "modo de preparo detalhado"
+    }
+  ]
+}
+
+TIPOS DE REFEIÇÃO permitidos (use exatamente estes):
+- "cafe_da_manha" (Café da Manhã)
+- "lanche_manha" (Lanche da Manhã)
+- "almoco" (Almoço)
+- "lanche_tarde" (Lanche da Tarde)
+- "jantar" (Jantar)
+- "ceia" (Ceia)
+
+DIRETRIZES NUTRICIONAIS:
+- Distribua as calorias de forma equilibrada ao longo do dia
+- Café da manhã: 25-30% das calorias diárias
+- Almoço: 30-35% das calorias diárias
+- Jantar: 25-30% das calorias diárias
+- Lanches: 10-15% das calorias diárias cada
+
+MACRONUTRIENTES:
+- Emagrecimento: 30% proteína, 40% carbo, 30% gordura
+- Hipertrofia: 30% proteína, 45% carbo, 25% gordura
+- Definição: 35% proteína, 35% carbo, 30% gordura
+- Low-carb: 30% proteína, 15% carbo, 55% gordura
+- Manutenção: 25% proteína, 45% carbo, 30% gordura
+
+QUALIDADES DO PLANO:
+- Refeições práticas e saborosas
+- Ingredientes acessíveis e de fácil preparo
+- Variedade de alimentos para evitar monotonia
+- Respeite todas as restrições alimentares
+- Inclua timing de nutrientes adequado
+- Hidratação e suplementação quando necessário`;
+
+    const userPrompt = `Crie um plano alimentar COMPLETO e PERSONALIZADO:
+
+👤 PERFIL DO USUÁRIO:
+${userProfile.weight ? `- Peso: ${userProfile.weight}kg` : ''}
+${userProfile.height ? `- Altura: ${userProfile.height}cm` : ''}
+${userProfile.age ? `- Idade: ${userProfile.age} anos` : ''}
+${userProfile.gender ? `- Gênero: ${userProfile.gender}` : ''}
+${userProfile.imc ? `- IMC: ${userProfile.imc}` : ''}
+${userProfile.goal ? `- Objetivo fitness: ${userProfile.goal}` : ''}
+
+🎯 ESPECIFICAÇÕES DO PLANO:
+- Tipo de dieta: ${dietType}
+- Descrição: ${dietDescription}
+- Meta calórica diária: aproximadamente ${recommendedCalories} kcal
+- Número de refeições: ${mealsPerDay}
+${restrictions.length > 0 ? `- Restrições: ${restrictions.join(', ')}` : ''}
+${userProfile.dietaryPreferences?.length > 0 ? `- Preferências: ${userProfile.dietaryPreferences.join(', ')}` : ''}
+${userProfile.dietaryRestrictions?.length > 0 ? `- Restrições do perfil: ${userProfile.dietaryRestrictions.join(', ')}` : ''}
+
+📋 REQUISITOS:
+- Crie exatamente ${mealsPerDay} refeições distribuídas ao longo do dia
+- Total de calorias deve somar aproximadamente ${recommendedCalories} kcal
+- Calcule macros precisos para cada refeição
+- Respeite TODAS as restrições alimentares mencionadas
+- Inclua instruções claras de preparo
+- Seja criativo mas prático
+- Varie fontes de proteína e carboidratos
+- Inclua vegetais e fibras em várias refeições
+
+LEMBRE-SE: Retorne APENAS o JSON, sem texto adicional antes ou depois!`;
+
+    console.log('Calling AI Gateway for nutrition plan...');
+    
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('AI Gateway error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Limite de requisições atingido. Tente novamente em alguns instantes.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'Créditos insuficientes. Adicione créditos ao seu workspace.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      throw new Error(`AI Gateway error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('AI Response received');
+    
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) {
+      throw new Error('No content in AI response');
+    }
+
+    // Parse the JSON response from AI
+    let nutritionPlan;
+    try {
+      // Remove markdown code blocks if present
+      const cleanContent = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      nutritionPlan = JSON.parse(cleanContent);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', content);
+      throw new Error('Invalid JSON response from AI');
+    }
+
+    // Validate the response structure
+    if (!nutritionPlan.planName || !nutritionPlan.meals || !Array.isArray(nutritionPlan.meals)) {
+      throw new Error('Invalid nutrition plan structure');
+    }
+
+    return new Response(
+      JSON.stringify(nutritionPlan),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('Error in generate-nutrition function:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'Erro ao gerar plano nutricional'
+      }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+  }
+});
