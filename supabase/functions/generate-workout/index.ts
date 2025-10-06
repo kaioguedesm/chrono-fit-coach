@@ -12,38 +12,72 @@ serve(async (req) => {
   }
 
   try {
-    const { goal, experience, equipment, workoutType } = await req.json();
+    const { 
+      goal, 
+      experience, 
+      equipment, 
+      muscleGroup, 
+      muscleGroupDescription,
+      duration,
+      userWeight,
+      userAge
+    } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    const systemPrompt = `Você é um personal trainer especializado em criar treinos personalizados.
-Crie treinos práticos e eficientes baseados no objetivo, nível de experiência e tipo de treino solicitado.
-Retorne APENAS um objeto JSON válido com a estrutura exata abaixo, sem texto adicional:
+    const systemPrompt = `Você é um personal trainer experiente e certificado, especializado em criar treinos personalizados e eficientes.
+Sua missão é desenvolver treinos cientificamente embasados que consideram o perfil completo do aluno.
+
+IMPORTANTE: Retorne APENAS um objeto JSON válido com a estrutura exata abaixo, sem nenhum texto adicional antes ou depois:
 
 {
-  "workoutName": "Nome do Treino",
+  "workoutName": "Nome criativo e motivador do treino",
   "exercises": [
     {
-      "name": "Nome do Exercício",
+      "name": "Nome completo do exercício",
       "sets": número_de_séries,
-      "reps": "faixa_de_repetições",
-      "weight": peso_sugerido_ou_null,
+      "reps": "faixa_de_repetições (ex: 8-12, 12-15)",
+      "weight": peso_sugerido_em_kg_ou_null,
       "rest_time": tempo_descanso_em_segundos,
-      "notes": "dicas de execução"
+      "notes": "técnica correta, músculos trabalhados e dicas importantes"
     }
   ]
-}`;
+}
 
-    const userPrompt = `Crie um treino com as seguintes características:
-- Objetivo: ${goal}
-- Nível: ${experience}
-- Equipamentos disponíveis: ${equipment || 'equipamentos de academia completa'}
-- Tipo de treino: ${workoutType}
+Diretrizes para criação do treino:
+- Inclua aquecimento específico quando apropriado
+- Varie ângulos e tipos de exercícios (compostos e isolados)
+- Progressão lógica de exercícios (mais complexos primeiro)
+- Considere fadiga muscular acumulada
+- Inclua dicas de técnica para prevenir lesões`;
 
-Inclua 4-6 exercícios apropriados para o nível e objetivo.`;
+    const userPrompt = `Crie um treino COMPLETO e PERSONALIZADO com as seguintes características:
+
+📋 PERFIL DO ALUNO:
+- Objetivo principal: ${goal}
+- Nível de experiência: ${experience}
+${userWeight ? `- Peso atual: ${userWeight}kg` : ''}
+${userAge ? `- Idade: ${userAge} anos` : ''}
+
+🎯 ESPECIFICAÇÕES DO TREINO:
+- Grupo muscular foco: ${muscleGroup}
+- Descrição do foco: ${muscleGroupDescription}
+- Duração aproximada: ${duration} minutos
+- Equipamentos disponíveis: ${equipment || 'equipamentos completos de academia'}
+
+📝 REQUISITOS:
+- Inclua ${duration < 45 ? '4-5' : duration < 75 ? '6-7' : '8-10'} exercícios apropriados
+- Exercícios progressivos (compostos → isolados)
+- Variação de ângulos e pegadas
+- Séries e repetições adequadas ao objetivo e nível
+- Tempo de descanso otimizado
+- Dicas técnicas e de segurança para cada exercício
+- Nome do treino criativo e motivador
+
+LEMBRE-SE: Retorne APENAS o JSON, sem texto adicional!`;
 
     console.log('Calling AI Gateway...');
     
