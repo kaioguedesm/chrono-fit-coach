@@ -101,9 +101,11 @@ export function Dashboard({ onActionClick }: DashboardProps) {
           </Card>
         )}
 
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold">Olá{user ? ', ' + userName : ''}! 👋</h2>
-          <p className="text-muted-foreground">Vamos continuar sua jornada fitness hoje?</p>
+        <div className="space-y-3 p-6 rounded-2xl bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 border border-primary/20">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
+            Olá{user ? ', ' + userName : ''}! 👋
+          </h2>
+          <p className="text-muted-foreground font-medium">Vamos continuar sua jornada fitness hoje?</p>
         </div>
 
         <DashboardStats />
