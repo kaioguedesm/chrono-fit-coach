@@ -1,6 +1,11 @@
+import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { MeasurementModal } from "@/components/dashboard/MeasurementModal";
+import { RestTimerModal } from "@/components/dashboard/RestTimerModal";
+import { PhotoUploadModal } from "@/components/dashboard/PhotoUploadModal";
+import { WorkoutStartModal } from "@/components/dashboard/WorkoutStartModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,15 +36,46 @@ const upcomingWorkouts = [
 ];
 
 interface DashboardProps {
-  onActionClick: (action: string) => void;
+  onActionClick?: (action: string) => void;
 }
 
 export function Dashboard({ onActionClick }: DashboardProps) {
   const { user } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
+  
+  const [measurementModalOpen, setMeasurementModalOpen] = useState(false);
+  const [timerModalOpen, setTimerModalOpen] = useState(false);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [workoutModalOpen, setWorkoutModalOpen] = useState(false);
 
   const userName = profile?.name || user?.user_metadata?.name || 'Atleta';
+
+  const handleActionClick = (action: string) => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    switch (action) {
+      case 'start-workout':
+        setWorkoutModalOpen(true);
+        break;
+      case 'add-measurements':
+        setMeasurementModalOpen(true);
+        break;
+      case 'take-photo':
+        setPhotoModalOpen(true);
+        break;
+      case 'rest-timer':
+        setTimerModalOpen(true);
+        break;
+      default:
+        break;
+    }
+
+    onActionClick?.(action);
+  };
 
   return (
     <div className="pb-20">
@@ -72,7 +108,27 @@ export function Dashboard({ onActionClick }: DashboardProps) {
 
         <DashboardStats />
         
-        <QuickActions onActionClick={onActionClick} />
+        <QuickActions onActionClick={handleActionClick} />
+
+        <MeasurementModal 
+          open={measurementModalOpen} 
+          onOpenChange={setMeasurementModalOpen} 
+        />
+        
+        <RestTimerModal 
+          open={timerModalOpen} 
+          onOpenChange={setTimerModalOpen} 
+        />
+        
+        <PhotoUploadModal 
+          open={photoModalOpen} 
+          onOpenChange={setPhotoModalOpen} 
+        />
+        
+        <WorkoutStartModal 
+          open={workoutModalOpen} 
+          onOpenChange={setWorkoutModalOpen} 
+        />
 
         <Card>
           <CardHeader>
