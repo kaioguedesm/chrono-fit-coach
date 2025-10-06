@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,98 +6,44 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useProfile } from '@/hooks/useProfile';
 import { Camera, Upload } from 'lucide-react';
 
-interface Profile {
-  name: string;
-  age: number | null;
-  gender: string | null;
-  weight: number | null;
-  height: number | null;
-  goal: string | null;
-  experience_level: string | null;
-  avatar_url: string | null;
-  dietary_preferences: string[];
-  dietary_restrictions: string[];
-}
-
 export default function Profile() {
-  const { user } = useAuth();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState<Profile>({
+  const { profile, loading, updateProfile, calculateIMC } = useProfile();
+  const [saving, setSaving] = useState(false);
+  const [localProfile, setLocalProfile] = useState({
     name: '',
-    age: null,
-    gender: null,
-    weight: null,
-    height: null,
-    goal: null,
-    experience_level: null,
-    avatar_url: null,
-    dietary_preferences: [],
-    dietary_restrictions: []
+    age: null as number | null,
+    gender: null as string | null,
+    weight: null as number | null,
+    height: null as number | null,
+    goal: null as string | null,
+    experience_level: null as string | null,
   });
 
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
-  }, [user]);
-
-  const fetchProfile = async () => {
-    if (!user) return;
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching profile:', error);
-      return;
-    }
-
-    if (data) {
-      setProfile({
-        name: data.name || '',
-        age: data.age,
-        gender: data.gender,
-        weight: data.weight,
-        height: data.height,
-        goal: data.goal,
-        experience_level: data.experience_level,
-        avatar_url: data.avatar_url,
-        dietary_preferences: data.dietary_preferences || [],
-        dietary_restrictions: data.dietary_restrictions || []
+  // Atualizar estado local quando perfil carregar
+  useState(() => {
+    if (profile && !localProfile.name) {
+      setLocalProfile({
+        name: profile.name,
+        age: profile.age,
+        gender: profile.gender,
+        weight: profile.weight,
+        height: profile.height,
+        goal: profile.goal,
+        experience_level: profile.experience_level,
       });
     }
-  };
+  });
 
   const handleSave = async () => {
-    if (!user) return;
-    
-    setLoading(true);
+    setSaving(true);
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({
-          user_id: user.id,
-          name: profile.name,
-          age: profile.age,
-          gender: profile.gender,
-          weight: profile.weight,
-          height: profile.height,
-          goal: profile.goal,
-          experience_level: profile.experience_level,
-          avatar_url: profile.avatar_url,
-          dietary_preferences: profile.dietary_preferences,
-          dietary_restrictions: profile.dietary_restrictions
-        });
+      const { error } = await updateProfile(localProfile);
 
       if (error) throw error;
 
@@ -112,16 +58,8 @@ export default function Profile() {
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
-  };
-
-  const calculateIMC = () => {
-    if (profile.weight && profile.height) {
-      const heightInM = profile.height / 100;
-      return (profile.weight / (heightInM * heightInM)).toFixed(1);
-    }
-    return null;
   };
 
   return (
@@ -137,9 +75,9 @@ export default function Profile() {
             </CardHeader>
             <CardContent className="flex flex-col items-center space-y-4">
               <Avatar className="w-24 h-24">
-                <AvatarImage src={profile.avatar_url || ''} />
+                <AvatarImage src={profile?.avatar_url || ''} />
                 <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xl">
-                  {profile.name ? profile.name.charAt(0).toUpperCase() : 'U'}
+                  {profile?.name ? profile.name.charAt(0).toUpperCase() : 'U'}
                 </AvatarFallback>
               </Avatar>
               <Button variant="outline" size="sm">
@@ -160,8 +98,8 @@ export default function Profile() {
                   <Label htmlFor="name">Nome completo</Label>
                   <Input
                     id="name"
-                    value={profile.name}
-                    onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                    value={localProfile.name}
+                    onChange={(e) => setLocalProfile({ ...localProfile, name: e.target.value })}
                     placeholder="Seu nome"
                   />
                 </div>
@@ -171,15 +109,15 @@ export default function Profile() {
                   <Input
                     id="age"
                     type="number"
-                    value={profile.age || ''}
-                    onChange={(e) => setProfile({ ...profile, age: e.target.value ? parseInt(e.target.value) : null })}
+                    value={localProfile.age || ''}
+                    onChange={(e) => setLocalProfile({ ...localProfile, age: e.target.value ? parseInt(e.target.value) : null })}
                     placeholder="Sua idade"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label>Gênero</Label>
-                  <Select value={profile.gender || ''} onValueChange={(value) => setProfile({ ...profile, gender: value })}>
+                  <Select value={localProfile.gender || ''} onValueChange={(value) => setLocalProfile({ ...localProfile, gender: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecionar" />
                     </SelectTrigger>
@@ -197,8 +135,8 @@ export default function Profile() {
                     id="weight"
                     type="number"
                     step="0.1"
-                    value={profile.weight || ''}
-                    onChange={(e) => setProfile({ ...profile, weight: e.target.value ? parseFloat(e.target.value) : null })}
+                    value={localProfile.weight || ''}
+                    onChange={(e) => setLocalProfile({ ...localProfile, weight: e.target.value ? parseFloat(e.target.value) : null })}
                     placeholder="Seu peso"
                   />
                 </div>
@@ -208,8 +146,8 @@ export default function Profile() {
                   <Input
                     id="height"
                     type="number"
-                    value={profile.height || ''}
-                    onChange={(e) => setProfile({ ...profile, height: e.target.value ? parseFloat(e.target.value) : null })}
+                    value={localProfile.height || ''}
+                    onChange={(e) => setLocalProfile({ ...localProfile, height: e.target.value ? parseFloat(e.target.value) : null })}
                     placeholder="Sua altura"
                   />
                 </div>
@@ -233,7 +171,7 @@ export default function Profile() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Objetivo Principal</Label>
-                  <Select value={profile.goal || ''} onValueChange={(value) => setProfile({ ...profile, goal: value })}>
+                  <Select value={localProfile.goal || ''} onValueChange={(value) => setLocalProfile({ ...localProfile, goal: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecionar objetivo" />
                     </SelectTrigger>
@@ -248,7 +186,7 @@ export default function Profile() {
 
                 <div className="space-y-2">
                   <Label>Nível de Experiência</Label>
-                  <Select value={profile.experience_level || ''} onValueChange={(value) => setProfile({ ...profile, experience_level: value })}>
+                  <Select value={localProfile.experience_level || ''} onValueChange={(value) => setLocalProfile({ ...localProfile, experience_level: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecionar nível" />
                     </SelectTrigger>
@@ -286,8 +224,8 @@ export default function Profile() {
             </CardContent>
           </Card>
 
-          <Button onClick={handleSave} disabled={loading} className="w-full">
-            {loading ? 'Salvando...' : 'Salvar Perfil'}
+          <Button onClick={handleSave} disabled={saving} className="w-full">
+            {saving ? 'Salvando...' : 'Salvar Perfil'}
           </Button>
         </div>
       </div>
