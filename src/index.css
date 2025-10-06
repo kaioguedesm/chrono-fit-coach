@@ -8,110 +8,127 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 355 100% 97%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 142 76% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 271 91% 65%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 33 100% 50%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 142 76% 36%;
-    --chart-1: 142 76% 36%;
-    --chart-2: 197 37% 24%;
-    --chart-3: 43 74% 66%;
-    --chart-4: 27 87% 67%;
-    --chart-5: 12 76% 61%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 142 76% 45%;
+    --chart-1: 142 76% 45%;
+    --chart-2: 271 91% 65%;
+    --chart-3: 33 100% 50%;
+    --chart-4: 197 71% 52%;
+    --chart-5: 0 84% 60%;
     --radius: 0.75rem;
     
-    /* Fitness theme colors */
-    --fitness-primary: 142 76% 36%;
-    --fitness-secondary: 39 100% 57%;
-    --fitness-accent: 197 71% 52%;
-    --fitness-success: 142 76% 36%;
-    --fitness-warning: 39 100% 57%;
+    /* Modern Fitness Colors */
+    --fitness-primary: 142 76% 45%;
+    --fitness-secondary: 271 91% 65%;
+    --fitness-accent: 33 100% 50%;
+    --fitness-success: 142 76% 45%;
+    --fitness-warning: 33 100% 50%;
     --fitness-danger: 0 84% 60%;
+    --fitness-info: 197 71% 52%;
+    --fitness-dark: 222 47% 11%;
     
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(142 76% 36%), hsl(197 71% 52%));
-    --gradient-secondary: linear-gradient(135deg, hsl(39 100% 57%), hsl(142 76% 36%));
-    --gradient-background: linear-gradient(180deg, hsl(0 0% 100%), hsl(240 4.8% 98%));
+    /* Modern Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(142 76% 45%) 0%, hsl(158 64% 52%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(271 91% 65%) 0%, hsl(142 76% 45%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(33 100% 50%) 0%, hsl(45 100% 51%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(142 76% 45%) 0%, hsl(271 91% 65%) 50%, hsl(33 100% 50%) 100%);
+    --gradient-background: linear-gradient(180deg, hsl(0 0% 98%) 0%, hsl(210 40% 98%) 100%);
+    --gradient-card: linear-gradient(135deg, hsla(142 76% 45% / 0.05) 0%, hsla(271 91% 65% / 0.05) 100%);
     
-    /* Shadows */
-    --shadow-fitness: 0 10px 25px -5px hsl(142 76% 36% / 0.1);
-    --shadow-card: 0 4px 12px -2px hsl(240 10% 3.9% / 0.08);
+    /* Modern Shadows */
+    --shadow-primary: 0 10px 40px -10px hsl(142 76% 45% / 0.3);
+    --shadow-secondary: 0 10px 40px -10px hsl(271 91% 65% / 0.3);
+    --shadow-card: 0 4px 20px -2px hsl(222 47% 11% / 0.08);
+    --shadow-glow: 0 0 30px hsl(142 76% 45% / 0.4);
+    
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 142 76% 36%;
-    --sidebar-primary-foreground: 355 100% 97%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 240 5.9% 90%;
-    --sidebar-ring: 142 76% 36%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 142 76% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 142 76% 45%;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 355 100% 97%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 13%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 13%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 142 76% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 271 91% 70%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 33 100% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 142 76% 36%;
-    --chart-1: 142 76% 36%;
-    --chart-2: 197 71% 52%;
-    --chart-3: 39 100% 57%;
-    --chart-4: 27 87% 67%;
-    --chart-5: 12 76% 61%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 142 76% 50%;
+    --chart-1: 142 76% 50%;
+    --chart-2: 271 91% 70%;
+    --chart-3: 33 100% 55%;
+    --chart-4: 197 71% 52%;
+    --chart-5: 0 84% 60%;
     
-    /* Dark mode fitness colors */
-    --fitness-primary: 142 76% 36%;
-    --fitness-secondary: 39 100% 57%;
-    --fitness-accent: 197 71% 52%;
-    --fitness-success: 142 76% 36%;
-    --fitness-warning: 39 100% 57%;
+    /* Dark Mode Fitness Colors */
+    --fitness-primary: 142 76% 50%;
+    --fitness-secondary: 271 91% 70%;
+    --fitness-accent: 33 100% 55%;
+    --fitness-success: 142 76% 50%;
+    --fitness-warning: 33 100% 55%;
     --fitness-danger: 0 84% 60%;
+    --fitness-info: 197 71% 52%;
+    --fitness-dark: 222 47% 11%;
     
-    /* Dark gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(142 76% 36%), hsl(197 71% 52%));
-    --gradient-secondary: linear-gradient(135deg, hsl(39 100% 57%), hsl(142 76% 36%));
-    --gradient-background: linear-gradient(180deg, hsl(240 10% 3.9%), hsl(240 3.7% 15.9%));
+    /* Dark Mode Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(142 76% 50%) 0%, hsl(158 64% 52%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(271 91% 70%) 0%, hsl(142 76% 50%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(33 100% 55%) 0%, hsl(45 100% 51%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(142 76% 50%) 0%, hsl(271 91% 70%) 50%, hsl(33 100% 55%) 100%);
+    --gradient-background: linear-gradient(180deg, hsl(222 47% 11%) 0%, hsl(222 47% 8%) 100%);
+    --gradient-card: linear-gradient(135deg, hsla(142 76% 50% / 0.1) 0%, hsla(271 91% 70% / 0.1) 100%);
     
-    /* Dark shadows */
-    --shadow-fitness: 0 10px 25px -5px hsl(142 76% 36% / 0.2);
-    --shadow-card: 0 4px 12px -2px hsl(0 0% 0% / 0.25);
+    /* Dark Mode Shadows */
+    --shadow-primary: 0 10px 40px -10px hsl(142 76% 50% / 0.4);
+    --shadow-secondary: 0 10px 40px -10px hsl(271 91% 70% / 0.4);
+    --shadow-card: 0 4px 20px -2px hsl(0 0% 0% / 0.4);
+    --shadow-glow: 0 0 40px hsl(142 76% 50% / 0.5);
     
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 142 76% 36%;
-    --sidebar-primary-foreground: 355 100% 97%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 142 76% 36%;
+    --sidebar-background: 222 47% 13%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 142 76% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 17%;
+    --sidebar-ring: 142 76% 50%;
   }
 }
 
