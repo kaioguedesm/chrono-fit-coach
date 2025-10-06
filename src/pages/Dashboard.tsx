@@ -83,17 +83,17 @@ export function Dashboard({ onActionClick }: DashboardProps) {
       
       <main className="container px-4 py-6 space-y-6">
         {!user && (
-          <Card className="border-primary/50 bg-gradient-to-br from-primary/10 to-transparent">
+          <Card className="border-primary/20 bg-primary/5">
             <CardContent className="py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold mb-1">Faça login para acessar todos os recursos!</h3>
-                  <p className="text-sm text-muted-foreground">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-sm mb-1">Faça login para acessar todos os recursos!</h3>
+                  <p className="text-xs text-muted-foreground">
                     Crie sua conta e personalize seu treino
                   </p>
                 </div>
-                <Button onClick={() => navigate('/auth')} className="ml-4">
-                  <LogIn className="w-4 h-4 mr-2" />
+                <Button onClick={() => navigate('/auth')} size="sm">
+                  <LogIn className="w-4 h-4 mr-1.5" />
                   Entrar
                 </Button>
               </div>
@@ -101,11 +101,11 @@ export function Dashboard({ onActionClick }: DashboardProps) {
           </Card>
         )}
 
-        <div className="space-y-3 p-6 rounded-2xl bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 border border-primary/20">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
+        <div className="space-y-1.5">
+          <h2 className="text-2xl font-bold text-foreground">
             Olá{user ? ', ' + userName : ''}! 👋
           </h2>
-          <p className="text-muted-foreground font-medium">Vamos continuar sua jornada fitness hoje?</p>
+          <p className="text-sm text-muted-foreground">Vamos continuar sua jornada fitness hoje?</p>
         </div>
 
         <DashboardStats />
@@ -134,33 +134,33 @@ export function Dashboard({ onActionClick }: DashboardProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-primary" />
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Calendar className="w-4 h-4 text-primary" />
               Próximos Treinos
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2">
             {upcomingWorkouts.map((workout, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center min-w-[60px]">
                     <span className="text-xs font-medium text-muted-foreground">{workout.day}</span>
-                    <div className="flex items-center gap-1 text-sm">
+                    <div className="flex items-center gap-1 text-xs font-semibold text-foreground">
                       <Clock className="w-3 h-3" />
                       {workout.time}
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <p className="font-medium text-sm">{workout.workout}</p>
+                  <div>
+                    <p className="font-medium text-sm text-foreground">{workout.workout}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div>
                   {workout.status === "pending" ? (
-                    <Badge variant="default" className="text-xs">
+                    <Badge variant="default" className="text-xs font-medium">
                       Hoje
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs font-medium">
                       Agendado
                     </Badge>
                   )}
