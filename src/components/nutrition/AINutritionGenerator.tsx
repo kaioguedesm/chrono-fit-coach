@@ -3,13 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sparkles, Loader2, Apple, ChefHat, Target, Utensils } from 'lucide-react';
+import { Sparkles, Loader2, Apple, ChefHat, Target, Utensils, Heart, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useProfile } from '@/hooks/useProfile';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 interface AINutritionGeneratorProps {
   onSuccess: () => void;
@@ -47,6 +49,11 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
   const [dietType, setDietType] = useState('emagrecimento');
   const [mealsPerDay, setMealsPerDay] = useState('5');
   const [restrictions, setRestrictions] = useState<string[]>([]);
+  const [favoritesFoods, setFavoritesFoods] = useState('');
+  const [dislikedFoods, setDislikedFoods] = useState('');
+  const [mealTiming, setMealTiming] = useState('');
+  const [specialNotes, setSpecialNotes] = useState('');
+  const [preparationTime, setPreparationTime] = useState('moderado');
 
   const handleRestrictionToggle = (restrictionId: string) => {
     setRestrictions(prev =>
@@ -70,6 +77,13 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
           dietDescription: selectedDiet?.description,
           mealsPerDay: parseInt(mealsPerDay),
           restrictions: restrictions.length > 0 ? restrictions : [],
+          userPreferences: {
+            favoritesFoods: favoritesFoods.trim(),
+            dislikedFoods: dislikedFoods.trim(),
+            mealTiming: mealTiming.trim(),
+            specialNotes: specialNotes.trim(),
+            preparationTime
+          },
           userProfile: {
             weight: profile?.weight,
             height: profile?.height,
@@ -252,6 +266,81 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
             </div>
           </div>
 
+          <div>
+            <Label className="text-base font-semibold mb-3 block flex items-center gap-2">
+              <Heart className="w-4 h-4 text-primary" />
+              Personalize Sua Dieta
+            </Label>
+            <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-muted">
+              <div>
+                <Label htmlFor="favorites" className="text-sm flex items-center gap-2">
+                  😋 Alimentos que você adora
+                </Label>
+                <Textarea
+                  id="favorites"
+                  placeholder="Ex: Frango grelhado, batata doce, abacate, ovos..."
+                  value={favoritesFoods}
+                  onChange={(e) => setFavoritesFoods(e.target.value)}
+                  className="mt-1 min-h-[60px]"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="dislikes" className="text-sm flex items-center gap-2">
+                  🚫 Alimentos que você não gosta
+                </Label>
+                <Textarea
+                  id="dislikes"
+                  placeholder="Ex: Brócolis, couve-flor, salmão..."
+                  value={dislikedFoods}
+                  onChange={(e) => setDislikedFoods(e.target.value)}
+                  className="mt-1 min-h-[60px]"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="timing" className="text-sm flex items-center gap-2">
+                  <Clock className="w-3 h-3" />
+                  Horários preferidos para refeições
+                </Label>
+                <Input
+                  id="timing"
+                  placeholder="Ex: Café 7h, Almoço 12h, Jantar 19h"
+                  value={mealTiming}
+                  onChange={(e) => setMealTiming(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="preparation">Tempo de preparo preferido</Label>
+                <Select value={preparationTime} onValueChange={setPreparationTime}>
+                  <SelectTrigger id="preparation" className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rapido">⚡ Rápido (até 15 min)</SelectItem>
+                    <SelectItem value="moderado">🍳 Moderado (15-30 min)</SelectItem>
+                    <SelectItem value="elaborado">👨‍🍳 Elaborado (30+ min)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="notes" className="text-sm flex items-center gap-2">
+                  📝 Observações especiais
+                </Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Ex: Prefiro alimentos com baixo índice glicêmico, gosto de variedade, quero receitas fáceis de preparar..."
+                  value={specialNotes}
+                  onChange={(e) => setSpecialNotes(e.target.value)}
+                  className="mt-1 min-h-[70px]"
+                />
+              </div>
+            </div>
+          </div>
+
           {(selectedDiet || selectedMeals) && (
             <div className="p-3 bg-muted/50 rounded-lg space-y-1">
               <p className="text-xs text-muted-foreground">
@@ -266,6 +355,16 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
               {restrictions.length > 0 && (
                 <p className="text-xs text-muted-foreground">
                   • Restrições: {restrictions.map(r => commonRestrictions.find(cr => cr.id === r)?.label).join(', ')}
+                </p>
+              )}
+              {favoritesFoods && (
+                <p className="text-xs text-muted-foreground">
+                  • Com alimentos favoritos incluídos
+                </p>
+              )}
+              {preparationTime && (
+                <p className="text-xs text-muted-foreground">
+                  • Preparo: {preparationTime === 'rapido' ? 'Rápido' : preparationTime === 'moderado' ? 'Moderado' : 'Elaborado'}
                 </p>
               )}
             </div>

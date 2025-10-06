@@ -16,7 +16,8 @@ serve(async (req) => {
       dietDescription,
       mealsPerDay, 
       restrictions, 
-      userProfile 
+      userProfile,
+      userPreferences 
     } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -117,18 +118,29 @@ ${userProfile.goal ? `- Objetivo fitness: ${userProfile.goal}` : ''}
 - Meta calórica diária: aproximadamente ${recommendedCalories} kcal
 - Número de refeições: ${mealsPerDay}
 ${restrictions.length > 0 ? `- Restrições: ${restrictions.join(', ')}` : ''}
-${userProfile.dietaryPreferences?.length > 0 ? `- Preferências: ${userProfile.dietaryPreferences.join(', ')}` : ''}
+${userProfile.dietaryPreferences?.length > 0 ? `- Preferências do perfil: ${userProfile.dietaryPreferences.join(', ')}` : ''}
 ${userProfile.dietaryRestrictions?.length > 0 ? `- Restrições do perfil: ${userProfile.dietaryRestrictions.join(', ')}` : ''}
 
-📋 REQUISITOS:
+💚 PREFERÊNCIAS PESSOAIS DO ALUNO:
+${userPreferences?.favoritesFoods ? `- ❤️ ALIMENTOS FAVORITOS (INCLUA O MÁXIMO POSSÍVEL): ${userPreferences.favoritesFoods}` : ''}
+${userPreferences?.dislikedFoods ? `- 🚫 ALIMENTOS QUE NÃO GOSTA (EVITE TOTALMENTE): ${userPreferences.dislikedFoods}` : ''}
+${userPreferences?.mealTiming ? `- ⏰ Horários preferidos: ${userPreferences.mealTiming}` : ''}
+${userPreferences?.preparationTime ? `- ⚡ Tempo de preparo: ${userPreferences.preparationTime === 'rapido' ? 'Refeições rápidas (até 15 min)' : userPreferences.preparationTime === 'moderado' ? 'Tempo moderado (15-30 min)' : 'Pode ser elaborado (30+ min)'}` : ''}
+${userPreferences?.specialNotes ? `- 📝 Observações especiais: ${userPreferences.specialNotes}` : ''}
+
+📋 REQUISITOS CRÍTICOS:
 - Crie exatamente ${mealsPerDay} refeições distribuídas ao longo do dia
 - Total de calorias deve somar aproximadamente ${recommendedCalories} kcal
 - Calcule macros precisos para cada refeição
 - Respeite TODAS as restrições alimentares mencionadas
-- Inclua instruções claras de preparo
+- IMPORTANTE: Priorize os alimentos favoritos do aluno nas refeições
+- IMPORTANTE: NUNCA inclua alimentos que o aluno não gosta
+- Ajuste o tempo de preparo conforme a preferência
+- Inclua instruções claras e práticas de preparo
 - Seja criativo mas prático
 - Varie fontes de proteína e carboidratos
 - Inclua vegetais e fibras em várias refeições
+- Torne o plano agradável e sustentável a longo prazo
 
 LEMBRE-SE: Retorne APENAS o JSON, sem texto adicional antes ou depois!`;
 
