@@ -1,15 +1,30 @@
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, Scale, Ruler, Plus } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { TrendingUp, TrendingDown, Scale, Ruler, Plus, Activity, Target, ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer, 
+  Legend,
+  Area,
+  AreaChart,
+  ComposedChart,
+  Bar,
+  ReferenceLine
+} from 'recharts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PhotoUpload } from '@/components/progress/PhotoUpload';
@@ -144,28 +159,70 @@ export default function Progress() {
     }
   };
 
+  const latestMeasurement = measurements[0];
+  const previousMeasurement = measurements[1];
+
+  // Calculate changes
+  const calculateChange = (current: number | null | undefined, previous: number | null | undefined) => {
+    if (!current || !previous) return null;
+    const change = current - previous;
+    const percentage = ((change / previous) * 100).toFixed(1);
+    return { change: change.toFixed(1), percentage, isPositive: change > 0, isNegative: change < 0 };
+  };
+
+  const weightChange = calculateChange(latestMeasurement?.weight, previousMeasurement?.weight);
+  const bodyFatChange = calculateChange(latestMeasurement?.body_fat_percentage, previousMeasurement?.body_fat_percentage);
+  const muscleMassChange = calculateChange(latestMeasurement?.muscle_mass, previousMeasurement?.muscle_mass);
+
   // Sample data for demonstration
   const sampleData = [
-    { date: '2024-01-01', weight: 80, bodyFat: 18 },
-    { date: '2024-01-15', weight: 79.5, bodyFat: 17.5 },
-    { date: '2024-02-01', weight: 79, bodyFat: 17 },
-    { date: '2024-02-15', weight: 78.5, bodyFat: 16.5 },
-    { date: '2024-03-01', weight: 78, bodyFat: 16 }
+    { date: '2024-01-01', weight: 80, bodyFat: 18, muscleMass: 62, chest: 100, waist: 85, arm: 34 },
+    { date: '2024-01-15', weight: 79.5, bodyFat: 17.5, muscleMass: 62.5, chest: 101, waist: 84, arm: 34.5 },
+    { date: '2024-02-01', weight: 79, bodyFat: 17, muscleMass: 63, chest: 102, waist: 83, arm: 35 },
+    { date: '2024-02-15', weight: 78.5, bodyFat: 16.5, muscleMass: 63.5, chest: 103, waist: 82, arm: 35.5 },
+    { date: '2024-03-01', weight: 78, bodyFat: 16, muscleMass: 64, chest: 104, waist: 81, arm: 36 }
   ];
 
   const chartData = measurements.length > 0 
     ? measurements.reverse().map(m => ({
         date: format(new Date(m.measured_at), 'dd/MM'),
+        fullDate: format(new Date(m.measured_at), "dd 'de' MMM", { locale: ptBR }),
         weight: m.weight,
-        bodyFat: m.body_fat_percentage
+        bodyFat: m.body_fat_percentage,
+        muscleMass: m.muscle_mass,
+        chest: m.chest,
+        waist: m.waist,
+        hips: m.hips,
+        arm: m.arm,
+        thigh: m.thigh
       }))
     : sampleData.map(d => ({
         date: format(new Date(d.date), 'dd/MM'),
+        fullDate: format(new Date(d.date), "dd 'de' MMM", { locale: ptBR }),
         weight: d.weight,
-        bodyFat: d.bodyFat
+        bodyFat: d.bodyFat,
+        muscleMass: d.muscleMass,
+        chest: d.chest,
+        waist: d.waist,
+        arm: d.arm
       }));
 
-  const latestMeasurement = measurements[0];
+  // Custom tooltip
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
+          <p className="font-semibold mb-2">{payload[0]?.payload?.fullDate}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className="text-sm" style={{ color: entry.color }}>
+              {entry.name}: {entry.value}{entry.unit || ''}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
@@ -183,89 +240,309 @@ export default function Progress() {
             {/* Stats Overview */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card>
-                <CardContent className="p-4 text-center">
-                  <Scale className="w-6 h-6 mx-auto text-primary mb-2" />
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Scale className="w-5 h-5 text-primary" />
+                    {weightChange && (
+                      <Badge variant={weightChange.isNegative ? "default" : "secondary"} className="text-xs">
+                        {weightChange.isNegative ? <ArrowDown className="w-3 h-3" /> : <ArrowUp className="w-3 h-3" />}
+                        {Math.abs(parseFloat(weightChange.change))}kg
+                      </Badge>
+                    )}
+                  </div>
                   <div className="text-2xl font-bold">
                     {latestMeasurement?.weight || 78}kg
                   </div>
                   <div className="text-sm text-muted-foreground">Peso atual</div>
+                  {weightChange && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {weightChange.percentage}% vs anterior
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               
               <Card>
-                <CardContent className="p-4 text-center">
-                  <TrendingUp className="w-6 h-6 mx-auto text-blue-600 mb-2" />
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <TrendingDown className="w-5 h-5 text-blue-600" />
+                    {bodyFatChange && (
+                      <Badge variant={bodyFatChange.isNegative ? "default" : "secondary"} className="text-xs">
+                        {bodyFatChange.isNegative ? <ArrowDown className="w-3 h-3" /> : <ArrowUp className="w-3 h-3" />}
+                        {Math.abs(parseFloat(bodyFatChange.change))}%
+                      </Badge>
+                    )}
+                  </div>
                   <div className="text-2xl font-bold">
                     {latestMeasurement?.body_fat_percentage || 16}%
                   </div>
-                  <div className="text-sm text-muted-foreground">Gordura</div>
+                  <div className="text-sm text-muted-foreground">% Gordura</div>
+                  {bodyFatChange && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {bodyFatChange.percentage}% vs anterior
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               
               <Card>
-                <CardContent className="p-4 text-center">
-                  <Ruler className="w-6 h-6 mx-auto text-green-600 mb-2" />
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Activity className="w-5 h-5 text-green-600" />
+                    {muscleMassChange && (
+                      <Badge variant={muscleMassChange.isPositive ? "default" : "secondary"} className="text-xs">
+                        {muscleMassChange.isPositive ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                        {Math.abs(parseFloat(muscleMassChange.change))}kg
+                      </Badge>
+                    )}
+                  </div>
                   <div className="text-2xl font-bold">
                     {latestMeasurement?.muscle_mass || 65}kg
                   </div>
                   <div className="text-sm text-muted-foreground">Massa muscular</div>
+                  {muscleMassChange && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {muscleMassChange.percentage}% vs anterior
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               
               <Card>
-                <CardContent className="p-4 text-center">
-                  <TrendingUp className="w-6 h-6 mx-auto text-orange-600 mb-2" />
-                  <div className="text-2xl font-bold">24.2</div>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Target className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {latestMeasurement?.weight 
+                      ? ((latestMeasurement.weight / Math.pow((latestMeasurement as any).height || 175 / 100, 2))).toFixed(1) 
+                      : '24.2'
+                    }
+                  </div>
                   <div className="text-sm text-muted-foreground">IMC</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Faixa ideal: 18.5-24.9
+                  </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Weight Chart */}
+            {/* Combined Chart - Weight and Body Composition */}
             <Card>
               <CardHeader>
-                <CardTitle>Evolução do Peso</CardTitle>
+                <CardTitle>Evolução da Composição Corporal</CardTitle>
+                <CardDescription>
+                  Acompanhe seu peso, gordura corporal e massa muscular ao longo do tempo
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={350}>
+                  <ComposedChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                    <XAxis 
+                      dataKey="date" 
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      tickLine={{ stroke: 'hsl(var(--muted))' }}
+                    />
+                    <YAxis 
+                      yAxisId="left"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      tickLine={{ stroke: 'hsl(var(--muted))' }}
+                      label={{ value: 'Peso (kg)', angle: -90, position: 'insideLeft', fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <YAxis 
+                      yAxisId="right" 
+                      orientation="right"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      tickLine={{ stroke: 'hsl(var(--muted))' }}
+                      label={{ value: '% / kg', angle: 90, position: 'insideRight', fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="line"
+                    />
+                    <Area
+                      yAxisId="left"
+                      type="monotone"
+                      dataKey="weight"
+                      name="Peso (kg)"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={3}
+                      fill="url(#colorWeight)"
+                      dot={{ fill: 'hsl(var(--primary))', r: 4 }}
+                      activeDot={{ r: 6 }}
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="bodyFat"
+                      name="Gordura (%)"
+                      stroke="hsl(220, 70%, 50%)"
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(220, 70%, 50%)', r: 4 }}
+                      unit="%"
+                    />
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="muscleMass"
+                      name="Massa Muscular (kg)"
+                      stroke="hsl(142, 76%, 36%)"
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(142, 76%, 36%)', r: 4 }}
+                      unit="kg"
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Body Measurements Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Medidas Corporais (Circunferências)</CardTitle>
+                <CardDescription>
+                  Evolução das principais circunferências do seu corpo em centímetros
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="weight" 
-                      stroke="hsl(var(--primary))" 
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
+                    <XAxis 
+                      dataKey="date"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <YAxis 
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      label={{ value: 'cm', angle: -90, position: 'insideLeft', fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend iconType="circle" />
+                    <Line
+                      type="monotone"
+                      dataKey="chest"
+                      name="Peito"
+                      stroke="hsl(262, 83%, 58%)"
                       strokeWidth={2}
-                      dot={{ fill: 'hsl(var(--primary))' }}
+                      dot={{ r: 3 }}
+                      unit="cm"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="waist"
+                      name="Cintura"
+                      stroke="hsl(24, 95%, 53%)"
+                      strokeWidth={2}
+                      dot={{ r: 3 }}
+                      unit="cm"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="arm"
+                      name="Braço"
+                      stroke="hsl(197, 71%, 52%)"
+                      strokeWidth={2}
+                      dot={{ r: 3 }}
+                      unit="cm"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="thigh"
+                      name="Coxa"
+                      stroke="hsl(47, 95%, 53%)"
+                      strokeWidth={2}
+                      dot={{ r: 3 }}
+                      unit="cm"
                     />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            {/* Body Fat Chart */}
+            {/* Progress Summary */}
             <Card>
               <CardHeader>
-                <CardTitle>Percentual de Gordura</CardTitle>
+                <CardTitle>Resumo do Progresso</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="bodyFat" 
-                      stroke="hsl(var(--secondary))" 
-                      strokeWidth={2}
-                      dot={{ fill: 'hsl(var(--secondary))' }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div className="space-y-3">
+                  {measurements.length >= 2 ? (
+                    <>
+                      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Scale className="w-4 h-4 text-primary" />
+                          <span className="text-sm font-medium">Mudança de Peso</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {weightChange && (
+                            <>
+                              <span className={`text-sm font-bold ${weightChange.isNegative ? 'text-green-600' : 'text-orange-600'}`}>
+                                {weightChange.change}kg ({weightChange.percentage}%)
+                              </span>
+                              {weightChange.isNegative ? 
+                                <TrendingDown className="w-4 h-4 text-green-600" /> : 
+                                <TrendingUp className="w-4 h-4 text-orange-600" />
+                              }
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <TrendingDown className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm font-medium">Mudança de Gordura</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {bodyFatChange && (
+                            <>
+                              <span className={`text-sm font-bold ${bodyFatChange.isNegative ? 'text-green-600' : 'text-orange-600'}`}>
+                                {bodyFatChange.change}% ({bodyFatChange.percentage}%)
+                              </span>
+                              {bodyFatChange.isNegative ? 
+                                <TrendingDown className="w-4 h-4 text-green-600" /> : 
+                                <TrendingUp className="w-4 h-4 text-orange-600" />
+                              }
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-green-600" />
+                          <span className="text-sm font-medium">Mudança de Massa Muscular</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {muscleMassChange && (
+                            <>
+                              <span className={`text-sm font-bold ${muscleMassChange.isPositive ? 'text-green-600' : 'text-orange-600'}`}>
+                                {muscleMassChange.change}kg ({muscleMassChange.percentage}%)
+                              </span>
+                              {muscleMassChange.isPositive ? 
+                                <TrendingUp className="w-4 h-4 text-green-600" /> : 
+                                <TrendingDown className="w-4 h-4 text-orange-600" />
+                              }
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>Adicione mais medidas para ver seu progresso comparativo</p>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
