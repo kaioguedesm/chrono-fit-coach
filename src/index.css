@@ -14,7 +14,7 @@ All colors MUST be HSL.
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 142 76% 45%;
+    --primary: 0 85% 60%;
     --primary-foreground: 0 0% 100%;
     --secondary: 271 91% 65%;
     --secondary-foreground: 0 0% 100%;
@@ -26,8 +26,8 @@ All colors MUST be HSL.
     --destructive-foreground: 0 0% 98%;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 142 76% 45%;
-    --chart-1: 142 76% 45%;
+    --ring: 0 85% 60%;
+    --chart-1: 0 85% 60%;
     --chart-2: 271 91% 65%;
     --chart-3: 33 100% 50%;
     --chart-4: 197 71% 52%;
@@ -35,7 +35,7 @@ All colors MUST be HSL.
     --radius: 0.75rem;
     
     /* Modern Fitness Colors */
-    --fitness-primary: 142 76% 45%;
+    --fitness-primary: 0 85% 60%;
     --fitness-secondary: 271 91% 65%;
     --fitness-accent: 33 100% 50%;
     --fitness-success: 142 76% 45%;
@@ -45,30 +45,30 @@ All colors MUST be HSL.
     --fitness-dark: 222 47% 11%;
     
     /* Modern Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(142 76% 45%) 0%, hsl(158 64% 52%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(271 91% 65%) 0%, hsl(142 76% 45%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(33 100% 50%) 0%, hsl(45 100% 51%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(142 76% 45%) 0%, hsl(271 91% 65%) 50%, hsl(33 100% 50%) 100%);
-    --gradient-background: linear-gradient(180deg, hsl(0 0% 98%) 0%, hsl(210 40% 98%) 100%);
-    --gradient-card: linear-gradient(135deg, hsla(142 76% 45% / 0.05) 0%, hsla(271 91% 65% / 0.05) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(0 85% 60%) 0%, hsl(15 85% 65%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(271 91% 65%) 0%, hsl(0 85% 60%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(33 100% 50%) 0%, hsl(0 85% 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(0 85% 60%) 0%, hsl(271 91% 65%) 50%, hsl(33 100% 50%) 100%);
+    --gradient-background: linear-gradient(180deg, hsl(0 0% 98%) 0%, hsl(0 5% 98%) 100%);
+    --gradient-card: linear-gradient(135deg, hsla(0 85% 60% / 0.05) 0%, hsla(271 91% 65% / 0.05) 100%);
     
     /* Modern Shadows */
-    --shadow-primary: 0 10px 40px -10px hsl(142 76% 45% / 0.3);
+    --shadow-primary: 0 10px 40px -10px hsl(0 85% 60% / 0.3);
     --shadow-secondary: 0 10px 40px -10px hsl(271 91% 65% / 0.3);
     --shadow-card: 0 4px 20px -2px hsl(222 47% 11% / 0.08);
-    --shadow-glow: 0 0 30px hsl(142 76% 45% / 0.4);
+    --shadow-glow: 0 0 30px hsl(0 85% 60% / 0.4);
     
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 142 76% 45%;
+    --sidebar-primary: 0 85% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 210 40% 96%;
     --sidebar-accent-foreground: 222 47% 11%;
     --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 142 76% 45%;
+    --sidebar-ring: 0 85% 60%;
   }
 
   .dark {
@@ -78,7 +78,7 @@ All colors MUST be HSL.
     --card-foreground: 210 40% 98%;
     --popover: 222 47% 13%;
     --popover-foreground: 210 40% 98%;
-    --primary: 142 76% 50%;
+    --primary: 0 85% 65%;
     --primary-foreground: 0 0% 100%;
     --secondary: 271 91% 70%;
     --secondary-foreground: 0 0% 100%;
@@ -90,15 +90,15 @@ All colors MUST be HSL.
     --destructive-foreground: 0 0% 98%;
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 142 76% 50%;
-    --chart-1: 142 76% 50%;
+    --ring: 0 85% 65%;
+    --chart-1: 0 85% 65%;
     --chart-2: 271 91% 70%;
     --chart-3: 33 100% 55%;
     --chart-4: 197 71% 52%;
     --chart-5: 0 84% 60%;
     
     /* Dark Mode Fitness Colors */
-    --fitness-primary: 142 76% 50%;
+    --fitness-primary: 0 85% 65%;
     --fitness-secondary: 271 91% 70%;
     --fitness-accent: 33 100% 55%;
     --fitness-success: 142 76% 50%;
@@ -108,27 +108,27 @@ All colors MUST be HSL.
     --fitness-dark: 222 47% 11%;
     
     /* Dark Mode Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(142 76% 50%) 0%, hsl(158 64% 52%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(271 91% 70%) 0%, hsl(142 76% 50%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(33 100% 55%) 0%, hsl(45 100% 51%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(142 76% 50%) 0%, hsl(271 91% 70%) 50%, hsl(33 100% 55%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(0 85% 65%) 0%, hsl(15 85% 70%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(271 91% 70%) 0%, hsl(0 85% 65%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(33 100% 55%) 0%, hsl(0 85% 65%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(0 85% 65%) 0%, hsl(271 91% 70%) 50%, hsl(33 100% 55%) 100%);
     --gradient-background: linear-gradient(180deg, hsl(222 47% 11%) 0%, hsl(222 47% 8%) 100%);
-    --gradient-card: linear-gradient(135deg, hsla(142 76% 50% / 0.1) 0%, hsla(271 91% 70% / 0.1) 100%);
+    --gradient-card: linear-gradient(135deg, hsla(0 85% 65% / 0.1) 0%, hsla(271 91% 70% / 0.1) 100%);
     
     /* Dark Mode Shadows */
-    --shadow-primary: 0 10px 40px -10px hsl(142 76% 50% / 0.4);
+    --shadow-primary: 0 10px 40px -10px hsl(0 85% 65% / 0.4);
     --shadow-secondary: 0 10px 40px -10px hsl(271 91% 70% / 0.4);
     --shadow-card: 0 4px 20px -2px hsl(0 0% 0% / 0.4);
-    --shadow-glow: 0 0 40px hsl(142 76% 50% / 0.5);
+    --shadow-glow: 0 0 40px hsl(0 85% 65% / 0.5);
     
     --sidebar-background: 222 47% 13%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 142 76% 50%;
+    --sidebar-primary: 0 85% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 217 33% 17%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 142 76% 50%;
+    --sidebar-ring: 0 85% 65%;
   }
 }
 
