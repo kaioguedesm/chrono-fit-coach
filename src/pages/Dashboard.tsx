@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, CheckCircle2, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { useProfile } from "@/hooks/useProfile";
 
 const upcomingWorkouts = [
   {
@@ -35,7 +36,10 @@ interface DashboardProps {
 
 export function Dashboard({ onActionClick }: DashboardProps) {
   const { user } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
+
+  const userName = profile?.name || user?.user_metadata?.name || 'Atleta';
 
   return (
     <div className="pb-20">
@@ -62,7 +66,7 @@ export function Dashboard({ onActionClick }: DashboardProps) {
         )}
 
         <div className="space-y-2">
-          <h2 className="text-2xl font-bold">Olá{user ? ', ' + (user.user_metadata?.name || 'Atleta') : ''}! 👋</h2>
+          <h2 className="text-2xl font-bold">Olá{user ? ', ' + userName : ''}! 👋</h2>
           <p className="text-muted-foreground">Vamos continuar sua jornada fitness hoje?</p>
         </div>
 

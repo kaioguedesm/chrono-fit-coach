@@ -1,50 +1,59 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, Target, Flame, TrendingUp } from "lucide-react";
-
-const stats = [
-  {
-    title: "Treinos esta semana",
-    value: "4",
-    target: "6",
-    icon: Activity,
-    color: "text-primary",
-    bgColor: "bg-primary/10"
-  },
-  {
-    title: "Meta de peso",
-    value: "72kg",
-    target: "75kg",
-    icon: Target,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50"
-  },
-  {
-    title: "Calorias queimadas",
-    value: "1,240",
-    target: "1,500",
-    icon: Flame,
-    color: "text-orange-600",
-    bgColor: "bg-orange-50"
-  },
-  {
-    title: "Progresso mensal",
-    value: "85%",
-    target: "100%",
-    icon: TrendingUp,
-    color: "text-green-600",
-    bgColor: "bg-green-50"
-  },
-];
+import { useProfile } from "@/hooks/useProfile";
 
 export function DashboardStats() {
+  const { profile, calculateIMC } = useProfile();
+
+  const imc = calculateIMC();
+  const currentWeight = profile?.weight || 0;
+  const goalWeight = profile?.goal === 'emagrecimento' ? currentWeight - 5 : 
+                     profile?.goal === 'hipertrofia' ? currentWeight + 3 : 
+                     currentWeight;
+
+  const stats = [
+    {
+      title: "Treinos esta semana",
+      value: "4",
+      target: "6",
+      icon: Activity,
+      color: "text-primary",
+      bgColor: "bg-primary/10",
+      percentage: (4/6) * 100
+    },
+    {
+      title: "Peso atual",
+      value: currentWeight > 0 ? `${currentWeight}kg` : "--",
+      target: goalWeight > 0 ? `${goalWeight}kg` : "--",
+      icon: Target,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
+      percentage: goalWeight > 0 ? (currentWeight/goalWeight) * 100 : 0
+    },
+    {
+      title: "IMC",
+      value: imc || "--",
+      target: "24.9",
+      icon: Flame,
+      color: "text-orange-600",
+      bgColor: "bg-orange-50",
+      percentage: imc ? (parseFloat(imc) / 24.9) * 100 : 0
+    },
+    {
+      title: "Progresso mensal",
+      value: "85%",
+      target: "100%",
+      icon: TrendingUp,
+      color: "text-green-600",
+      bgColor: "bg-green-50",
+      percentage: 85
+    },
+  ];
+
   return (
     <div className="grid grid-cols-2 gap-4">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
-        const percentage = stat.value === "85%" ? 85 : 
-          stat.title === "Treinos esta semana" ? (4/6) * 100 :
-          stat.title === "Meta de peso" ? (72/75) * 100 :
-          (1240/1500) * 100;
         
         return (
           <Card key={index} className="relative overflow-hidden">
@@ -65,7 +74,7 @@ export function DashboardStats() {
                 <div className="w-full bg-muted rounded-full h-1.5">
                   <div 
                     className="bg-primary h-1.5 rounded-full transition-all duration-300" 
-                    style={{ width: `${Math.min(percentage, 100)}%` }}
+                    style={{ width: `${Math.min(stat.percentage, 100)}%` }}
                   />
                 </div>
               </div>

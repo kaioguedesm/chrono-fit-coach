@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,8 +25,8 @@ export default function Profile() {
   });
 
   // Atualizar estado local quando perfil carregar
-  useState(() => {
-    if (profile && !localProfile.name) {
+  useEffect(() => {
+    if (profile) {
       setLocalProfile({
         name: profile.name,
         age: profile.age,
@@ -37,7 +37,7 @@ export default function Profile() {
         experience_level: profile.experience_level,
       });
     }
-  });
+  }, [profile]);
 
   const handleSave = async () => {
     setSaving(true);
