@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from '@/hooks/useTheme';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Bell, 
@@ -30,6 +31,7 @@ export default function Settings() {
   const { signOut, user } = useAuth();
   const { profile, updateProfile, refreshProfile } = useProfile();
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   
   // Profile edit states
@@ -292,7 +294,12 @@ export default function Settings() {
       title: "Aplicativo",
       icon: Smartphone,
       items: [
-        { label: "Modo escuro", hasSwitch: true, value: false, onChange: () => {} },
+        { 
+          label: "Modo escuro", 
+          hasSwitch: true, 
+          value: theme === 'dark', 
+          onChange: (value: boolean) => setTheme(value ? 'dark' : 'light')
+        },
         { label: "Sons e vibração", hasSwitch: true, value: true, onChange: () => {} },
         { label: "Idioma", action: () => {}, hasSwitch: false },
         { label: "Unidades de medida", action: () => {}, hasSwitch: false }
