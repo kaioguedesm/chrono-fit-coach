@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { authSchema } from '@/lib/validations';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -22,10 +23,18 @@ export default function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password || (!isLogin && !name)) {
+    // Validate inputs
+    try {
+      const validationData = isLogin 
+        ? { email, password } 
+        : { email, password, name };
+      
+      authSchema.parse(validationData);
+    } catch (error: any) {
+      const errorMessage = error.errors?.[0]?.message || 'Dados inválidos';
       toast({
-        title: "Erro",
-        description: "Por favor, preencha todos os campos.",
+        title: "Erro de validação",
+        description: errorMessage,
         variant: "destructive"
       });
       return;

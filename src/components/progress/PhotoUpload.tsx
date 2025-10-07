@@ -8,6 +8,7 @@ import { Camera, Upload, X, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { photoUploadSchema } from '@/lib/validations';
 
 interface PhotoUploadProps {
   onSuccess: () => void;
@@ -17,7 +18,7 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
-  const [photoType, setPhotoType] = useState<'front' | 'side' | 'back'>('front');
+  const [photoType, setPhotoType] = useState<'frente' | 'lado' | 'costas'>('frente');
   const [description, setDescription] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -26,10 +27,14 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file
+    try {
+      photoUploadSchema.pick({ file: true }).parse({ file });
+    } catch (error: any) {
+      const errorMessage = error.errors?.[0]?.message || 'Arquivo inválido';
       toast({
-        title: "Erro",
-        description: "A foto deve ter no máximo 5MB.",
+        title: "Erro de validação",
+        description: errorMessage,
         variant: "destructive"
       });
       return;
@@ -41,6 +46,23 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
 
   const uploadPhoto = async () => {
     if (!user || !selectedFile) return;
+
+    // Validate all fields
+    try {
+      photoUploadSchema.parse({
+        file: selectedFile,
+        photo_type: photoType,
+        description: description || undefined,
+      });
+    } catch (error: any) {
+      const errorMessage = error.errors?.[0]?.message || 'Dados inválidos';
+      toast({
+        title: "Erro de validação",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      return;
+    }
 
     setUploading(true);
     try {
@@ -102,9 +124,9 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="front">Frontal</SelectItem>
-              <SelectItem value="side">Lateral</SelectItem>
-              <SelectItem value="back">Costas</SelectItem>
+              <SelectItem value="frente">Frontal</SelectItem>
+              <SelectItem value="lado">Lateral</SelectItem>
+              <SelectItem value="costas">Costas</SelectItem>
             </SelectContent>
           </Select>
         </div>

@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useProfile } from '@/hooks/useProfile';
 import { Camera, Upload } from 'lucide-react';
+import { profileSchema } from '@/lib/validations';
 
 export default function Profile() {
   const { toast } = useToast();
@@ -40,6 +41,19 @@ export default function Profile() {
   }, [profile]);
 
   const handleSave = async () => {
+    // Validate profile data
+    try {
+      profileSchema.parse(localProfile);
+    } catch (error: any) {
+      const errorMessage = error.errors?.[0]?.message || 'Dados inválidos';
+      toast({
+        title: "Erro de validação",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSaving(true);
 
     try {

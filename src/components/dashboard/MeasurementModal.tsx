@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Scale, Ruler, Activity } from 'lucide-react';
+import { measurementSchema } from '@/lib/validations';
 
 interface MeasurementModalProps {
   open: boolean;
@@ -32,20 +33,37 @@ export function MeasurementModal({ open, onOpenChange }: MeasurementModalProps) 
     e.preventDefault();
     if (!user) return;
 
+    // Prepare and validate measurement data
+    const measurementData = {
+      weight: measurement.weight ? parseFloat(measurement.weight) : null,
+      body_fat_percentage: measurement.bodyFat ? parseFloat(measurement.bodyFat) : null,
+      muscle_mass: measurement.muscleMass ? parseFloat(measurement.muscleMass) : null,
+      chest: measurement.chest ? parseFloat(measurement.chest) : null,
+      waist: measurement.waist ? parseFloat(measurement.waist) : null,
+      hips: measurement.hips ? parseFloat(measurement.hips) : null,
+      arm: measurement.arm ? parseFloat(measurement.arm) : null,
+      thigh: measurement.thigh ? parseFloat(measurement.thigh) : null,
+    };
+
+    try {
+      measurementSchema.parse(measurementData);
+    } catch (error: any) {
+      const errorMessage = error.errors?.[0]?.message || 'Dados inválidos';
+      toast({
+        title: "Erro de validação",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const { error } = await supabase
         .from('body_measurements')
         .insert({
           user_id: user.id,
-          weight: measurement.weight ? parseFloat(measurement.weight) : null,
-          body_fat_percentage: measurement.bodyFat ? parseFloat(measurement.bodyFat) : null,
-          muscle_mass: measurement.muscleMass ? parseFloat(measurement.muscleMass) : null,
-          chest: measurement.chest ? parseFloat(measurement.chest) : null,
-          waist: measurement.waist ? parseFloat(measurement.waist) : null,
-          hips: measurement.hips ? parseFloat(measurement.hips) : null,
-          arm: measurement.arm ? parseFloat(measurement.arm) : null,
-          thigh: measurement.thigh ? parseFloat(measurement.thigh) : null,
+          ...measurementData,
           measured_at: new Date().toISOString()
         });
 
