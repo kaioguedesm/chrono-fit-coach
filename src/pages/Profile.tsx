@@ -5,11 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { useProfile } from '@/hooks/useProfile';
 import { Camera, Upload } from 'lucide-react';
 import { profileSchema } from '@/lib/validations';
+import { AvatarUpload } from '@/components/profile/AvatarUpload';
 
 export default function Profile() {
   const { toast } = useToast();
@@ -87,17 +87,14 @@ export default function Profile() {
             <CardHeader>
               <CardTitle>Foto de Perfil</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col items-center space-y-4">
-              <Avatar className="w-24 h-24">
-                <AvatarImage src={profile?.avatar_url || ''} />
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xl">
-                  {profile?.name ? profile.name.charAt(0).toUpperCase() : 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <Button variant="outline" size="sm">
-                <Camera className="w-4 h-4 mr-2" />
-                Alterar Foto
-              </Button>
+            <CardContent>
+              <AvatarUpload
+                currentAvatarUrl={profile?.avatar_url || null}
+                userName={profile?.name || ''}
+                onUploadSuccess={(url) => {
+                  // Profile will be refreshed automatically
+                }}
+              />
             </CardContent>
           </Card>
 
