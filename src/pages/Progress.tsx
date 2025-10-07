@@ -29,6 +29,10 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PhotoUpload } from '@/components/progress/PhotoUpload';
 import { PhotoGallery } from '@/components/progress/PhotoGallery';
+import { PhotoComparison } from '@/components/progress/PhotoComparison';
+import { AchievementsBadges } from '@/components/progress/AchievementsBadges';
+import { WeeklySummary } from '@/components/progress/WeeklySummary';
+import { useGoals } from '@/hooks/useGoals';
 
 interface BodyMeasurement {
   id: string;
@@ -57,9 +61,10 @@ interface NewMeasurement {
 export default function Progress() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { goals } = useGoals();
   const [measurements, setMeasurements] = useState<BodyMeasurement[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('charts');
+  const [activeTab, setActiveTab] = useState('overview');
   const [refreshPhotos, setRefreshPhotos] = useState(0);
   const [newMeasurement, setNewMeasurement] = useState<NewMeasurement>({
     weight: '',
@@ -230,16 +235,26 @@ export default function Progress() {
       
       <div className="container mx-auto px-4 py-6 pb-20">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
             <TabsTrigger value="charts">Gráficos</TabsTrigger>
             <TabsTrigger value="measurements">Medidas</TabsTrigger>
             <TabsTrigger value="photos">Fotos</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="charts" className="space-y-4">
+          <TabsContent value="overview" className="space-y-4 animate-fade-in">
+            <WeeklySummary />
+            
+            <div className="grid gap-4 md:grid-cols-2">
+              <AchievementsBadges />
+              <PhotoComparison />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="charts" className="space-y-4 animate-fade-in">
             {/* Stats Overview */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card>
+              <Card className="hover-scale">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <Scale className="w-5 h-5 text-primary" />
@@ -262,7 +277,7 @@ export default function Progress() {
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="hover-scale">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <TrendingDown className="w-5 h-5 text-blue-600" />
@@ -285,7 +300,7 @@ export default function Progress() {
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="hover-scale">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <Activity className="w-5 h-5 text-green-600" />
@@ -308,7 +323,7 @@ export default function Progress() {
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="hover-scale">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <Target className="w-5 h-5 text-orange-600" />
@@ -328,7 +343,7 @@ export default function Progress() {
             </div>
 
             {/* Combined Chart - Weight and Body Composition */}
-            <Card>
+            <Card className="animate-scale-in">
               <CardHeader>
                 <CardTitle>Evolução da Composição Corporal</CardTitle>
                 <CardDescription>
@@ -399,13 +414,27 @@ export default function Progress() {
                       dot={{ fill: 'hsl(142, 76%, 36%)', r: 4 }}
                       unit="kg"
                     />
+                    {/* Goal Lines */}
+                    {goals.find(g => g.goal_type === 'weight' && g.is_active) && (
+                      <ReferenceLine
+                        yAxisId="left"
+                        y={goals.find(g => g.goal_type === 'weight')?.target_value}
+                        stroke="hsl(var(--primary))"
+                        strokeDasharray="5 5"
+                        label={{
+                          value: 'Meta',
+                          fill: 'hsl(var(--primary))',
+                          fontSize: 12,
+                        }}
+                      />
+                    )}
                   </ComposedChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
             {/* Body Measurements Chart */}
-            <Card>
+            <Card className="animate-scale-in">
               <CardHeader>
                 <CardTitle>Medidas Corporais (Circunferências)</CardTitle>
                 <CardDescription>
@@ -547,7 +576,7 @@ export default function Progress() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="measurements" className="space-y-4">
+          <TabsContent value="measurements" className="space-y-4 animate-fade-in">
             <Card>
               <CardHeader>
                 <CardTitle>Registrar Novas Medidas</CardTitle>
@@ -679,7 +708,7 @@ export default function Progress() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="photos" className="space-y-4">
+          <TabsContent value="photos" className="space-y-4 animate-fade-in">
             <PhotoUpload onSuccess={() => setRefreshPhotos(prev => prev + 1)} />
             <div key={refreshPhotos}>
               <PhotoGallery />

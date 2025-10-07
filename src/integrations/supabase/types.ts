@@ -354,6 +354,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_type: string
+          created_at: string
+          description: string | null
+          earned_at: string
+          icon: string
+          id: string
+          metadata: Json | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          achievement_type: string
+          created_at?: string
+          description?: string | null
+          earned_at?: string
+          icon: string
+          id?: string
+          metadata?: Json | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          achievement_type?: string
+          created_at?: string
+          description?: string | null
+          earned_at?: string
+          icon?: string
+          id?: string
+          metadata?: Json | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_challenges: {
         Row: {
           challenge_id: string
@@ -391,6 +427,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_goals: {
+        Row: {
+          achieved_at: string | null
+          created_at: string
+          current_value: number | null
+          deadline: string | null
+          goal_type: string
+          id: string
+          is_active: boolean | null
+          target_value: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string | null
+          created_at?: string
+          current_value?: number | null
+          deadline?: string | null
+          goal_type: string
+          id?: string
+          is_active?: boolean | null
+          target_value: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string | null
+          created_at?: string
+          current_value?: number | null
+          deadline?: string | null
+          goal_type?: string
+          id?: string
+          is_active?: boolean | null
+          target_value?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       workout_plans: {
         Row: {
