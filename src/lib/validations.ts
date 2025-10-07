@@ -51,7 +51,7 @@ export const profileSchema = z.object({
     .optional()
     .nullable(),
   goal: z
-    .enum(['perda_peso', 'ganho_massa', 'definicao', 'manutencao'])
+    .enum(['emagrecimento', 'hipertrofia', 'resistencia', 'mobilidade'])
     .optional()
     .nullable(),
   experience_level: z
