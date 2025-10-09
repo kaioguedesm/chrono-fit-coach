@@ -7,11 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Play, Plus, Weight, RotateCcw, TrendingUp } from 'lucide-react';
+import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2 } from 'lucide-react';
 import { ActiveWorkoutSession } from '@/components/workout/ActiveWorkoutSession';
 import { WorkoutHistory } from '@/components/workout/WorkoutHistory';
 import { CreateWorkoutForm } from '@/components/workout/CreateWorkoutForm';
 import { AIWorkoutGenerator } from '@/components/workout/AIWorkoutGenerator';
+import { ShareWorkoutModal } from '@/components/workout/ShareWorkoutModal';
 
 interface WorkoutPlan {
   id: string;
@@ -39,6 +40,11 @@ export default function Workout() {
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('plans');
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedWorkoutToShare, setSelectedWorkoutToShare] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [activeSession, setActiveSession] = useState<{
     sessionId: string;
     planName: string;
@@ -338,14 +344,26 @@ export default function Workout() {
                         )}
                       </div>
 
-                      <Button 
-                        className="w-full" 
-                        size="lg"
-                        onClick={() => startWorkout(plan)}
-                      >
-                        <Play className="w-5 h-5 mr-2" />
-                        Iniciar Treino
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          className="flex-1" 
+                          size="lg"
+                          onClick={() => startWorkout(plan)}
+                        >
+                          <Play className="w-5 h-5 mr-2" />
+                          Iniciar Treino
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          onClick={() => {
+                            setSelectedWorkoutToShare({ id: plan.id, name: plan.name });
+                            setShareModalOpen(true);
+                          }}
+                        >
+                          <Share2 className="w-5 h-5" />
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -364,6 +382,15 @@ export default function Workout() {
             }} />
           </TabsContent>
         </Tabs>
+
+        {selectedWorkoutToShare && (
+          <ShareWorkoutModal
+            open={shareModalOpen}
+            onOpenChange={setShareModalOpen}
+            workoutPlanId={selectedWorkoutToShare.id}
+            workoutName={selectedWorkoutToShare.name}
+          />
+        )}
       </div>
     </div>
   );
