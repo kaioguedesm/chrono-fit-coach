@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Apple, Upload, Bot, BookOpen, Plus } from 'lucide-react';
 import { AINutritionGenerator } from '@/components/nutrition/AINutritionGenerator';
+import { MealPhotoAnalyzer } from '@/components/nutrition/MealPhotoAnalyzer';
 
 interface NutritionPlan {
   id: string;
@@ -141,8 +142,9 @@ export default function Nutrition() {
       
       <div className="container mx-auto px-4 py-6 pb-20">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="plans">Planos</TabsTrigger>
+            <TabsTrigger value="photo">Foto IA</TabsTrigger>
             <TabsTrigger value="recipes">Receitas</TabsTrigger>
             <TabsTrigger value="create">Criar</TabsTrigger>
           </TabsList>
@@ -251,6 +253,10 @@ export default function Nutrition() {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="photo" className="space-y-4">
+            <MealPhotoAnalyzer />
           </TabsContent>
 
           <TabsContent value="recipes" className="space-y-4">

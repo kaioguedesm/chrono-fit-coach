@@ -187,6 +187,51 @@ export type Database = {
           },
         ]
       }
+      meal_logs: {
+        Row: {
+          ai_analysis: string | null
+          created_at: string
+          food_items: Json | null
+          id: string
+          meal_name: string | null
+          meal_time: string
+          photo_url: string
+          total_calories: number | null
+          total_carbs: number | null
+          total_fat: number | null
+          total_protein: number | null
+          user_id: string
+        }
+        Insert: {
+          ai_analysis?: string | null
+          created_at?: string
+          food_items?: Json | null
+          id?: string
+          meal_name?: string | null
+          meal_time?: string
+          photo_url: string
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_protein?: number | null
+          user_id: string
+        }
+        Update: {
+          ai_analysis?: string | null
+          created_at?: string
+          food_items?: Json | null
+          id?: string
+          meal_name?: string | null
+          meal_time?: string
+          photo_url?: string
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_protein?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       meals: {
         Row: {
           calories: number | null
