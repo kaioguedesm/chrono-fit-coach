@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64 } = await req.json();
+    const { imageBase64, userDescription } = await req.json();
     
     if (!imageBase64) {
       return new Response(
@@ -67,7 +67,18 @@ FORMATO DE RESPOSTA (JSON):
   "confidence": "alta|média|baixa - seu nível de confiança na análise"
 }`;
 
-    const userPrompt = `Analise esta foto de refeição e forneça uma contagem nutricional completa e precisa. 
+    const userPrompt = userDescription 
+      ? `Analise esta foto de refeição e forneça uma contagem nutricional completa e precisa.
+
+O usuário forneceu a seguinte descrição para auxiliar na análise:
+"${userDescription}"
+
+Use esta descrição como guia adicional, mas valide com o que você vê na imagem. Se houver discrepâncias entre a descrição e a foto, priorize o que está visível na imagem e mencione isso na análise.
+
+Seja específico sobre os alimentos identificados e o tamanho das porções. Use seu conhecimento nutricional para fornecer estimativas baseadas em bancos de dados nutricionais confiáveis (TACO, USDA, etc.).
+
+Retorne APENAS o JSON, sem texto adicional.`
+      : `Analise esta foto de refeição e forneça uma contagem nutricional completa e precisa. 
     
 Seja específico sobre os alimentos identificados e o tamanho das porções. Use seu conhecimento nutricional para fornecer estimativas baseadas em bancos de dados nutricionais confiáveis (TACO, USDA, etc.).
 

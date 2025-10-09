@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import { Camera, Upload, Loader2, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +34,7 @@ interface NutritionData {
 export function MealPhotoAnalyzer() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [description, setDescription] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [nutritionData, setNutritionData] = useState<NutritionData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -65,6 +68,7 @@ export function MealPhotoAnalyzer() {
   const clearPhoto = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
+    setDescription('');
     setNutritionData(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (cameraInputRef.current) cameraInputRef.current.value = '';
@@ -88,7 +92,10 @@ export function MealPhotoAnalyzer() {
 
       // Call edge function to analyze
       const { data, error } = await supabase.functions.invoke('analyze-meal-photo', {
-        body: { imageBase64 }
+        body: { 
+          imageBase64,
+          userDescription: description.trim() || null
+        }
       });
 
       if (error) {
@@ -215,6 +222,21 @@ export function MealPhotoAnalyzer() {
               >
                 <X className="h-4 w-4" />
               </Button>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Descrição Opcional (melhora a precisão)</Label>
+              <Textarea
+                id="description"
+                placeholder="Ex: Prato grande com arroz integral, frango grelhado 200g, salada com tomate e alface, 1 colher de azeite..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Descreva os alimentos, quantidades aproximadas e preparo para uma análise mais precisa
+              </p>
             </div>
 
             {!nutritionData && (
