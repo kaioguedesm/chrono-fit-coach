@@ -25,34 +25,7 @@ const Index = () => {
   }, [user, loading, navigate]);
 
   const handleActionClick = (action: string) => {
-    switch (action) {
-      case "start-workout":
-        toast({
-          title: "Treino iniciado!",
-          description: "Boa sorte com seu treino de hoje 💪",
-        });
-        break;
-      case "add-measurements":
-        toast({
-          title: "Em breve!",
-          description: "Feature de medidas será implementada em breve.",
-        });
-        break;
-      case "take-photo":
-        toast({
-          title: "Em breve!",
-          description: "Feature de fotos será implementada em breve.",
-        });
-        break;
-      case "rest-timer":
-        toast({
-          title: "Em breve!",
-          description: "Timer de descanso será implementado em breve.",
-        });
-        break;
-      default:
-        break;
-    }
+    // As funcionalidades são gerenciadas pelo Dashboard
   };
 
   const renderActiveTab = () => {
