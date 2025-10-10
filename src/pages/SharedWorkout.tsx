@@ -49,6 +49,8 @@ export default function SharedWorkout() {
 
   const loadSharedWorkout = async () => {
     try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
       const { data, error } = await supabase
         .from('workout_shares')
         .select(`
@@ -56,6 +58,8 @@ export default function SharedWorkout() {
           title,
           description,
           view_count,
+          is_private,
+          shared_by,
           workout_plan:workout_plans!workout_plan_id (
             id,
             name,
@@ -73,6 +77,33 @@ export default function SharedWorkout() {
         toast.error('Treino não encontrado ou link expirado');
         navigate('/');
         return;
+      }
+
+      // Se for privado, verificar permissão
+      if (data.is_private) {
+        if (!currentUser) {
+          toast.error('Faça login para acessar este treino compartilhado');
+          navigate('/auth');
+          return;
+        }
+
+        // Verificar se é o dono ou está na lista de convidados
+        const isOwner = currentUser.id === data.shared_by;
+        
+        if (!isOwner) {
+          const { data: invite, error: inviteError } = await supabase
+            .from('workout_share_invites')
+            .select('id')
+            .eq('share_id', data.id)
+            .or(`invited_user_id.eq.${currentUser.id},invited_email.eq.${currentUser.email}`)
+            .maybeSingle();
+
+          if (inviteError || !invite) {
+            toast.error('Você não tem permissão para acessar este treino');
+            navigate('/');
+            return;
+          }
+        }
       }
 
       // Increment view count

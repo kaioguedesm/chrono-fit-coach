@@ -627,6 +627,44 @@ export type Database = {
           },
         ]
       }
+      workout_share_invites: {
+        Row: {
+          accepted: boolean | null
+          created_at: string
+          id: string
+          invited_by: string
+          invited_email: string
+          invited_user_id: string | null
+          share_id: string
+        }
+        Insert: {
+          accepted?: boolean | null
+          created_at?: string
+          id?: string
+          invited_by: string
+          invited_email: string
+          invited_user_id?: string | null
+          share_id: string
+        }
+        Update: {
+          accepted?: boolean | null
+          created_at?: string
+          id?: string
+          invited_by?: string
+          invited_email?: string
+          invited_user_id?: string | null
+          share_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_share_invites_share_id_fkey"
+            columns: ["share_id"]
+            isOneToOne: false
+            referencedRelation: "workout_shares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workout_shares: {
         Row: {
           created_at: string
@@ -634,6 +672,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_active: boolean | null
+          is_private: boolean | null
           share_token: string
           shared_by: string
           title: string | null
@@ -647,6 +686,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          is_private?: boolean | null
           share_token: string
           shared_by: string
           title?: string | null
@@ -660,6 +700,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean | null
+          is_private?: boolean | null
           share_token?: string
           shared_by?: string
           title?: string | null
