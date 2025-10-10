@@ -37,9 +37,10 @@ const upcomingWorkouts = [
 
 interface DashboardProps {
   onActionClick?: (action: string) => void;
+  onNavigateToTab?: (tab: string) => void;
 }
 
-export function Dashboard({ onActionClick }: DashboardProps) {
+export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
   const { user } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
@@ -129,7 +130,11 @@ export function Dashboard({ onActionClick }: DashboardProps) {
         
         <WorkoutStartModal 
           open={workoutModalOpen} 
-          onOpenChange={setWorkoutModalOpen} 
+          onOpenChange={setWorkoutModalOpen}
+          onNavigateToSchedule={() => {
+            setWorkoutModalOpen(false);
+            onNavigateToTab?.('schedule');
+          }}
         />
 
         <Card>

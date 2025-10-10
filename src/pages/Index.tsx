@@ -58,7 +58,7 @@ const Index = () => {
   const renderActiveTab = () => {
     switch (activeTab) {
       case "dashboard":
-        return <Dashboard onActionClick={handleActionClick} />;
+        return <Dashboard onActionClick={handleActionClick} onNavigateToTab={setActiveTab} />;
       case "profile":
         return <Profile />;
       case "workout":
@@ -72,7 +72,7 @@ const Index = () => {
       case "settings":
         return <Settings />;
       default:
-        return <Dashboard onActionClick={handleActionClick} />;
+        return <Dashboard onActionClick={handleActionClick} onNavigateToTab={setActiveTab} />;
     }
   };
 

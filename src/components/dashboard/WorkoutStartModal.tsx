@@ -18,9 +18,10 @@ interface WorkoutPlan {
 interface WorkoutStartModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onNavigateToSchedule?: () => void;
 }
 
-export function WorkoutStartModal({ open, onOpenChange }: WorkoutStartModalProps) {
+export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule }: WorkoutStartModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -159,8 +160,12 @@ export function WorkoutStartModal({ open, onOpenChange }: WorkoutStartModalProps
               variant="outline"
               className="w-full"
               onClick={() => {
-                onOpenChange(false);
-                navigate('/schedule');
+                if (onNavigateToSchedule) {
+                  onNavigateToSchedule();
+                } else {
+                  onOpenChange(false);
+                  navigate('/schedule');
+                }
               }}
             >
               <Calendar className="w-4 h-4 mr-2" />
