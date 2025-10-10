@@ -56,9 +56,9 @@ export function PhotoGallery() {
 
   const getPhotoTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      front: 'Frontal',
-      side: 'Lateral',
-      back: 'Costas'
+      frente: 'Frontal',
+      lado: 'Lateral',
+      costas: 'Costas'
     };
     return labels[type] || type;
   };

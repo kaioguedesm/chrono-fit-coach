@@ -17,7 +17,11 @@ interface ProgressPhoto {
   taken_at: string;
 }
 
-export function PhotoComparison() {
+interface PhotoComparisonProps {
+  refreshTrigger?: number;
+}
+
+export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
   const { user } = useAuth();
   const [photos, setPhotos] = useState<ProgressPhoto[]>([]);
   const [beforePhoto, setBeforePhoto] = useState<string>('');
@@ -28,7 +32,7 @@ export function PhotoComparison() {
     if (user) {
       fetchPhotos();
     }
-  }, [user]);
+  }, [user, refreshTrigger]);
 
   const fetchPhotos = async () => {
     if (!user) return;

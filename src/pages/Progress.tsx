@@ -247,7 +247,7 @@ export default function Progress() {
             
             <div className="grid gap-4 md:grid-cols-2">
               <AchievementsBadges />
-              <PhotoComparison />
+              <PhotoComparison refreshTrigger={refreshPhotos} />
             </div>
           </TabsContent>
 
