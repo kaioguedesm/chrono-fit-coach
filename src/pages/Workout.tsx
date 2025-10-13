@@ -24,12 +24,13 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical } from 'lucide-react';
+import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical, Edit } from 'lucide-react';
 import { ActiveWorkoutSession } from '@/components/workout/ActiveWorkoutSession';
 import { WorkoutHistory } from '@/components/workout/WorkoutHistory';
 import { CreateWorkoutForm } from '@/components/workout/CreateWorkoutForm';
 import { AIWorkoutGenerator } from '@/components/workout/AIWorkoutGenerator';
 import { ShareWorkoutModal } from '@/components/workout/ShareWorkoutModal';
+import { EditWorkoutModal } from '@/components/workout/EditWorkoutModal';
 
 interface WorkoutPlan {
   id: string;
@@ -62,6 +63,8 @@ export default function Workout() {
     id: string;
     name: string;
   } | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedWorkoutToEdit, setSelectedWorkoutToEdit] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [planToDelete, setPlanToDelete] = useState<string | null>(null);
   const [activeSession, setActiveSession] = useState<{
@@ -387,6 +390,16 @@ export default function Workout() {
                               <DropdownMenuItem
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  setSelectedWorkoutToEdit(plan.id);
+                                  setEditModalOpen(true);
+                                }}
+                              >
+                                <Edit className="w-4 h-4 mr-2" />
+                                Visualizar e Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   setSelectedWorkoutToShare({ id: plan.id, name: plan.name });
                                   setShareModalOpen(true);
                                 }}
@@ -468,6 +481,15 @@ export default function Workout() {
             onOpenChange={setShareModalOpen}
             workoutPlanId={selectedWorkoutToShare.id}
             workoutName={selectedWorkoutToShare.name}
+          />
+        )}
+
+        {selectedWorkoutToEdit && (
+          <EditWorkoutModal
+            open={editModalOpen}
+            onOpenChange={setEditModalOpen}
+            workoutPlanId={selectedWorkoutToEdit}
+            onSuccess={fetchWorkoutPlans}
           />
         )}
 
