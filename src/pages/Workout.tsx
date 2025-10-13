@@ -14,10 +14,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2 } from 'lucide-react';
+import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical } from 'lucide-react';
 import { ActiveWorkoutSession } from '@/components/workout/ActiveWorkoutSession';
 import { WorkoutHistory } from '@/components/workout/WorkoutHistory';
 import { CreateWorkoutForm } from '@/components/workout/CreateWorkoutForm';
@@ -360,7 +367,7 @@ export default function Workout() {
                   <Card key={plan.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
-                        <div>
+                        <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <CardTitle className="text-lg">{plan.name}</CardTitle>
                             <Badge variant={plan.created_by === 'ai' ? 'default' : 'secondary'}>
@@ -369,6 +376,39 @@ export default function Workout() {
                           </div>
                           <Badge variant="outline">Treino {plan.type}</Badge>
                         </div>
+                        {user && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedWorkoutToShare({ id: plan.id, name: plan.name });
+                                  setShareModalOpen(true);
+                                }}
+                              >
+                                <Share2 className="w-4 h-4 mr-2" />
+                                Compartilhar
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPlanToDelete(plan.id);
+                                  setDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Excluir treino
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                       </div>
                     </CardHeader>
                     
@@ -395,38 +435,14 @@ export default function Workout() {
                         )}
                       </div>
 
-                      <div className="flex gap-2">
-                        <Button 
-                          className="flex-1" 
-                          size="lg"
-                          onClick={() => startWorkout(plan)}
-                        >
-                          <Play className="w-5 h-5 mr-2" />
-                          Iniciar Treino
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="lg"
-                          onClick={() => {
-                            setSelectedWorkoutToShare({ id: plan.id, name: plan.name });
-                            setShareModalOpen(true);
-                          }}
-                        >
-                          <Share2 className="w-5 h-5" />
-                        </Button>
-                        {user && (
-                          <Button
-                            variant="destructive"
-                            size="lg"
-                            onClick={() => {
-                              setPlanToDelete(plan.id);
-                              setDeleteDialogOpen(true);
-                            }}
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </Button>
-                        )}
-                      </div>
+                      <Button 
+                        className="w-full" 
+                        size="lg"
+                        onClick={() => startWorkout(plan)}
+                      >
+                        <Play className="w-5 h-5 mr-2" />
+                        Iniciar Treino
+                      </Button>
                     </CardContent>
                   </Card>
                 ))}
