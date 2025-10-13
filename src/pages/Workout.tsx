@@ -4,10 +4,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2 } from 'lucide-react';
+import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2 } from 'lucide-react';
 import { ActiveWorkoutSession } from '@/components/workout/ActiveWorkoutSession';
 import { WorkoutHistory } from '@/components/workout/WorkoutHistory';
 import { CreateWorkoutForm } from '@/components/workout/CreateWorkoutForm';
@@ -45,6 +55,8 @@ export default function Workout() {
     id: string;
     name: string;
   } | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState<string | null>(null);
   const [activeSession, setActiveSession] = useState<{
     sessionId: string;
     planName: string;
@@ -138,6 +150,45 @@ export default function Workout() {
         .eq('id', activeSession.sessionId);
     }
     setActiveSession(null);
+  };
+
+  const handleDeletePlan = async () => {
+    if (!planToDelete || !user) return;
+
+    try {
+      // Delete exercises first (due to foreign key constraints)
+      const { error: exercisesError } = await supabase
+        .from('exercises')
+        .delete()
+        .eq('workout_plan_id', planToDelete);
+
+      if (exercisesError) throw exercisesError;
+
+      // Then delete the workout plan
+      const { error: planError } = await supabase
+        .from('workout_plans')
+        .delete()
+        .eq('id', planToDelete);
+
+      if (planError) throw planError;
+
+      toast({
+        title: "Treino excluído",
+        description: "O treino foi removido com sucesso."
+      });
+
+      // Update local state
+      setWorkoutPlans(workoutPlans.filter(p => p.id !== planToDelete));
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o treino.",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setPlanToDelete(null);
+    }
   };
 
   const samplePlans: WorkoutPlan[] = [
@@ -363,6 +414,18 @@ export default function Workout() {
                         >
                           <Share2 className="w-5 h-5" />
                         </Button>
+                        {user && (
+                          <Button
+                            variant="destructive"
+                            size="lg"
+                            onClick={() => {
+                              setPlanToDelete(plan.id);
+                              setDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -391,6 +454,23 @@ export default function Workout() {
             workoutName={selectedWorkoutToShare.name}
           />
         )}
+
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir treino?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta ação não pode ser desfeita. O treino e todos os seus exercícios serão permanentemente excluídos.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeletePlan}>
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
