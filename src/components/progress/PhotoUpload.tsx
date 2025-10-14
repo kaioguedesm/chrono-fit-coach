@@ -27,11 +27,15 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    console.log('Arquivo selecionado:', file.name, file.size, file.type);
+
     // Validate file
     try {
       photoUploadSchema.pick({ file: true }).parse({ file });
+      console.log('Validação do arquivo passou');
     } catch (error: any) {
       const errorMessage = error.errors?.[0]?.message || 'Arquivo inválido';
+      console.error('Erro na validação do arquivo:', error);
       toast({
         title: "Erro de validação",
         description: errorMessage,
@@ -41,11 +45,28 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
     }
 
     setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+    console.log('Preview URL criada:', objectUrl);
   };
 
   const uploadPhoto = async () => {
-    if (!user || !selectedFile) return;
+    if (!user || !selectedFile) {
+      console.error('Upload cancelado - Usuário ou arquivo não disponível', { user: !!user, selectedFile: !!selectedFile });
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione uma foto para fazer upload.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    console.log('Iniciando upload da foto...', { 
+      userId: user.id, 
+      fileName: selectedFile.name,
+      photoType,
+      description 
+    });
 
     // Validate all fields
     try {
@@ -54,8 +75,10 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
         photo_type: photoType,
         description: description || undefined,
       });
+      console.log('Validação completa passou');
     } catch (error: any) {
       const errorMessage = error.errors?.[0]?.message || 'Dados inválidos';
+      console.error('Erro na validação completa:', error);
       toast({
         title: "Erro de validação",
         description: errorMessage,
@@ -68,18 +91,32 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
     try {
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      console.log('Nome do arquivo no storage:', fileName);
 
-      const { error: uploadError } = await supabase.storage
+      // Upload to storage
+      console.log('Fazendo upload para o storage...');
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('progress-photos')
-        .upload(fileName, selectedFile);
+        .upload(fileName, selectedFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Erro no upload para storage:', uploadError);
+        throw uploadError;
+      }
+      console.log('Upload para storage concluído:', uploadData);
 
+      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('progress-photos')
         .getPublicUrl(fileName);
+      console.log('URL pública gerada:', publicUrl);
 
-      const { error: dbError } = await supabase
+      // Insert into database
+      console.log('Inserindo registro no banco de dados...');
+      const { data: dbData, error: dbError } = await supabase
         .from('progress_photos')
         .insert({
           user_id: user.id,
@@ -87,9 +124,14 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
           photo_type: photoType,
           description: description || null,
           taken_at: new Date().toISOString()
-        });
+        })
+        .select();
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error('Erro ao inserir no banco:', dbError);
+        throw dbError;
+      }
+      console.log('Registro criado no banco:', dbData);
 
       toast({
         title: "Foto salva! 📸",
@@ -101,9 +143,10 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
       setDescription('');
       onSuccess();
     } catch (error: any) {
+      console.error('Erro geral no upload:', error);
       toast({
-        title: "Erro",
-        description: error.message || "Não foi possível fazer upload da foto.",
+        title: "Erro ao salvar foto",
+        description: error.message || "Não foi possível fazer upload da foto. Tente novamente.",
         variant: "destructive"
       });
     } finally {
