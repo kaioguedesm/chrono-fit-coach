@@ -10,11 +10,13 @@ import { useProfile } from '@/hooks/useProfile';
 import { Camera, Upload } from 'lucide-react';
 import { profileSchema } from '@/lib/validations';
 import { AvatarUpload } from '@/components/profile/AvatarUpload';
+import { PhotoUploadModal } from '@/components/dashboard/PhotoUploadModal';
 
 export default function Profile() {
   const { toast } = useToast();
   const { profile, loading, updateProfile, calculateIMC } = useProfile();
   const [saving, setSaving] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [localProfile, setLocalProfile] = useState({
     name: '',
     age: null as number | null,
@@ -228,7 +230,11 @@ export default function Profile() {
                   </div>
                 ))}
               </div>
-              <Button variant="outline" className="w-full mt-4">
+              <Button 
+                variant="outline" 
+                className="w-full mt-4"
+                onClick={() => setShowPhotoModal(true)}
+              >
                 <Camera className="w-4 h-4 mr-2" />
                 Adicionar Fotos
               </Button>
@@ -240,6 +246,11 @@ export default function Profile() {
           </Button>
         </div>
       </div>
+
+      <PhotoUploadModal
+        open={showPhotoModal}
+        onOpenChange={setShowPhotoModal}
+      />
     </div>
   );
 }
