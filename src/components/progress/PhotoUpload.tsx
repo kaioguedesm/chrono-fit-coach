@@ -203,18 +203,24 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
             </Button>
           </div>
         ) : (
-          <div className="border-2 border-dashed rounded-lg p-8 text-center">
-            <Camera className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <Label
-              htmlFor="photo-upload"
-              className="cursor-pointer text-primary hover:underline"
+          <div className="border-2 border-dashed rounded-lg p-8 text-center space-y-4">
+            <Camera className="w-12 h-12 mx-auto text-muted-foreground" />
+            <div>
+              <p className="text-sm font-medium mb-1">Adicione uma foto de progresso</p>
+              <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP (máx. 10MB)</p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => document.getElementById('photo-upload')?.click()}
+              type="button"
             >
-              Clique para selecionar uma foto
-            </Label>
+              <Upload className="w-4 h-4 mr-2" />
+              Selecionar Foto
+            </Button>
             <Input
               id="photo-upload"
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               className="hidden"
               onChange={handleFileSelect}
             />
