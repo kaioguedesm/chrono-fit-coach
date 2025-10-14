@@ -10,6 +10,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, TrendingDown, Scale, Ruler, Plus, Activity, Target, ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { LoadingState } from '@/components/common/LoadingState';
+import { EmptyState } from '@/components/common/EmptyState';
 import { 
   LineChart, 
   Line, 
@@ -252,6 +254,19 @@ export default function Progress() {
           </TabsContent>
 
           <TabsContent value="charts" className="space-y-4 animate-fade-in">
+            {loading ? (
+              <LoadingState type="stats" />
+            ) : measurements.length === 0 ? (
+              <EmptyState
+                icon={TrendingUp}
+                title="Nenhuma medida registrada"
+                description="Comece registrando suas medidas corporais para acompanhar seu progresso ao longo do tempo."
+                motivation="Meça para gerenciar!"
+                actionLabel="Registrar Primeira Medida"
+                onAction={() => setActiveTab('measurements')}
+              />
+            ) : (
+              <>
             {/* Stats Overview */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card className="hover-scale">
@@ -574,6 +589,8 @@ export default function Progress() {
                 </div>
               </CardContent>
             </Card>
+            </>
+            )}
           </TabsContent>
 
           <TabsContent value="measurements" className="space-y-4 animate-fade-in">

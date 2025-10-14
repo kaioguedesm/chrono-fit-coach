@@ -24,13 +24,15 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical, Edit } from 'lucide-react';
+import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical, Edit, Dumbbell } from 'lucide-react';
 import { ActiveWorkoutSession } from '@/components/workout/ActiveWorkoutSession';
 import { WorkoutHistory } from '@/components/workout/WorkoutHistory';
 import { CreateWorkoutForm } from '@/components/workout/CreateWorkoutForm';
 import { AIWorkoutGenerator } from '@/components/workout/AIWorkoutGenerator';
 import { ShareWorkoutModal } from '@/components/workout/ShareWorkoutModal';
 import { EditWorkoutModal } from '@/components/workout/EditWorkoutModal';
+import { LoadingState } from '@/components/common/LoadingState';
+import { EmptyState } from '@/components/common/EmptyState';
 
 interface WorkoutPlan {
   id: string;
@@ -289,7 +291,7 @@ export default function Workout() {
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         <Header title="Treinos" />
         <div className="container mx-auto px-4 py-6 pb-20">
-          <div className="text-center">Carregando...</div>
+          <LoadingState type="grid" count={2} />
         </div>
       </div>
     );
@@ -351,19 +353,14 @@ export default function Workout() {
             </div>
 
             {displayPlans.length === 0 ? (
-              <Card className="border-dashed">
-                <CardContent className="text-center py-12">
-                  <Play className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Nenhum treino criado</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Crie seu primeiro treino personalizado ou use a IA
-                  </p>
-                  <Button onClick={() => setActiveTab('create')}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Criar Primeiro Treino
-                  </Button>
-                </CardContent>
-              </Card>
+              <EmptyState
+                icon={Dumbbell}
+                title="Nenhum treino criado"
+                description="Crie seu primeiro treino personalizado ou use a IA para gerar um plano completo adaptado aos seus objetivos."
+                motivation="O primeiro passo é sempre o mais importante!"
+                actionLabel="Criar Primeiro Treino"
+                onAction={() => setActiveTab('create')}
+              />
             ) : (
               <div className="space-y-4">
                 {displayPlans.map((plan) => (

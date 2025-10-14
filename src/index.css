@@ -236,4 +236,27 @@ All colors MUST be HSL.
   .glow-on-hover:hover {
     box-shadow: var(--shadow-glow);
   }
+  
+  /* Stagger children animations */
+  @keyframes stagger-fade {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .stagger-children > * {
+    animation: stagger-fade 0.3s ease-out backwards;
+  }
+  
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 50ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 100ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 150ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 200ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 250ms; }
 }

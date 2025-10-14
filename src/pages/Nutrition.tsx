@@ -12,6 +12,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Apple, Upload, Bot, BookOpen, Plus } from 'lucide-react';
 import { AINutritionGenerator } from '@/components/nutrition/AINutritionGenerator';
 import { MealPhotoAnalyzer } from '@/components/nutrition/MealPhotoAnalyzer';
+import { LoadingState } from '@/components/common/LoadingState';
+import { EmptyState } from '@/components/common/EmptyState';
 
 interface NutritionPlan {
   id: string;
@@ -158,8 +160,20 @@ export default function Nutrition() {
               </Button>
             </div>
 
-            <div className="space-y-4">
-              {displayPlans.map((plan) => (
+            {loading ? (
+              <LoadingState type="card" count={2} />
+            ) : displayPlans.length === 0 ? (
+              <EmptyState
+                icon={Apple}
+                title="Nenhum plano nutricional"
+                description="Comece criando um plano personalizado ou use a IA para gerar um plano alimentar completo adaptado aos seus objetivos."
+                motivation="Alimentação é 70% do sucesso!"
+                actionLabel="Criar Plano com IA"
+                onAction={() => setActiveTab('create')}
+              />
+            ) : (
+              <div className="space-y-4">
+                {displayPlans.map((plan) => (
                 <Card key={plan.id}>
                   <CardHeader>
                     <div className="flex justify-between items-center">
@@ -252,7 +266,8 @@ export default function Nutrition() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="photo" className="space-y-4">

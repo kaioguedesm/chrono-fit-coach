@@ -6,6 +6,10 @@ import { MeasurementModal } from "@/components/dashboard/MeasurementModal";
 import { RestTimerModal } from "@/components/dashboard/RestTimerModal";
 import { PhotoUploadModal } from "@/components/dashboard/PhotoUploadModal";
 import { WorkoutStartModal } from "@/components/dashboard/WorkoutStartModal";
+import { ProgressChart } from "@/components/dashboard/ProgressChart";
+import { StreakCounter } from "@/components/dashboard/StreakCounter";
+import { InsightsCard } from "@/components/dashboard/InsightsCard";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,6 +84,7 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
 
   return (
     <div className="pb-20">
+      <OnboardingTour />
       <Header title="Meta Fit" />
       
       <main className="container px-4 py-6 space-y-6">
@@ -102,7 +107,7 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
           </Card>
         )}
 
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 animate-fade-in">
           <h2 className="text-2xl font-bold text-foreground">
             Olá{user ? ', ' + userName : ''}! 👋
           </h2>
@@ -111,7 +116,13 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
 
         <DashboardStats />
         
+        <StreakCounter />
+        
         <QuickActions onActionClick={handleActionClick} />
+
+        <ProgressChart />
+        
+        <InsightsCard />
 
         <MeasurementModal 
           open={measurementModalOpen} 
