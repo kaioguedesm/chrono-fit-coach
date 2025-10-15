@@ -588,30 +588,42 @@ export type Database = {
       }
       workout_sessions: {
         Row: {
+          ai_post_workout_message: string | null
+          ai_pre_workout_message: string | null
           completed_at: string | null
           created_at: string
           duration_minutes: number | null
           id: string
+          mood: string | null
+          mood_intensity: number | null
           notes: string | null
           started_at: string
           user_id: string
           workout_plan_id: string
         }
         Insert: {
+          ai_post_workout_message?: string | null
+          ai_pre_workout_message?: string | null
           completed_at?: string | null
           created_at?: string
           duration_minutes?: number | null
           id?: string
+          mood?: string | null
+          mood_intensity?: number | null
           notes?: string | null
           started_at?: string
           user_id: string
           workout_plan_id: string
         }
         Update: {
+          ai_post_workout_message?: string | null
+          ai_pre_workout_message?: string | null
           completed_at?: string | null
           created_at?: string
           duration_minutes?: number | null
           id?: string
+          mood?: string | null
+          mood_intensity?: number | null
           notes?: string | null
           started_at?: string
           user_id?: string

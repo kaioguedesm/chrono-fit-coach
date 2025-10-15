@@ -99,12 +99,57 @@ export function ActiveWorkoutSession({
       const endTime = new Date();
       const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / 60000);
 
+      // Buscar informações da sessão
+      const { data: sessionData } = await supabase
+        .from('workout_sessions')
+        .select('mood, mood_intensity, workout_plan_id')
+        .eq('id', sessionId)
+        .single();
+
+      // Buscar nome do treino
+      const { data: workoutPlan } = await supabase
+        .from('workout_plans')
+        .select('name, user_id')
+        .eq('id', sessionData?.workout_plan_id)
+        .single();
+
+      // Buscar nome do usuário
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('user_id', workoutPlan?.user_id)
+        .single();
+
+      // Gerar dica pós-treino com IA
+      let aiPostMessage = null;
+      if (sessionData?.mood) {
+        try {
+          const { data: motivationData } = await supabase.functions.invoke(
+            'generate-workout-motivation',
+            {
+              body: {
+                mood: sessionData.mood,
+                moodIntensity: sessionData.mood_intensity,
+                workoutName: workoutPlan?.name || planName,
+                exerciseCount: exercises.length,
+                type: 'post-workout',
+                userName: profile?.name
+              }
+            }
+          );
+          aiPostMessage = motivationData?.message;
+        } catch (error) {
+          console.error('Erro ao gerar dica pós-treino:', error);
+        }
+      }
+
       // Update workout session
       await supabase
         .from('workout_sessions')
         .update({
           completed_at: endTime.toISOString(),
-          duration_minutes: durationMinutes
+          duration_minutes: durationMinutes,
+          ai_post_workout_message: aiPostMessage
         })
         .eq('id', sessionId);
 
@@ -125,10 +170,19 @@ export function ActiveWorkoutSession({
         }
       }
 
-      toast({
-        title: "Treino concluído! 🎉",
-        description: `Você treinou por ${durationMinutes} minutos. Parabéns!`
-      });
+      // Mostrar mensagem de conclusão com dica de IA
+      if (aiPostMessage) {
+        toast({
+          title: "🎉 Treino Concluído!",
+          description: aiPostMessage,
+          duration: 7000,
+        });
+      } else {
+        toast({
+          title: "Treino concluído! 🎉",
+          description: `Você treinou por ${durationMinutes} minutos. Parabéns!`
+        });
+      }
 
       onComplete();
     } catch (error) {
