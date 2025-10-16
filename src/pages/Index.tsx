@@ -55,8 +55,10 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      {renderActiveTab()}
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-24">
+      <div className="h-full">
+        {renderActiveTab()}
+      </div>
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
       <InstallPWA />
     </div>
