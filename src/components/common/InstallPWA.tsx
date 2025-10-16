@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, X, Smartphone, Share } from "lucide-react";
+import { Download, X, Smartphone, Share, Chrome } from "lucide-react";
 import { toast } from "sonner";
 
 export const InstallPWA = () => {
@@ -19,25 +19,27 @@ export const InstallPWA = () => {
     const standalone = window.matchMedia('(display-mode: standalone)').matches;
     setIsStandalone(standalone);
 
+    // Mostra banner após 2 segundos se não estiver instalado
+    if (!standalone) {
+      setTimeout(() => setShowBanner(true), 2000);
+    }
+
     // Para Android/Chrome
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      setShowBanner(true);
     };
 
     window.addEventListener('beforeinstallprompt', handler);
-
-    // Mostra banner para iOS se não estiver instalado
-    if (iOS && !standalone) {
-      setTimeout(() => setShowBanner(true), 3000);
-    }
 
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      toast.info("Use o menu do navegador para instalar o app");
+      return;
+    }
 
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
@@ -50,11 +52,12 @@ export const InstallPWA = () => {
     setDeferredPrompt(null);
   };
 
-  if (isStandalone || !showBanner) return null;
+  if (isStandalone) return null;
+  if (!showBanner) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-md animate-in slide-in-from-bottom">
-      <Card className="border-primary/20 shadow-lg">
+    <div className="fixed bottom-20 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-md animate-in slide-in-from-bottom">
+      <Card className="border-primary/20 shadow-xl bg-card/95 backdrop-blur">
         <CardHeader className="relative pb-3">
           <Button
             variant="ghost"
@@ -71,31 +74,52 @@ export const InstallPWA = () => {
             <div>
               <CardTitle className="text-base">Instalar ChronoFit</CardTitle>
               <CardDescription className="text-xs">
-                Acesso rápido e funciona offline
+                Acesso rápido direto da tela inicial
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-3 pt-0">
           {isIOS ? (
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">Como instalar no iPhone/iPad:</p>
-              <ol className="space-y-1 list-decimal list-inside text-xs">
-                <li>Toque no botão <Share className="inline h-3 w-3 mx-1" /> (Compartilhar)</li>
-                <li>Role e toque em "Adicionar à Tela de Início"</li>
-                <li>Toque em "Adicionar"</li>
+            <div className="space-y-2 text-sm">
+              <p className="font-medium flex items-center gap-2">
+                <Share className="h-4 w-4 text-primary" />
+                Como instalar no Safari:
+              </p>
+              <ol className="space-y-1.5 list-decimal list-inside text-xs text-muted-foreground ml-1">
+                <li>Toque no botão de compartilhar (quadrado com seta ↑)</li>
+                <li>Role para baixo e toque em "Adicionar à Tela de Início"</li>
+                <li>Toque em "Adicionar" no canto superior direito</li>
               </ol>
             </div>
           ) : (
-            <Button 
-              onClick={handleInstall} 
-              className="w-full"
-              disabled={!deferredPrompt}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Instalar Aplicativo
-            </Button>
+            <div className="space-y-2">
+              {deferredPrompt ? (
+                <Button 
+                  onClick={handleInstall} 
+                  className="w-full"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Instalar Agora
+                </Button>
+              ) : (
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium flex items-center gap-2">
+                    <Chrome className="h-4 w-4 text-primary" />
+                    Como instalar no Chrome/Android:
+                  </p>
+                  <ol className="space-y-1.5 list-decimal list-inside text-xs text-muted-foreground ml-1">
+                    <li>Toque no menu (⋮) no canto superior direito</li>
+                    <li>Toque em "Instalar app" ou "Adicionar à tela inicial"</li>
+                    <li>Confirme tocando em "Instalar"</li>
+                  </ol>
+                </div>
+              )}
+            </div>
           )}
+          <p className="text-xs text-center text-muted-foreground pt-1">
+            ✨ Funciona offline e carrega mais rápido!
+          </p>
         </CardContent>
       </Card>
     </div>
