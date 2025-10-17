@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["icon-192x192.png", "icon-512x512.png"],
       manifest: {
-        name: "Chrono Fit Coach",
-        short_name: "ChronoFit",
+        name: "Meta Fit",
+        short_name: "MetaFit",
         description: "Seu personal trainer inteligente com acompanhamento personalizado",
         theme_color: "#8B5CF6",
         background_color: "#ffffff",

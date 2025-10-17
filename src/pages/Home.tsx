@@ -36,7 +36,7 @@ const Home = () => {
           <div className="flex items-center gap-2">
             <Dumbbell className="h-8 w-8 text-primary" />
             <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              ChronoFit
+              Meta Fit
             </span>
           </div>
           <Button onClick={() => navigate('/auth')} variant="outline">
@@ -130,10 +130,10 @@ const Home = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
               <Dumbbell className="h-6 w-6 text-primary" />
-              <span className="font-semibold">ChronoFit</span>
+              <span className="font-semibold">Meta Fit</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2025 ChronoFit. Todos os direitos reservados.
+              © 2025 Meta Fit. Todos os direitos reservados.
             </p>
           </div>
         </div>
