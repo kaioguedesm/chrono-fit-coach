@@ -83,7 +83,7 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
   };
 
   return (
-    <div className="pb-20 pt-14">
+    <div className="pb-20">
       <OnboardingTour />
       <Header title="Meta Fit" />
       
