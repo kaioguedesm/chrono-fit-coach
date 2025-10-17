@@ -108,10 +108,10 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
         )}
 
         <div className="space-y-4">
-          <h2 className="text-3xl md:text-2xl font-bold text-foreground">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-tight break-words">
             Olá{user ? ', ' + userName : ''}! 👋
           </h2>
-          <p className="text-base md:text-sm text-muted-foreground">Vamos continuar sua jornada fitness hoje?</p>
+          <p className="text-sm md:text-base text-muted-foreground">Vamos continuar sua jornada fitness hoje?</p>
         </div>
 
         <DashboardStats />
