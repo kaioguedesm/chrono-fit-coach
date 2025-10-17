@@ -298,10 +298,10 @@ export default function Settings() {
       icon: Smartphone,
       items: [
         { 
-          label: "Modo escuro", 
+          label: "Modo claro", 
           hasSwitch: true, 
-          value: theme === 'dark', 
-          onChange: (value: boolean) => setTheme(value ? 'dark' : 'light')
+          value: theme === 'light', 
+          onChange: (value: boolean) => setTheme(value ? 'light' : 'dark')
         },
         { label: "Sons e vibração", hasSwitch: true, value: true, onChange: () => {} },
         { label: "Idioma", action: () => {}, hasSwitch: false },
