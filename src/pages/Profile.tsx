@@ -79,7 +79,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pt-14">
       <Header title="Perfil" />
       
       <div className="container mx-auto px-4 py-6 pb-20 max-w-7xl">

@@ -288,7 +288,7 @@ export default function Workout() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pt-14">
         <Header title="Treinos" />
         <div className="container mx-auto px-4 py-6 pb-20">
           <LoadingState type="grid" count={2} />
@@ -300,7 +300,7 @@ export default function Workout() {
   // If there's an active session, show the workout interface
   if (activeSession) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pt-14">
         <Header title="Treino em Andamento" />
         <div className="container mx-auto px-4 py-6 pb-20">
           <ActiveWorkoutSession
@@ -316,7 +316,7 @@ export default function Workout() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pt-14">
       <Header title="Treinos" />
       
       <div className="container mx-auto px-4 py-6 pb-20 space-y-6 max-w-7xl">
