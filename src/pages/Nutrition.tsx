@@ -179,7 +179,7 @@ export default function Nutrition() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Nutrição" />
       
-      <div className="container mx-auto px-4 py-6 pb-20 max-w-7xl">
+      <div className="container mx-auto px-4 pt-20 py-6 pb-20 max-w-7xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="plans">Planos</TabsTrigger>

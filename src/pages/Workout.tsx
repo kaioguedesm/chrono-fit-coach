@@ -290,7 +290,7 @@ export default function Workout() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         <Header title="Treinos" />
-        <div className="container mx-auto px-4 py-6 pb-20">
+        <div className="container mx-auto px-4 pt-20 py-6 pb-20">
           <LoadingState type="grid" count={2} />
         </div>
       </div>
@@ -302,7 +302,7 @@ export default function Workout() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         <Header title="Treino em Andamento" />
-        <div className="container mx-auto px-4 py-6 pb-20">
+        <div className="container mx-auto px-4 pt-20 py-6 pb-20">
           <ActiveWorkoutSession
             sessionId={activeSession.sessionId}
             planName={activeSession.planName}
@@ -319,7 +319,7 @@ export default function Workout() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Treinos" />
       
-      <div className="container mx-auto px-4 py-6 pb-20 space-y-6 max-w-7xl">
+      <div className="container mx-auto px-4 pt-20 py-6 pb-20 space-y-6 max-w-7xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="plans">
