@@ -28,26 +28,26 @@ All colors MUST be HSL.
     --input: 240 6% 90%;
     --ring: 142 71% 45%;
     --chart-1: 142 71% 45%;
-    --chart-2: 262 83% 58%;
-    --chart-3: 197 37% 24%;
+    --chart-2: 0 0% 95%;
+    --chart-3: 0 0% 85%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.75rem;
     
     /* Professional Palette */
     --fitness-primary: 142 71% 45%;
-    --fitness-secondary: 262 83% 58%;
-    --fitness-accent: 197 37% 24%;
+    --fitness-secondary: 0 0% 95%;
+    --fitness-accent: 0 0% 85%;
     --fitness-success: 142 71% 45%;
     --fitness-warning: 43 74% 66%;
     --fitness-danger: 0 84% 60%;
-    --fitness-info: 211 100% 50%;
+    --fitness-info: 0 0% 100%;
     --fitness-dark: 222.2 84% 4.9%;
     --fitness-light: 240 5% 96%;
     
     /* Professional Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(142 71% 38%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(262 83% 48%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(0 0% 98%) 0%, hsl(0 0% 92%) 100%);
     --gradient-hero: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(158 64% 52%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(240 5% 98%) 100%);
     --gradient-overlay: linear-gradient(180deg, transparent 0%, hsl(0 0% 0% / 0.02) 100%);
@@ -96,15 +96,15 @@ All colors MUST be HSL.
     --input: 217 33% 17%;
     --ring: 142 76% 50%;
     --chart-1: 142 76% 50%;
-    --chart-2: 262 83% 58%;
-    --chart-3: 197 37% 34%;
+    --chart-2: 0 0% 25%;
+    --chart-3: 0 0% 35%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     
     /* Dark Mode Professional */
     --fitness-primary: 142 76% 50%;
-    --fitness-secondary: 262 83% 58%;
-    --fitness-accent: 197 37% 34%;
+    --fitness-secondary: 0 0% 25%;
+    --fitness-accent: 0 0% 35%;
     
     --gradient-primary: linear-gradient(135deg, hsl(142 76% 50%) 0%, hsl(142 76% 42%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(222.2 84% 5.9%) 0%, hsl(222.2 84% 4.9%) 100%);
