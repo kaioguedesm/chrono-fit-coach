@@ -141,6 +141,16 @@ export default function Nutrition() {
   const handleDeletePlan = async (planId: string) => {
     if (!user) return;
 
+    // Não permitir deletar planos de exemplo
+    if (planId.startsWith('sample-')) {
+      toast({
+        title: "Atenção",
+        description: "Este é um plano de exemplo. Crie sua própria dieta para poder gerenciá-la.",
+        variant: "default"
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('nutrition_plans')
@@ -212,16 +222,14 @@ export default function Nutrition() {
                         <Badge variant={plan.created_by === 'ai' ? 'default' : 'secondary'}>
                           {plan.created_by === 'ai' ? 'IA Nutricional' : 'Personalizado'}
                         </Badge>
-                        {plan.id !== 'sample-1' && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeletePlan(plan.id)}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeletePlan(plan.id)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
                     </div>
                     {plan.description && (
