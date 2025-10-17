@@ -183,10 +183,18 @@ const Home = () => {
               Meta Fit
             </span>
           </div>
-          <Button onClick={() => navigate('/auth')} className="gap-2 shadow-lg shadow-primary/20">
-            Começar Agora
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost"
+              onClick={() => navigate('/app')}
+            >
+              Acessar App
+            </Button>
+            <Button onClick={() => navigate('/auth')} className="gap-2 shadow-lg shadow-primary/20">
+              Começar Agora
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </header>
 

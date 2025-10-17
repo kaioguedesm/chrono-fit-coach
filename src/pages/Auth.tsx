@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,9 +16,16 @@ export default function Auth() {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Redireciona usuários autenticados para o app
+  useEffect(() => {
+    if (user) {
+      navigate('/app');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +69,7 @@ export default function Auth() {
           title: isLogin ? "Login realizado!" : "Conta criada!",
           description: isLogin ? "Bem-vindo de volta! 🎉" : "Conta criada com sucesso! 🎉"
         });
-        navigate('/');
+        navigate('/app');
       }
     } catch (error: any) {
       toast({
@@ -152,6 +159,18 @@ export default function Auth() {
                   ? 'Não tem conta? Criar conta'
                   : 'Já tem conta? Fazer login'
                 }
+              </Button>
+            </div>
+
+            <div className="text-center pt-2 border-t">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => navigate('/landing')}
+                disabled={loading}
+                className="text-sm"
+              >
+                Saiba mais sobre o Meta Fit
               </Button>
             </div>
           </form>
