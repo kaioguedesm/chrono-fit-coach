@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/hooks/useTheme';
+import { useStorageUrl } from '@/hooks/useStorageUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Bell, 
@@ -33,6 +34,9 @@ export default function Settings() {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+  
+  // Get signed URL for avatar display
+  const { url: avatarUrl } = useStorageUrl('avatars', profile?.avatar_url || null, 3600);
   
   // Profile edit states
   const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -161,12 +165,11 @@ export default function Settings() {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
+      // Use the file path instead of public URL for private bucket
+      const avatarPath = filePath;
 
       const { error: updateError } = await updateProfile({
-        avatar_url: publicUrl
+        avatar_url: avatarPath
       });
 
       if (updateError) throw updateError;
@@ -338,7 +341,7 @@ export default function Settings() {
                 <div className="flex items-center space-x-4">
                   <div className="relative">
                     <Avatar className="w-16 h-16">
-                      <AvatarImage src={profile?.avatar_url || undefined} />
+                      <AvatarImage src={avatarUrl || undefined} />
                       <AvatarFallback className="bg-primary/10">
                         <User className="w-8 h-8 text-primary" />
                       </AvatarFallback>

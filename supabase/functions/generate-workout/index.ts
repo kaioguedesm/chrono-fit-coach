@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,16 +13,31 @@ serve(async (req) => {
   }
 
   try {
-    const { 
-      goal, 
-      experience, 
-      equipment, 
-      muscleGroup, 
+    // Input validation schema
+    const workoutSchema = z.object({
+      goal: z.string().trim().min(1).max(200),
+      experience: z.string().trim().min(1).max(50),
+      equipment: z.string().trim().max(1000).optional(),
+      muscleGroup: z.string().trim().min(1).max(100),
+      muscleGroupDescription: z.string().trim().max(500).optional(),
+      duration: z.number().int().min(15).max(180),
+      userWeight: z.number().min(20).max(500).optional(),
+      userAge: z.number().int().min(13).max(120).optional()
+    });
+
+    const requestBody = await req.json();
+    const validated = workoutSchema.parse(requestBody);
+
+    const {
+      goal,
+      experience,
+      equipment,
+      muscleGroup,
       muscleGroupDescription,
       duration,
       userWeight,
       userAge
-    } = await req.json();
+    } = validated;
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {

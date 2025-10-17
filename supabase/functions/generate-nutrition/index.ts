@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,14 +12,39 @@ serve(async (req) => {
   }
 
   try {
-    const { 
-      dietType, 
+    // Input validation schema
+    const nutritionSchema = z.object({
+      dietType: z.string().trim().min(1).max(100),
+      dietDescription: z.string().trim().max(500).optional(),
+      mealsPerDay: z.number().int().min(1).max(10),
+      restrictions: z.array(z.string().trim().max(100)).max(20).optional(),
+      userProfile: z.object({
+        weight: z.number().min(20).max(500).optional(),
+        height: z.number().min(50).max(300).optional(),
+        age: z.number().int().min(13).max(120).optional(),
+        gender: z.string().trim().max(20).optional(),
+        goal: z.string().trim().max(200).optional(),
+        activityLevel: z.string().trim().max(50).optional()
+      }).optional(),
+      userPreferences: z.object({
+        foodPreferences: z.string().trim().max(1000).optional(),
+        mealTiming: z.string().trim().max(500).optional(),
+        preparationTime: z.string().trim().max(100).optional(),
+        specialNotes: z.string().trim().max(1000).optional()
+      }).optional()
+    });
+
+    const requestBody = await req.json();
+    const validated = nutritionSchema.parse(requestBody);
+
+    const {
+      dietType,
       dietDescription,
-      mealsPerDay, 
-      restrictions, 
+      mealsPerDay,
+      restrictions,
       userProfile,
-      userPreferences 
-    } = await req.json();
+      userPreferences
+    } = validated;
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {

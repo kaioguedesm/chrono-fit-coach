@@ -59,19 +59,23 @@ export function AvatarUpload({ currentAvatarUrl, userName, onUploadSuccess }: Av
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
+      // Use the file path instead of public URL for private bucket
+      const avatarPath = fileName;
 
-      // Update profile with new avatar URL
+      // Update profile with avatar path (we'll generate signed URLs on demand)
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ avatar_url: publicUrl })
+        .update({ avatar_url: avatarPath })
         .eq('user_id', user.id);
 
       if (updateError) throw updateError;
 
-      onUploadSuccess(publicUrl);
+      // Generate signed URL for immediate display (valid for 1 hour)
+      const { data: signedUrlData } = await supabase.storage
+        .from('avatars')
+        .createSignedUrl(avatarPath, 3600);
+
+      onUploadSuccess(signedUrlData?.signedUrl || avatarPath);
       
       toast({
         title: "Foto atualizada! 📸",

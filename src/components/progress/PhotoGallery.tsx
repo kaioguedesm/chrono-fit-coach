@@ -6,8 +6,10 @@ import { Camera } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useStorageUrl } from '@/hooks/useStorageUrl';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { PhotoGalleryImage } from './PhotoGalleryImage';
 
 interface ProgressPhoto {
   id: string;
@@ -15,6 +17,31 @@ interface ProgressPhoto {
   photo_type: string;
   description: string | null;
   taken_at: string;
+}
+
+function SelectedPhotoView({ photo }: { photo: ProgressPhoto }) {
+  const { url } = useStorageUrl('progress-photos', photo.photo_url, 3600);
+  
+  return (
+    <div className="space-y-4">
+      {url && (
+        <img
+          src={url}
+          alt={photo.description || 'Foto de progresso'}
+          className="w-full rounded-lg"
+        />
+      )}
+      <div>
+        <Badge>{photo.photo_type === 'frente' ? 'Frontal' : photo.photo_type === 'lado' ? 'Lateral' : 'Costas'}</Badge>
+        <p className="text-sm text-muted-foreground mt-2">
+          {format(new Date(photo.taken_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+        </p>
+        {photo.description && (
+          <p className="mt-2">{photo.description}</p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function PhotoGallery() {
@@ -100,8 +127,8 @@ export function PhotoGallery() {
                 className="relative cursor-pointer group"
                 onClick={() => setSelectedPhoto(photo)}
               >
-                <img
-                  src={photo.photo_url}
+                <PhotoGalleryImage
+                  photoPath={photo.photo_url}
                   alt={photo.description || 'Foto de progresso'}
                   className="w-full h-48 object-cover rounded-lg transition-transform group-hover:scale-105"
                 />
@@ -121,24 +148,7 @@ export function PhotoGallery() {
 
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
         <DialogContent className="max-w-2xl">
-          {selectedPhoto && (
-            <div className="space-y-4">
-              <img
-                src={selectedPhoto.photo_url}
-                alt={selectedPhoto.description || 'Foto de progresso'}
-                className="w-full rounded-lg"
-              />
-              <div>
-                <Badge>{getPhotoTypeLabel(selectedPhoto.photo_type)}</Badge>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {format(new Date(selectedPhoto.taken_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                </p>
-                {selectedPhoto.description && (
-                  <p className="mt-2">{selectedPhoto.description}</p>
-                )}
-              </div>
-            </div>
-          )}
+          {selectedPhoto && <SelectedPhotoView photo={selectedPhoto} />}
         </DialogContent>
       </Dialog>
     </>

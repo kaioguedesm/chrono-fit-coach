@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,7 +13,16 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, userDescription } = await req.json();
+    // Input validation schema
+    const mealPhotoSchema = z.object({
+      imageBase64: z.string().trim().min(100).max(10485760), // Max ~10MB base64
+      userDescription: z.string().trim().max(1000).optional()
+    });
+
+    const requestBody = await req.json();
+    const validated = mealPhotoSchema.parse(requestBody);
+    
+    const { imageBase64, userDescription } = validated;
     
     if (!imageBase64) {
       return new Response(

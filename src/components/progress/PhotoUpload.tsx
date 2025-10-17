@@ -108,19 +108,16 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
       }
       console.log('Upload para storage concluído:', uploadData);
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('progress-photos')
-        .getPublicUrl(fileName);
-      console.log('URL pública gerada:', publicUrl);
+      // Use the file path instead of public URL for private bucket
+      const photoPath = fileName;
 
-      // Insert into database
+      // Insert into database with path (we'll generate signed URLs on demand)
       console.log('Inserindo registro no banco de dados...');
       const { data: dbData, error: dbError } = await supabase
         .from('progress_photos')
         .insert({
           user_id: user.id,
-          photo_url: publicUrl,
+          photo_url: photoPath,
           photo_type: photoType,
           description: description || null,
           taken_at: new Date().toISOString()

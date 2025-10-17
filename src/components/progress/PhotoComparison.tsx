@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useStorageUrl } from '@/hooks/useStorageUrl';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -54,6 +55,10 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
 
   const beforePhotoData = photos.find(p => p.id === beforePhoto);
   const afterPhotoData = photos.find(p => p.id === afterPhoto);
+  
+  // Get signed URLs for the selected photos
+  const { url: beforeUrl } = useStorageUrl('progress-photos', beforePhotoData?.photo_url || null, 3600);
+  const { url: afterUrl } = useStorageUrl('progress-photos', afterPhotoData?.photo_url || null, 3600);
 
   if (photos.length < 2) {
     return (
@@ -111,12 +116,12 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
           </div>
         </div>
 
-        {beforePhotoData && afterPhotoData && (
+        {beforePhotoData && afterPhotoData && beforeUrl && afterUrl && (
           <div className="space-y-4">
             {/* Comparison Slider */}
             <div className="relative h-96 rounded-lg overflow-hidden bg-muted">
               <img
-                src={beforePhotoData.photo_url}
+                src={beforeUrl}
                 alt="Antes"
                 className="absolute inset-0 w-full h-full object-cover"
               />
@@ -125,7 +130,7 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
                 style={{ width: `${sliderPosition}%` }}
               >
                 <img
-                  src={afterPhotoData.photo_url}
+                  src={afterUrl}
                   alt="Depois"
                   className="absolute inset-0 w-full h-full object-cover"
                   style={{ width: `${100 * (100 / sliderPosition)}%` }}
