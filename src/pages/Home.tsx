@@ -59,15 +59,10 @@ const Home = () => {
               Meta Fit
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <Button onClick={() => navigate('/app')} variant="ghost" className="hidden sm:flex">
-              Ver Demo
-            </Button>
-            <Button onClick={() => navigate('/auth')} className="gap-2">
-              Começar
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button onClick={() => navigate('/auth')} className="gap-2">
+            Começar
+            <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
       </header>
 
@@ -91,7 +86,7 @@ const Home = () => {
             Treinos personalizados, nutrição balanceada e acompanhamento profissional em tempo real.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 animate-fade-in">
+          <div className="flex justify-center pt-6 animate-fade-in">
             <Button 
               size="lg" 
               onClick={() => navigate('/auth')}
@@ -99,14 +94,6 @@ const Home = () => {
             >
               Iniciar Jornada
               <ArrowRight className="h-5 w-5" />
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => navigate('/app')}
-              className="text-lg px-8 border-2"
-            >
-              Explorar Plataforma
             </Button>
           </div>
         </div>
