@@ -107,8 +107,8 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
           </Card>
         )}
 
-        <div className="space-y-2 md:space-y-4">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-relaxed break-words">
+        <div className="space-y-2 md:space-y-4 w-full">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-relaxed break-words whitespace-normal overflow-visible w-full">
             Olá{user ? ', ' + userName : ''}! 👋
           </h2>
           <p className="text-sm md:text-base text-muted-foreground">Vamos continuar sua jornada fitness hoje?</p>
