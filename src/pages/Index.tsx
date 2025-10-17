@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/layout/Navigation";
+import { InstallPWA } from "@/components/common/InstallPWA";
 import { Dashboard } from "@/pages/Dashboard";
 import Profile from "./Profile";
 import Workout from "./Workout";
@@ -58,6 +59,7 @@ const Index = () => {
       <div className="h-full">
         {renderActiveTab()}
       </div>
+      <InstallPWA />
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
   );
