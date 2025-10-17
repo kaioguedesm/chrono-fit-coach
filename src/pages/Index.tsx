@@ -38,7 +38,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-24 pt-14">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-24">
       <div className="h-full">
         {renderActiveTab()}
       </div>
