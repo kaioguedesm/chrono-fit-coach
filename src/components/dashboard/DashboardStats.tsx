@@ -51,29 +51,29 @@ export function DashboardStats() {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 gap-4 md:gap-4">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         
         return (
           <Card key={index} className="relative overflow-hidden">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-3 md:pb-2">
               <div className="flex items-center justify-between">
-                <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                  <Icon className={`w-4 h-4 ${stat.color}`} />
+                <div className={`p-2.5 md:p-2 rounded-lg ${stat.bgColor}`}>
+                  <Icon className={`w-5 h-5 md:w-4 md:h-4 ${stat.color}`} />
                 </div>
-                <span className="text-xs text-muted-foreground">/{stat.target}</span>
+                <span className="text-sm md:text-xs text-muted-foreground">/{stat.target}</span>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="space-y-2">
+              <div className="space-y-3 md:space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold">{stat.value}</span>
+                  <span className="text-3xl md:text-2xl font-bold">{stat.value}</span>
                 </div>
-                <p className="text-xs text-muted-foreground line-clamp-2">{stat.title}</p>
-                <div className="w-full bg-muted rounded-full h-1.5">
+                <p className="text-sm md:text-xs text-muted-foreground line-clamp-2">{stat.title}</p>
+                <div className="w-full bg-muted rounded-full h-2 md:h-1.5">
                   <div 
-                    className="bg-primary h-1.5 rounded-full transition-all duration-300" 
+                    className="bg-primary h-2 md:h-1.5 rounded-full transition-all duration-300" 
                     style={{ width: `${Math.min(stat.percentage, 100)}%` }}
                   />
                 </div>

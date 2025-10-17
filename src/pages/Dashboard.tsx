@@ -87,7 +87,7 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
       <OnboardingTour />
       <Header title="Meta Fit" />
       
-      <main className="container px-4 py-6 space-y-6">
+      <main className="container px-5 md:px-4 py-8 md:py-6 space-y-8 md:space-y-6">
         {!user && (
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="py-4">
@@ -107,11 +107,11 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
           </Card>
         )}
 
-        <div className="space-y-1.5 animate-fade-in">
-          <h2 className="text-2xl font-bold text-foreground">
+        <div className="space-y-2 md:space-y-1.5 animate-fade-in">
+          <h2 className="text-3xl md:text-2xl font-bold text-foreground">
             Olá{user ? ', ' + userName : ''}! 👋
           </h2>
-          <p className="text-sm text-muted-foreground">Vamos continuar sua jornada fitness hoje?</p>
+          <p className="text-base md:text-sm text-muted-foreground">Vamos continuar sua jornada fitness hoje?</p>
         </div>
 
         <DashboardStats />
@@ -150,33 +150,33 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Calendar className="w-4 h-4 text-primary" />
+            <CardTitle className="flex items-center gap-2 text-lg md:text-base">
+              <Calendar className="w-5 h-5 md:w-4 md:h-4 text-primary" />
               Próximos Treinos
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3 md:space-y-2">
             {upcomingWorkouts.map((workout, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="flex flex-col items-center min-w-[60px]">
-                    <span className="text-xs font-medium text-muted-foreground">{workout.day}</span>
-                    <div className="flex items-center gap-1 text-xs font-semibold text-foreground">
-                      <Clock className="w-3 h-3" />
+              <div key={index} className="flex items-center justify-between p-4 md:p-3 rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors">
+                <div className="flex items-center gap-4 md:gap-3">
+                  <div className="flex flex-col items-center min-w-[70px] md:min-w-[60px]">
+                    <span className="text-sm md:text-xs font-medium text-muted-foreground">{workout.day}</span>
+                    <div className="flex items-center gap-1 text-sm md:text-xs font-semibold text-foreground">
+                      <Clock className="w-4 h-4 md:w-3 md:h-3" />
                       {workout.time}
                     </div>
                   </div>
                   <div>
-                    <p className="font-medium text-sm text-foreground">{workout.workout}</p>
+                    <p className="font-medium text-base md:text-sm text-foreground">{workout.workout}</p>
                   </div>
                 </div>
                 <div>
                   {workout.status === "pending" ? (
-                    <Badge variant="default" className="text-xs font-medium">
+                    <Badge variant="default" className="text-sm md:text-xs font-medium px-3 md:px-2 py-1">
                       Hoje
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="text-xs font-medium">
+                    <Badge variant="secondary" className="text-sm md:text-xs font-medium px-3 md:px-2 py-1">
                       Agendado
                     </Badge>
                   )}

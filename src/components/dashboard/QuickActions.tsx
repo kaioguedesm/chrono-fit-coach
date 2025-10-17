@@ -38,11 +38,11 @@ interface QuickActionsProps {
 
 export function QuickActions({ onActionClick }: QuickActionsProps) {
   return (
-    <div className="space-y-4">
-      <h3 className="text-base font-semibold text-foreground">
+    <div className="space-y-5 md:space-y-4">
+      <h3 className="text-lg md:text-base font-semibold text-foreground">
         Ações Rápidas
       </h3>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4 md:gap-3">
         {quickActions.map((action, index) => {
           const Icon = action.icon;
           
@@ -52,13 +52,13 @@ export function QuickActions({ onActionClick }: QuickActionsProps) {
               onClick={() => onActionClick(action.action)}
               className="cursor-pointer hover:shadow-[var(--shadow-lg)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group"
             >
-              <CardContent className="p-4 flex flex-col items-start gap-3">
-                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
-                  <Icon className="w-5 h-5 text-primary" strokeWidth={2} />
+              <CardContent className="p-5 md:p-4 flex flex-col items-start gap-4 md:gap-3">
+                <div className="w-12 h-12 md:w-11 md:h-11 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+                  <Icon className="w-6 h-6 md:w-5 md:h-5 text-primary" strokeWidth={2} />
                 </div>
-                <div className="space-y-0.5">
-                  <p className="font-semibold text-sm text-foreground leading-tight">{action.title}</p>
-                  <p className="text-xs text-muted-foreground">{action.subtitle}</p>
+                <div className="space-y-1 md:space-y-0.5">
+                  <p className="font-semibold text-base md:text-sm text-foreground leading-tight">{action.title}</p>
+                  <p className="text-sm md:text-xs text-muted-foreground">{action.subtitle}</p>
                 </div>
               </CardContent>
             </Card>
