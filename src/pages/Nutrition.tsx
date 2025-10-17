@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Apple, Upload, Bot, BookOpen, Plus } from 'lucide-react';
+import { Apple, Upload, Bot, BookOpen, Plus, Trash2 } from 'lucide-react';
 import { AINutritionGenerator } from '@/components/nutrition/AINutritionGenerator';
 import { MealPhotoAnalyzer } from '@/components/nutrition/MealPhotoAnalyzer';
 import { LoadingState } from '@/components/common/LoadingState';
@@ -138,6 +138,33 @@ export default function Nutrition() {
     }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
   };
 
+  const handleDeletePlan = async (planId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('nutrition_plans')
+        .update({ is_active: false })
+        .eq('id', planId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Plano nutricional excluído com sucesso.",
+      });
+
+      fetchNutritionPlans();
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o plano nutricional.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Nutrição" />
@@ -181,9 +208,21 @@ export default function Nutrition() {
                         <Apple className="w-5 h-5" />
                         {plan.title}
                       </CardTitle>
-                      <Badge variant={plan.created_by === 'ai' ? 'default' : 'secondary'}>
-                        {plan.created_by === 'ai' ? 'IA Nutricional' : 'Personalizado'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={plan.created_by === 'ai' ? 'default' : 'secondary'}>
+                          {plan.created_by === 'ai' ? 'IA Nutricional' : 'Personalizado'}
+                        </Badge>
+                        {plan.id !== 'sample-1' && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeletePlan(plan.id)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                     {plan.description && (
                       <p className="text-sm text-muted-foreground">{plan.description}</p>
