@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { InstallPWA } from "@/components/common/InstallPWA";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/layout/Navigation";
 import { Dashboard } from "@/pages/Dashboard";
@@ -60,7 +59,6 @@ const Index = () => {
         {renderActiveTab()}
       </div>
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-      <InstallPWA />
     </div>
   );
 };
