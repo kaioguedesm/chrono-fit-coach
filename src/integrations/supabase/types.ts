@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_rate_limits: {
+        Row: {
+          call_count: number
+          created_at: string | null
+          function_name: string
+          id: string
+          reset_at: string
+          user_id: string
+        }
+        Insert: {
+          call_count?: number
+          created_at?: string | null
+          function_name: string
+          id?: string
+          reset_at: string
+          user_id: string
+        }
+        Update: {
+          call_count?: number
+          created_at?: string | null
+          function_name?: string
+          id?: string
+          reset_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       body_measurements: {
         Row: {
           arm: number | null
@@ -738,6 +765,10 @@ export type Database = {
       generate_share_token: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      increment_rate_limit: {
+        Args: { p_function_name: string; p_limit: number; p_user_id: string }
+        Returns: Json
       }
     }
     Enums: {

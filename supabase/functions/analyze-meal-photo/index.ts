@@ -13,6 +13,49 @@ serve(async (req) => {
   }
 
   try {
+    // Get authenticated user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Autorização necessária' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Usuário não autenticado' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check rate limit (20 requests per day)
+    const { data: rateLimitResult, error: rateLimitError } = await supabase
+      .rpc('increment_rate_limit', {
+        p_user_id: user.id,
+        p_function_name: 'analyze-meal-photo',
+        p_limit: 20
+      });
+
+    if (rateLimitError) {
+      console.error('Rate limit check error:', rateLimitError);
+    } else if (rateLimitResult && !rateLimitResult.allowed) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Limite diário de análises de fotos atingido (20/dia). Tente novamente amanhã.',
+          resetAt: rateLimitResult.reset_at
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Input validation schema
     const mealPhotoSchema = z.object({
       imageBase64: z.string().trim().min(100).max(10485760), // Max ~10MB base64
