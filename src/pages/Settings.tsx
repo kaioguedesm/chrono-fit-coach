@@ -332,7 +332,7 @@ export default function Settings() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Configurações" />
       
-      <div className="container mx-auto px-4 py-6 pb-20">
+      <div className="container mx-auto px-4 py-6 pb-20 max-w-7xl">
         <div className="space-y-6">
           {/* User Info Card */}
           <Card>

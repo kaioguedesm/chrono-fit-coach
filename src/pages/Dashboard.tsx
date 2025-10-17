@@ -87,7 +87,7 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
       <OnboardingTour />
       <Header title="Meta Fit" />
       
-      <main className="container px-5 md:px-4 py-8 md:py-6 space-y-8 md:space-y-6">
+      <main className="container mx-auto px-4 py-6 space-y-6 max-w-7xl">
         {!user && (
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="py-4">
@@ -107,7 +107,7 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
           </Card>
         )}
 
-        <div className="space-y-2 md:space-y-1.5 animate-fade-in">
+        <div className="space-y-4">
           <h2 className="text-3xl md:text-2xl font-bold text-foreground">
             Olá{user ? ', ' + userName : ''}! 👋
           </h2>

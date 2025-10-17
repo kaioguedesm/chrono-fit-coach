@@ -369,7 +369,7 @@ export default function Schedule() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Agenda" />
       
-      <div className="container mx-auto px-4 py-6 pb-20">
+      <div className="container mx-auto px-4 py-6 pb-20 max-w-7xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="schedule">Agenda</TabsTrigger>

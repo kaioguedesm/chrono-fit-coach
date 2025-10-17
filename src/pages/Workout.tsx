@@ -319,7 +319,7 @@ export default function Workout() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Treinos" />
       
-      <div className="container mx-auto px-4 py-6 pb-20">
+      <div className="container mx-auto px-4 py-6 pb-20 space-y-6 max-w-7xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="plans">
