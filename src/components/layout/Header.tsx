@@ -34,18 +34,18 @@ export function Header({ title, showProfile = true }: HeaderProps) {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm pt-safe">
-      <div className="container mx-auto flex h-14 items-center justify-between px-4 max-w-7xl">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
+      <div className="container mx-auto flex h-14 items-center justify-between px-4 max-w-7xl gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-sm flex-shrink-0">
             <span className="text-primary-foreground font-bold text-sm">MF</span>
           </div>
-          <h1 className="text-lg font-bold text-foreground truncate">
+          <h1 className="text-base md:text-lg font-bold text-foreground truncate">
             {title}
           </h1>
         </div>
         
         {showProfile && (
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1 md:gap-1.5 flex-shrink-0">
             <Button variant="ghost" size="icon" className="relative h-9 w-9">
               <Bell className="w-4 h-4" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
