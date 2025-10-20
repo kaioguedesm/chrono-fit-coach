@@ -94,7 +94,7 @@ export function MealPhotoAnalyzer() {
       const { data, error } = await supabase.functions.invoke('analyze-meal-photo', {
         body: { 
           imageBase64,
-          userDescription: description.trim() || null
+          userDescription: description.trim() || undefined
         }
       });
 

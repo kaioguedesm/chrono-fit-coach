@@ -59,7 +59,7 @@ serve(async (req) => {
     // Input validation schema
     const mealPhotoSchema = z.object({
       imageBase64: z.string().trim().min(100).max(10485760), // Max ~10MB base64
-      userDescription: z.string().trim().max(1000).optional()
+      userDescription: z.string().trim().max(1000).nullable().optional()
     });
 
     const requestBody = await req.json();
