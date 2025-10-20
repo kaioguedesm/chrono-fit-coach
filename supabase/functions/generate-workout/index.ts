@@ -65,7 +65,8 @@ serve(async (req) => {
       muscleGroupDescription: z.string().trim().max(500).optional(),
       duration: z.number().int().min(15).max(180),
       userWeight: z.number().min(20).max(500).optional(),
-      userAge: z.number().int().min(13).max(120).optional()
+      userAge: z.number().int().min(13).max(120).optional(),
+      customDescription: z.string().trim().max(500).optional().nullable()
     });
 
     const requestBody = await req.json();
@@ -79,7 +80,8 @@ serve(async (req) => {
       muscleGroupDescription,
       duration,
       userWeight,
-      userAge
+      userAge,
+      customDescription
     } = validated;
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -127,6 +129,11 @@ ${userAge ? `- Idade: ${userAge} anos` : ''}
 - Duração aproximada: ${duration} minutos
 - Equipamentos disponíveis: ${equipment || 'equipamentos completos de academia'}
 
+${customDescription ? `✨ PREFERÊNCIAS PERSONALIZADAS DO ALUNO:
+"${customDescription}"
+
+⚠️ IMPORTANTE: Respeite TODAS as preferências acima ao criar o treino. Se o aluno mencionou algo específico (exercícios preferidos, restrições, técnicas desejadas), incorpore isso no plano.
+` : ''}
 📝 REQUISITOS:
 - Inclua ${duration < 45 ? '4-5' : duration < 75 ? '6-7' : '8-10'} exercícios apropriados
 - Exercícios progressivos (compostos → isolados)

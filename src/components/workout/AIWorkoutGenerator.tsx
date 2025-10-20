@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Sparkles, Loader2, Dumbbell, Target, Zap } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Sparkles, Loader2, Dumbbell, Target, Zap, Wand2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -34,6 +35,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
   const [generating, setGenerating] = useState(false);
   const [muscleGroup, setMuscleGroup] = useState('peito');
   const [duration, setDuration] = useState('60');
+  const [customDescription, setCustomDescription] = useState('');
 
   // Pegar objetivo e experiência do perfil do usuário
   const userGoal = profile?.goal || 'hipertrofia';
@@ -55,7 +57,8 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
           duration: parseInt(duration),
           equipment: 'equipamentos de academia completa',
           userWeight: profile?.weight || null,
-          userAge: profile?.age || null
+          userAge: profile?.age || null,
+          customDescription: customDescription.trim() || null
         }
       });
 
@@ -194,6 +197,29 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
                 <SelectItem value="90">90 minutos (Intensivo)</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="custom-description" className="flex items-center gap-2">
+              <Wand2 className="w-4 h-4 text-primary" />
+              Descreva seu treino ideal (opcional)
+            </Label>
+            <Textarea
+              id="custom-description"
+              placeholder="Ex: Quero focar em exercícios compostos, prefiro usar halteres, preciso de variações para dor no ombro, quero incluir drop sets..."
+              value={customDescription}
+              onChange={(e) => setCustomDescription(e.target.value)}
+              className="min-h-[100px] resize-none bg-background/50 border-primary/20 focus:border-primary/50 transition-colors"
+              maxLength={500}
+            />
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                Seja específico! A IA vai personalizar ainda mais seu treino.
+              </p>
+              <span className="text-xs text-muted-foreground">
+                {customDescription.length}/500
+              </span>
+            </div>
           </div>
 
           {selectedMuscleGroup && (
