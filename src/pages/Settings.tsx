@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTheme } from '@/hooks/useTheme';
 import { useStorageUrl } from '@/hooks/useStorageUrl';
 import { supabase } from '@/integrations/supabase/client';
+import { NotificationSettings } from '@/components/settings/NotificationSettings';
 import { 
   Bell, 
   Shield, 
@@ -62,13 +63,8 @@ export default function Settings() {
   const [dietaryPreferences, setDietaryPreferences] = useState<string[]>([]);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
   
-  const [notifications, setNotifications] = useState({
-    workoutReminders: true,
-    nutritionReminders: true,
-    waterReminders: true,
-    achievements: true,
-    weeklyReports: true
-  });
+  // View state
+  const [showNotificationSettings, setShowNotificationSettings] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -262,34 +258,9 @@ export default function Settings() {
       icon: Bell,
       items: [
         { 
-          label: "Lembretes de treino", 
-          hasSwitch: true, 
-          value: notifications.workoutReminders,
-          onChange: (value: boolean) => setNotifications({...notifications, workoutReminders: value})
-        },
-        { 
-          label: "Lembretes de nutrição", 
-          hasSwitch: true, 
-          value: notifications.nutritionReminders,
-          onChange: (value: boolean) => setNotifications({...notifications, nutritionReminders: value})
-        },
-        { 
-          label: "Lembretes de hidratação", 
-          hasSwitch: true, 
-          value: notifications.waterReminders,
-          onChange: (value: boolean) => setNotifications({...notifications, waterReminders: value})
-        },
-        { 
-          label: "Conquistas e metas", 
-          hasSwitch: true, 
-          value: notifications.achievements,
-          onChange: (value: boolean) => setNotifications({...notifications, achievements: value})
-        },
-        { 
-          label: "Relatórios semanais", 
-          hasSwitch: true, 
-          value: notifications.weeklyReports,
-          onChange: (value: boolean) => setNotifications({...notifications, weeklyReports: value})
+          label: "Configurar notificações", 
+          hasSwitch: false,
+          action: () => setShowNotificationSettings(true)
         }
       ]
     },
@@ -456,6 +427,19 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      {/* Notification Settings Dialog */}
+      <Dialog open={showNotificationSettings} onOpenChange={setShowNotificationSettings}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5" />
+              Configurar Notificações
+            </DialogTitle>
+          </DialogHeader>
+          <NotificationSettings />
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Profile Dialog */}
       <Dialog open={editProfileOpen} onOpenChange={setEditProfileOpen}>
