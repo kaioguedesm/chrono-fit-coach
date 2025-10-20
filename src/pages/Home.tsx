@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { InstallPWA } from "@/components/common/InstallPWA";
 import { 
   Dumbbell, TrendingUp, Apple, Calendar, Sparkles, ArrowRight, 
   Target, Zap, Shield, Brain, Trophy, Users, Check, Star,
@@ -531,6 +532,8 @@ const Home = () => {
           </div>
         </div>
       </footer>
+      
+      <InstallPWA />
     </div>
   );
 };
