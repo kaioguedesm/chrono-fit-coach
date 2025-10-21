@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Apple, Upload, Bot, BookOpen, Plus, Trash2 } from 'lucide-react';
 import { AINutritionGenerator } from '@/components/nutrition/AINutritionGenerator';
 import { MealPhotoAnalyzer } from '@/components/nutrition/MealPhotoAnalyzer';
+import { DietUploader } from '@/components/nutrition/DietUploader';
 import { LoadingState } from '@/components/common/LoadingState';
 import { EmptyState } from '@/components/common/EmptyState';
 
@@ -347,25 +348,7 @@ export default function Nutrition() {
           <TabsContent value="create" className="space-y-4">
             <AINutritionGenerator onSuccess={fetchNutritionPlans} />
             
-            <Card>
-              <CardHeader>
-                <CardTitle>Upload de Dieta</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                  <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Clique para fazer upload
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    PDF, DOC, DOCX até 10MB
-                  </p>
-                </div>
-                <Button className="w-full" variant="outline">
-                  Selecionar Arquivo
-                </Button>
-              </CardContent>
-            </Card>
+            <DietUploader />
           </TabsContent>
         </Tabs>
       </div>

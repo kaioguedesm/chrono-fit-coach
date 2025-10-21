@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.generate-workout-motivation]
 verify_jwt = true
+
+[functions.analyze-diet-file]
+verify_jwt = true
