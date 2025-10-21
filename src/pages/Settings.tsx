@@ -17,6 +17,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { useStorageUrl } from '@/hooks/useStorageUrl';
 import { supabase } from '@/integrations/supabase/client';
 import { NotificationSettings } from '@/components/settings/NotificationSettings';
+import { PrivacySettings } from '@/components/settings/PrivacySettings';
+import { SupportDialog } from '@/components/settings/SupportDialog';
 import { 
   Bell, 
   Shield, 
@@ -65,6 +67,10 @@ export default function Settings() {
   
   // View state
   const [showNotificationSettings, setShowNotificationSettings] = useState(false);
+  const [privacyDialogOpen, setPrivacyDialogOpen] = useState(false);
+  const [privacyType, setPrivacyType] = useState<'terms' | 'privacy' | 'data'>('terms');
+  const [supportDialogOpen, setSupportDialogOpen] = useState(false);
+  const [supportType, setSupportType] = useState<'help' | 'contact' | 'rate'>('help');
 
   useEffect(() => {
     if (profile) {
@@ -283,18 +289,60 @@ export default function Settings() {
       title: "Privacidade e Segurança",
       icon: Shield,
       items: [
-        { label: "Termos de uso", action: () => {}, hasSwitch: false },
-        { label: "Política de privacidade", action: () => {}, hasSwitch: false },
-        { label: "Gerenciar dados", action: () => {}, hasSwitch: false }
+        { 
+          label: "Termos de uso", 
+          action: () => { 
+            setPrivacyType('terms'); 
+            setPrivacyDialogOpen(true); 
+          }, 
+          hasSwitch: false 
+        },
+        { 
+          label: "Política de privacidade", 
+          action: () => { 
+            setPrivacyType('privacy'); 
+            setPrivacyDialogOpen(true); 
+          }, 
+          hasSwitch: false 
+        },
+        { 
+          label: "Gerenciar dados", 
+          action: () => { 
+            setPrivacyType('data'); 
+            setPrivacyDialogOpen(true); 
+          }, 
+          hasSwitch: false 
+        }
       ]
     },
     {
       title: "Suporte",
       icon: HelpCircle,
       items: [
-        { label: "Central de ajuda", action: () => {}, hasSwitch: false },
-        { label: "Fale conosco", action: () => {}, hasSwitch: false },
-        { label: "Avaliar app", action: () => {}, hasSwitch: false }
+        { 
+          label: "Central de ajuda", 
+          action: () => { 
+            setSupportType('help'); 
+            setSupportDialogOpen(true); 
+          }, 
+          hasSwitch: false 
+        },
+        { 
+          label: "Fale conosco", 
+          action: () => { 
+            setSupportType('contact'); 
+            setSupportDialogOpen(true); 
+          }, 
+          hasSwitch: false 
+        },
+        { 
+          label: "Avaliar app", 
+          action: () => { 
+            setSupportType('rate'); 
+            setSupportDialogOpen(true); 
+          }, 
+          hasSwitch: false 
+        }
       ]
     }
   ];
@@ -627,6 +675,20 @@ export default function Settings() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Privacy Settings Dialog */}
+      <PrivacySettings 
+        open={privacyDialogOpen} 
+        onOpenChange={setPrivacyDialogOpen}
+        type={privacyType}
+      />
+
+      {/* Support Dialog */}
+      <SupportDialog 
+        open={supportDialogOpen} 
+        onOpenChange={setSupportDialogOpen}
+        type={supportType}
+      />
     </div>
   );
 }
