@@ -43,44 +43,68 @@ export function ShareWorkoutModal({ open, onOpenChange, workoutPlanId, workoutNa
   const [isPrivate, setIsPrivate] = useState(true);
   const [inviteEmail, setInviteEmail] = useState('');
   const [invites, setInvites] = useState<Record<string, Invite[]>>({});
+  const [isLoadingShares, setIsLoadingShares] = useState(false);
+
+  // Reset title when workoutName changes
+  useEffect(() => {
+    setTitle(workoutName);
+  }, [workoutName]);
 
   useEffect(() => {
-    if (open) {
+    if (open && workoutPlanId) {
       loadShares();
-    } else {
+    } else if (!open) {
       // Reset on close
       setDescription('');
       setInviteEmail('');
       setIsPrivate(true);
+      setCopiedToken(null);
     }
-  }, [open]);
+  }, [open, workoutPlanId]);
 
   const loadShares = async () => {
-    const { data } = await supabase
-      .from('workout_shares')
-      .select('*')
-      .eq('workout_plan_id', workoutPlanId)
-      .order('created_at', { ascending: false });
+    if (!workoutPlanId) return;
+    
+    setIsLoadingShares(true);
+    try {
+      const { data, error } = await supabase
+        .from('workout_shares')
+        .select('*')
+        .eq('workout_plan_id', workoutPlanId)
+        .order('created_at', { ascending: false });
 
-    if (data) {
-      setShareLinks(data);
-      // Load invites for each private share
-      data.forEach(share => {
-        if (share.is_private) {
-          loadInvites(share.id);
-        }
-      });
+      if (error) throw error;
+
+      if (data) {
+        setShareLinks(data);
+        // Load invites for private shares in parallel
+        const privateShares = data.filter(share => share.is_private);
+        await Promise.all(
+          privateShares.map(share => loadInvites(share.id))
+        );
+      }
+    } catch (error) {
+      console.error('Error loading shares:', error);
+      toast.error('Erro ao carregar compartilhamentos');
+    } finally {
+      setIsLoadingShares(false);
     }
   };
 
   const loadInvites = async (shareId: string) => {
-    const { data } = await supabase
-      .from('workout_share_invites')
-      .select('id, invited_email, accepted')
-      .eq('share_id', shareId);
+    try {
+      const { data, error } = await supabase
+        .from('workout_share_invites')
+        .select('id, invited_email, accepted')
+        .eq('share_id', shareId);
 
-    if (data) {
-      setInvites(prev => ({ ...prev, [shareId]: data }));
+      if (error) throw error;
+
+      if (data) {
+        setInvites(prev => ({ ...prev, [shareId]: data }));
+      }
+    } catch (error) {
+      console.error('Error loading invites:', error);
     }
   };
 
@@ -113,7 +137,7 @@ export function ShareWorkoutModal({ open, onOpenChange, workoutPlanId, workoutNa
       if (error) throw error;
 
       toast.success(isPrivate ? 'Compartilhamento privado criado!' : 'Link público criado!');
-      setShareLinks([data, ...shareLinks]);
+      await loadShares(); // Reload to ensure consistency
       setDescription('');
       
       // Copy link automatically
@@ -214,12 +238,17 @@ export function ShareWorkoutModal({ open, onOpenChange, workoutPlanId, workoutNa
     toast.success('Convite removido');
   };
 
-  const copyToClipboard = (token: string) => {
-    const url = `${window.location.origin}/shared/${token}`;
-    navigator.clipboard.writeText(url);
-    setCopiedToken(token);
-    toast.success('Link copiado!');
-    setTimeout(() => setCopiedToken(null), 2000);
+  const copyToClipboard = async (token: string) => {
+    try {
+      const url = `${window.location.origin}/shared/${token}`;
+      await navigator.clipboard.writeText(url);
+      setCopiedToken(token);
+      toast.success('Link copiado!');
+      setTimeout(() => setCopiedToken(null), 2000);
+    } catch (error) {
+      console.error('Error copying to clipboard:', error);
+      toast.error('Erro ao copiar link');
+    }
   };
 
   const toggleShareActive = async (shareId: string, currentState: boolean) => {
@@ -273,200 +302,210 @@ export function ShareWorkoutModal({ open, onOpenChange, workoutPlanId, workoutNa
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Create New Share */}
-          <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
-            <div className="flex items-center justify-between p-3 bg-background rounded-lg border">
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  {isPrivate ? <Lock className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
-                  <Label className="text-base font-semibold">
-                    {isPrivate ? 'Compartilhamento Privado' : 'Compartilhamento Público'}
-                  </Label>
+          {isLoadingShares && (
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          )}
+
+          {!isLoadingShares && (
+            <>
+              {/* Create New Share */}
+              <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+                <div className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      {isPrivate ? <Lock className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
+                      <Label className="text-base font-semibold">
+                        {isPrivate ? 'Compartilhamento Privado' : 'Compartilhamento Público'}
+                      </Label>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {isPrivate 
+                        ? 'Apenas pessoas convidadas podem acessar' 
+                        : 'Qualquer pessoa com o link pode acessar'}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={isPrivate}
+                    onCheckedChange={setIsPrivate}
+                  />
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {isPrivate 
-                    ? 'Apenas pessoas convidadas podem acessar' 
-                    : 'Qualquer pessoa com o link pode acessar'}
-                </p>
+
+                <div className="space-y-2">
+                  <Label htmlFor="title">Título do Compartilhamento</Label>
+                  <Input
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder={workoutName}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Descrição (opcional)</Label>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Adicione informações sobre este treino..."
+                    rows={3}
+                  />
+                </div>
+
+                <Button 
+                  onClick={createShareLink} 
+                  disabled={isCreating || !title}
+                  className="w-full"
+                >
+                  <Share2 className="mr-2 h-4 w-4" />
+                  {isCreating ? 'Criando...' : isPrivate ? 'Criar Compartilhamento Privado' : 'Criar Link Público'}
+                </Button>
               </div>
-              <Switch
-                checked={isPrivate}
-                onCheckedChange={setIsPrivate}
-              />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="title">Título do Compartilhamento</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={workoutName}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Descrição (opcional)</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Adicione informações sobre este treino..."
-                rows={3}
-              />
-            </div>
-
-            <Button 
-              onClick={createShareLink} 
-              disabled={isCreating || !title}
-              className="w-full"
-            >
-              <Share2 className="mr-2 h-4 w-4" />
-              {isCreating ? 'Criando...' : isPrivate ? 'Criar Compartilhamento Privado' : 'Criar Link Público'}
-            </Button>
-          </div>
-
-          {/* Existing Shares */}
-          {shareLinks.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm">Compartilhamentos Criados ({shareLinks.length})</h3>
-              <div className="space-y-3">
-                {shareLinks.map((link) => (
-                  <div 
-                    key={link.id} 
-                    className={`p-4 rounded-lg border ${
-                      link.is_active ? 'bg-background' : 'bg-muted/50 opacity-60'
-                    }`}
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            {link.is_private ? (
-                              <Lock className="w-4 h-4 text-primary" />
-                            ) : (
-                              <Globe className="w-4 h-4 text-muted-foreground" />
-                            )}
-                            <h4 className="font-medium truncate">{link.title}</h4>
-                            {link.is_active ? (
-                              <Badge variant="default" className="text-xs">Ativo</Badge>
-                            ) : (
-                              <Badge variant="secondary" className="text-xs">Inativo</Badge>
-                            )}
-                            {link.is_private && (
-                              <Badge variant="outline" className="text-xs">Privado</Badge>
-                            )}
-                          </div>
-                          
-                          {link.description && (
-                            <p className="text-sm text-muted-foreground mb-2">{link.description}</p>
-                          )}
-
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <span>{link.view_count} visualizações</span>
-                            <span>•</span>
-                            <span>Criado em {new Date(link.created_at).toLocaleDateString('pt-BR')}</span>
-                          </div>
-
-                          <div className="mt-3 flex items-center gap-2">
-                            <Input
-                              value={`${window.location.origin}/shared/${link.share_token}`}
-                              readOnly
-                              className="text-xs h-8"
-                            />
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => copyToClipboard(link.share_token)}
-                              className="shrink-0"
-                            >
-                              {copiedToken === link.share_token ? (
-                                <Check className="h-4 w-4" />
-                              ) : (
-                                <Copy className="h-4 w-4" />
-                              )}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => openInNewTab(link.share_token)}
-                              className="shrink-0"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                          <Switch
-                            checked={link.is_active}
-                            onCheckedChange={() => toggleShareActive(link.id, link.is_active)}
-                          />
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => deleteShare(link.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Private Share - Invites Section */}
-                      {link.is_private && (
-                        <div className="mt-4 pt-4 border-t space-y-3">
-                          <Label className="flex items-center gap-2 text-sm">
-                            <UserPlus className="w-4 h-4" />
-                            Pessoas Convidadas
-                          </Label>
-                          
-                          <div className="flex gap-2">
-                            <Input
-                              type="email"
-                              value={inviteEmail}
-                              onChange={(e) => setInviteEmail(e.target.value)}
-                              placeholder="email@exemplo.com"
-                              className="h-8 text-sm"
-                              onKeyPress={(e) => e.key === 'Enter' && addInvite(link.id)}
-                            />
-                            <Button 
-                              size="sm" 
-                              onClick={() => addInvite(link.id)}
-                              disabled={!inviteEmail.trim()}
-                            >
-                              <Mail className="w-4 h-4 mr-1" />
-                              Convidar
-                            </Button>
-                          </div>
-
-                          {invites[link.id] && invites[link.id].length > 0 && (
-                            <div className="space-y-2">
-                              <p className="text-xs text-muted-foreground">
-                                {invites[link.id].length} pessoa(s) convidada(s)
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {invites[link.id].map((invite) => (
-                                  <Badge key={invite.id} variant="secondary" className="gap-2">
-                                    {invite.invited_email}
-                                    {invite.accepted && <Check className="w-3 h-3 text-green-600" />}
-                                    <button
-                                      onClick={() => removeInvite(invite.id, link.id)}
-                                      className="hover:text-destructive"
-                                    >
-                                      <X className="w-3 h-3" />
-                                    </button>
-                                  </Badge>
-                                ))}
+              {/* Existing Shares */}
+              {shareLinks.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-sm">Compartilhamentos Criados ({shareLinks.length})</h3>
+                  <div className="space-y-3">
+                    {shareLinks.map((link) => (
+                      <div 
+                        key={link.id} 
+                        className={`p-4 rounded-lg border ${
+                          link.is_active ? 'bg-background' : 'bg-muted/50 opacity-60'
+                        }`}
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                {link.is_private ? (
+                                  <Lock className="w-4 h-4 text-primary" />
+                                ) : (
+                                  <Globe className="w-4 h-4 text-muted-foreground" />
+                                )}
+                                <h4 className="font-medium truncate">{link.title}</h4>
+                                {link.is_active ? (
+                                  <Badge variant="default" className="text-xs">Ativo</Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="text-xs">Inativo</Badge>
+                                )}
+                                {link.is_private && (
+                                  <Badge variant="outline" className="text-xs">Privado</Badge>
+                                )}
                               </div>
+                              
+                              {link.description && (
+                                <p className="text-sm text-muted-foreground mb-2">{link.description}</p>
+                              )}
+
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>{link.view_count} visualizações</span>
+                                <span>•</span>
+                                <span>Criado em {new Date(link.created_at).toLocaleDateString('pt-BR')}</span>
+                              </div>
+
+                              <div className="mt-3 flex items-center gap-2">
+                                <Input
+                                  value={`${window.location.origin}/shared/${link.share_token}`}
+                                  readOnly
+                                  className="text-xs h-8"
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => copyToClipboard(link.share_token)}
+                                  className="shrink-0"
+                                >
+                                  {copiedToken === link.share_token ? (
+                                    <Check className="h-4 w-4" />
+                                  ) : (
+                                    <Copy className="h-4 w-4" />
+                                  )}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openInNewTab(link.share_token)}
+                                  className="shrink-0"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                              <Switch
+                                checked={link.is_active}
+                                onCheckedChange={() => toggleShareActive(link.id, link.is_active)}
+                              />
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => deleteShare(link.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Private Share - Invites Section */}
+                          {link.is_private && (
+                            <div className="mt-4 pt-4 border-t space-y-3">
+                              <Label className="flex items-center gap-2 text-sm">
+                                <UserPlus className="w-4 h-4" />
+                                Pessoas Convidadas
+                              </Label>
+                              
+                              <div className="flex gap-2">
+                                <Input
+                                  type="email"
+                                  value={inviteEmail}
+                                  onChange={(e) => setInviteEmail(e.target.value)}
+                                  placeholder="email@exemplo.com"
+                                  className="h-8 text-sm"
+                                  onKeyPress={(e) => e.key === 'Enter' && addInvite(link.id)}
+                                />
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => addInvite(link.id)}
+                                  disabled={!inviteEmail.trim()}
+                                >
+                                  <Mail className="w-4 h-4 mr-1" />
+                                  Convidar
+                                </Button>
+                              </div>
+
+                              {invites[link.id] && invites[link.id].length > 0 && (
+                                <div className="space-y-2">
+                                  <p className="text-xs text-muted-foreground">
+                                    {invites[link.id].length} pessoa(s) convidada(s)
+                                  </p>
+                                  <div className="flex flex-wrap gap-2">
+                                    {invites[link.id].map((invite) => (
+                                      <Badge key={invite.id} variant="secondary" className="gap-2">
+                                        {invite.invited_email}
+                                        {invite.accepted && <Check className="w-3 h-3 text-green-600" />}
+                                        <button
+                                          onClick={() => removeInvite(invite.id, link.id)}
+                                          className="hover:text-destructive"
+                                        >
+                                          <X className="w-3 h-3" />
+                                        </button>
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </DialogContent>

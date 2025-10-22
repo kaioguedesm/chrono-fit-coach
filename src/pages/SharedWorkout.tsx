@@ -129,7 +129,7 @@ export default function SharedWorkout() {
       return;
     }
 
-    if (!workout) return;
+    if (!workout || copying) return;
 
     setCopying(true);
     try {

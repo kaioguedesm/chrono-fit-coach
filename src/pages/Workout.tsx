@@ -75,6 +75,19 @@ export default function Workout() {
     exercises: Exercise[];
   } | null>(null);
 
+  // Reset selected workout when modal closes
+  useEffect(() => {
+    if (!shareModalOpen) {
+      setSelectedWorkoutToShare(null);
+    }
+  }, [shareModalOpen]);
+
+  useEffect(() => {
+    if (!editModalOpen) {
+      setSelectedWorkoutToEdit(null);
+    }
+  }, [editModalOpen]);
+
   useEffect(() => {
     if (user) {
       fetchWorkoutPlans();
