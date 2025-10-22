@@ -327,7 +327,7 @@ export function SupportDialog({ open, onOpenChange, type }: SupportDialogProps) 
           <TabsContent value="rate" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Avalie o Meta Fit</CardTitle>
+                <CardTitle>Avalie o Nex Fit</CardTitle>
                 <CardDescription>
                   Sua opinião nos ajuda a melhorar constantemente
                 </CardDescription>
@@ -384,7 +384,7 @@ export function SupportDialog({ open, onOpenChange, type }: SupportDialogProps) 
                       id="feedback-text"
                       value={feedbackForm.feedback}
                       onChange={(e) => setFeedbackForm({...feedbackForm, feedback: e.target.value})}
-                      placeholder="Compartilhe sua experiência com o Meta Fit..."
+                      placeholder="Compartilhe sua experiência com o Nex Fit..."
                       className="min-h-[120px]"
                     />
                   </div>

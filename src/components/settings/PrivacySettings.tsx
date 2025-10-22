@@ -52,7 +52,7 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `metafit-dados-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `nexfit-dados-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -126,14 +126,14 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
         <div>
           <h3 className="font-semibold text-lg mb-2">1. Aceitação dos Termos</h3>
           <p className="text-sm text-muted-foreground">
-            Ao utilizar o Meta Fit, você concorda com estes termos de uso. Se não concordar, não utilize o aplicativo.
+            Ao utilizar o Nex Fit, você concorda com estes termos de uso. Se não concordar, não utilize o aplicativo.
           </p>
         </div>
         <Separator />
         <div>
           <h3 className="font-semibold text-lg mb-2">2. Uso do Serviço</h3>
           <p className="text-sm text-muted-foreground">
-            O Meta Fit é uma plataforma de acompanhamento fitness. Você é responsável por manter a confidencialidade de sua conta e senha.
+            O Nex Fit é uma plataforma de acompanhamento fitness. Você é responsável por manter a confidencialidade de sua conta e senha.
           </p>
         </div>
         <Separator />
@@ -147,7 +147,7 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
         <div>
           <h3 className="font-semibold text-lg mb-2">4. Isenção de Responsabilidade</h3>
           <p className="text-sm text-muted-foreground">
-            O Meta Fit não substitui orientação médica profissional. Consulte um médico antes de iniciar qualquer programa de exercícios ou dieta.
+            O Nex Fit não substitui orientação médica profissional. Consulte um médico antes de iniciar qualquer programa de exercícios ou dieta.
           </p>
         </div>
         <Separator />

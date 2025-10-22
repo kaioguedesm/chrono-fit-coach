@@ -71,7 +71,7 @@ const DEFAULT_SETTINGS: NotificationSettings = {
   }
 };
 
-const STORAGE_KEY = 'metafit-notifications';
+const STORAGE_KEY = 'nexfit-notifications';
 
 export const useNotifications = () => {
   const { toast } = useToast();
@@ -137,7 +137,7 @@ export const useNotifications = () => {
         body,
         icon: icon || '/icon-192x192.png',
         badge: '/icon-192x192.png',
-        tag: 'metafit-notification',
+        tag: 'nexfit-notification',
         requireInteraction: false,
         silent: false
       });
@@ -208,15 +208,15 @@ export const useNotifications = () => {
       
       if (currentTime >= startTime && currentTime <= endTime) {
         const randomMessage = waterMessages[Math.floor(Math.random() * waterMessages.length)];
-        sendNotification("Meta Fit - Hidratação", randomMessage);
+        sendNotification("Nex Fit - Hidratação", randomMessage);
       }
     };
 
     // Agendar para cada intervalo
     const intervalMs = interval * 60 * 1000;
     const timerId = setInterval(checkWaterTime, intervalMs);
-    (window as any).__metafitTimers = (window as any).__metafitTimers || [];
-    (window as any).__metafitTimers.push(timerId);
+    (window as any).__nexfitTimers = (window as any).__nexfitTimers || [];
+    (window as any).__nexfitTimers.push(timerId);
   };
 
   const scheduleWorkoutReminders = () => {
@@ -238,13 +238,13 @@ export const useNotifications = () => {
       
       if (days.includes(currentDay) && now.getHours() === hours && now.getMinutes() === minutes) {
         const randomMessage = workoutMessages[Math.floor(Math.random() * workoutMessages.length)];
-        sendNotification("Meta Fit - Hora do Treino!", randomMessage);
+        sendNotification("Nex Fit - Hora do Treino!", randomMessage);
       }
     };
 
     const timerId = setInterval(checkWorkoutTime, 60000); // Verificar a cada minuto
-    (window as any).__metafitTimers = (window as any).__metafitTimers || [];
-    (window as any).__metafitTimers.push(timerId);
+    (window as any).__nexfitTimers = (window as any).__nexfitTimers || [];
+    (window as any).__nexfitTimers.push(timerId);
   };
 
   const scheduleMealReminders = () => {
@@ -263,14 +263,14 @@ export const useNotifications = () => {
       
       meals.forEach(meal => {
         if (currentTime === meal.time) {
-          sendNotification(`Meta Fit - ${meal.title}`, `${meal.emoji} ${meal.message}`);
+          sendNotification(`Nex Fit - ${meal.title}`, `${meal.emoji} ${meal.message}`);
         }
       });
     };
 
     const timerId = setInterval(checkMealTime, 60000);
-    (window as any).__metafitTimers = (window as any).__metafitTimers || [];
-    (window as any).__metafitTimers.push(timerId);
+    (window as any).__nexfitTimers = (window as any).__nexfitTimers || [];
+    (window as any).__nexfitTimers.push(timerId);
   };
 
   const scheduleMotivationReminder = () => {
@@ -292,13 +292,13 @@ export const useNotifications = () => {
       const now = new Date();
       if (now.getHours() === hours && now.getMinutes() === minutes) {
         const randomMessage = motivationMessages[Math.floor(Math.random() * motivationMessages.length)];
-        sendNotification("Meta Fit - Mensagem do Dia", randomMessage);
+        sendNotification("Nex Fit - Mensagem do Dia", randomMessage);
       }
     };
 
     const timerId = setInterval(checkMotivationTime, 60000);
-    (window as any).__metafitTimers = (window as any).__metafitTimers || [];
-    (window as any).__metafitTimers.push(timerId);
+    (window as any).__nexfitTimers = (window as any).__nexfitTimers || [];
+    (window as any).__nexfitTimers.push(timerId);
   };
 
   const scheduleSleepReminder = () => {
@@ -309,15 +309,15 @@ export const useNotifications = () => {
       const now = new Date();
       if (now.getHours() === hours && now.getMinutes() === minutes) {
         sendNotification(
-          "Meta Fit - Hora de Descansar",
+          "Nex Fit - Hora de Descansar",
           "😴 O descanso é tão importante quanto o treino. Boa noite!"
         );
       }
     };
 
     const timerId = setInterval(checkSleepTime, 60000);
-    (window as any).__metafitTimers = (window as any).__metafitTimers || [];
-    (window as any).__metafitTimers.push(timerId);
+    (window as any).__nexfitTimers = (window as any).__nexfitTimers || [];
+    (window as any).__nexfitTimers.push(timerId);
   };
 
   const scheduleWeighInReminder = () => {
@@ -331,21 +331,21 @@ export const useNotifications = () => {
       
       if (currentDay === day && now.getHours() === hours && now.getMinutes() === minutes) {
         sendNotification(
-          "Meta Fit - Pesagem Semanal",
+          "Nex Fit - Pesagem Semanal",
           "⚖️ Hora de registrar seu progresso! Faça sua pesagem semanal."
         );
       }
     };
 
     const timerId = setInterval(checkWeighInTime, 60000);
-    (window as any).__metafitTimers = (window as any).__metafitTimers || [];
-    (window as any).__metafitTimers.push(timerId);
+    (window as any).__nexfitTimers = (window as any).__nexfitTimers || [];
+    (window as any).__nexfitTimers.push(timerId);
   };
 
   const clearAllTimers = () => {
-    const timers = (window as any).__metafitTimers || [];
+    const timers = (window as any).__nexfitTimers || [];
     timers.forEach((timer: number) => clearInterval(timer));
-    (window as any).__metafitTimers = [];
+    (window as any).__nexfitTimers = [];
   };
 
   const updateSettings = (newSettings: Partial<NotificationSettings>) => {

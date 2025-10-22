@@ -86,7 +86,7 @@ const Home = () => {
       role: "Engenheiro",
       image: "👨‍💻",
       rating: 5,
-      text: "Como alguém com rotina corrida, o Meta Fit se encaixou perfeitamente na minha agenda. Resultados incríveis!"
+      text: "Como alguém com rotina corrida, o Nex Fit se encaixou perfeitamente na minha agenda. Resultados incríveis!"
     },
     {
       name: "Ana Costa",
@@ -181,7 +181,7 @@ const Home = () => {
               <Dumbbell className="h-6 w-6 text-primary-foreground" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-              Meta Fit
+              Nex Fit
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -288,7 +288,7 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <Badge className="mb-4" variant="outline">
-              Por que escolher Meta Fit?
+              Por que escolher Nex Fit?
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               Resultados que falam por si
@@ -479,7 +479,7 @@ const Home = () => {
           </h2>
           
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-8">
-            Junte-se a mais de 50.000 pessoas que já alcançaram seus objetivos com Meta Fit
+            Junte-se a mais de 50.000 pessoas que já alcançaram seus objetivos com Nex Fit
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -518,12 +518,12 @@ const Home = () => {
               <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-primary/70">
                 <Dumbbell className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="font-bold text-lg">Meta Fit</span>
+              <span className="font-bold text-lg">Nex Fit</span>
             </div>
             
             <div className="flex flex-col items-center gap-2">
               <p className="text-sm text-muted-foreground">
-                © 2025 Meta Fit. Transformando vidas através da tecnologia.
+                © 2025 Nex Fit. Transformando vidas através da tecnologia.
               </p>
               <p className="text-xs text-muted-foreground">
                 Feito com ❤️ no Brasil

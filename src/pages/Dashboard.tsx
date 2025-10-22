@@ -85,7 +85,7 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
   return (
     <div className="pb-20">
       <OnboardingTour />
-      <Header title="Meta Fit" />
+      <Header title="Nex Fit" />
       
       <main className="container mx-auto px-4 pt-20 py-6 space-y-6 max-w-7xl">
         {!user && (

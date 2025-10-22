@@ -470,7 +470,7 @@ export default function Settings() {
 
           {/* Footer */}
           <div className="text-center text-sm text-muted-foreground py-4">
-            <p>Meta Fit v1.0.0</p>
+            <p>Nex Fit v1.0.0</p>
             <p>Seu parceiro fitness de confiança</p>
           </div>
         </div>

@@ -72,7 +72,7 @@ export const InstallPWA = () => {
               <Smartphone className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-base">Instalar Meta Fit</CardTitle>
+              <CardTitle className="text-base">Instalar Nex Fit</CardTitle>
               <CardDescription className="text-xs">
                 Acesso rápido direto da tela inicial
               </CardDescription>

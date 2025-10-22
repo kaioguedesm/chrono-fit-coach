@@ -92,7 +92,7 @@ export default function Auth() {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            Meta Fit
+            Nex Fit
           </CardTitle>
           <CardDescription>
             {isLogin ? 'Entre na sua conta' : 'Crie sua conta'}
@@ -170,7 +170,7 @@ export default function Auth() {
                 disabled={loading}
                 className="text-sm"
               >
-                Saiba mais sobre o Meta Fit
+                Saiba mais sobre o Nex Fit
               </Button>
             </div>
           </form>

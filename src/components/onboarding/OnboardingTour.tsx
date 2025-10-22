@@ -12,7 +12,7 @@ interface OnboardingStep {
 const steps: OnboardingStep[] = [
   {
     emoji: "👋",
-    title: "Bem-vindo ao Meta Fit!",
+    title: "Bem-vindo ao Nex Fit!",
     description: "Vamos fazer um tour rápido pelas principais funcionalidades do app."
   },
   {
@@ -47,14 +47,14 @@ export function OnboardingTour() {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
-    const hasSeenTour = localStorage.getItem("metafit-tour-completed");
+    const hasSeenTour = localStorage.getItem("nexfit-tour-completed");
     if (!hasSeenTour) {
       setTimeout(() => setIsVisible(true), 1000);
     }
   }, []);
 
   const handleClose = () => {
-    localStorage.setItem("metafit-tour-completed", "true");
+    localStorage.setItem("nexfit-tour-completed", "true");
     setIsVisible(false);
   };
 
