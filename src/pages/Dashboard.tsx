@@ -143,6 +143,10 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
             setWorkoutModalOpen(false);
             onNavigateToTab?.('schedule');
           }}
+          onNavigateToWorkout={() => {
+            setWorkoutModalOpen(false);
+            onNavigateToTab?.('workout');
+          }}
         />
 
         <Card>

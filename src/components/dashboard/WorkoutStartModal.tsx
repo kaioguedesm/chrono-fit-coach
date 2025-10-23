@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Play, Dumbbell, Calendar, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { MoodSelector } from '@/components/workout/MoodSelector';
 import { useProfile } from '@/hooks/useProfile';
 
@@ -21,13 +20,13 @@ interface WorkoutStartModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onNavigateToSchedule?: () => void;
+  onNavigateToWorkout?: () => void;
 }
 
-export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule }: WorkoutStartModalProps) {
+export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule, onNavigateToWorkout }: WorkoutStartModalProps) {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [workouts, setWorkouts] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWorkout, setSelectedWorkout] = useState<WorkoutPlan | null>(null);
@@ -132,7 +131,11 @@ export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule }: 
       onOpenChange(false);
       setShowMoodSelector(false);
       setSelectedWorkout(null);
-      navigate('/workout', { state: { sessionId: session.id } });
+      
+      // Navigate to workout tab if callback provided
+      if (onNavigateToWorkout) {
+        onNavigateToWorkout();
+      }
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -218,7 +221,9 @@ export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule }: 
                     </p>
                     <Button onClick={() => {
                       onOpenChange(false);
-                      navigate('/workout');
+                      if (onNavigateToWorkout) {
+                        onNavigateToWorkout();
+                      }
                     }}>
                       Criar Meu Primeiro Treino
                     </Button>
@@ -260,11 +265,9 @@ export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule }: 
                   variant="outline"
                   className="w-full"
                   onClick={() => {
+                    onOpenChange(false);
                     if (onNavigateToSchedule) {
                       onNavigateToSchedule();
-                    } else {
-                      onOpenChange(false);
-                      navigate('/schedule');
                     }
                   }}
                 >
