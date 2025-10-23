@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import nexfitLogo from "@/assets/nexfit-logo.png";
 
 interface HeaderProps {
   title: string;
@@ -36,8 +37,8 @@ export function Header({ title, showProfile = true }: HeaderProps) {
     <header className="fixed top-0 left-0 right-0 z-50 w-full bg-background backdrop-blur-xl border-b border-border/50 shadow-sm pt-safe">
       <div className="container mx-auto flex h-14 items-center justify-between px-4 max-w-7xl gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-sm flex-shrink-0">
-            <span className="text-primary-foreground font-bold text-sm">MF</span>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
+            <img src={nexfitLogo} alt="Nex Fit Logo" className="w-8 h-8 object-contain" />
           </div>
           <h1 className="text-base md:text-lg font-bold text-foreground truncate">
             {title}
