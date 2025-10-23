@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { authSchema } from '@/lib/validations';
-import nexfitLogo from "@/assets/nexfit-logo.png";
+import nexfitIcon from "@/assets/nexfit-icon.png";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -84,20 +84,27 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-lg flex items-center justify-center">
-              <img src={nexfitLogo} alt="Nex Fit Logo" className="w-16 h-16 object-contain" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+      <Card className="w-full max-w-md border-border/50 shadow-2xl backdrop-blur-sm bg-card/95">
+        <CardHeader className="text-center space-y-4 pb-6">
+          <div className="flex justify-center">
+            <div className="relative w-20 h-20 flex items-center justify-center">
+              <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl animate-pulse"></div>
+              <img 
+                src={nexfitIcon} 
+                alt="Nex Fit" 
+                className="relative w-20 h-20 object-contain drop-shadow-2xl" 
+              />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            Nex Fit
-          </CardTitle>
-          <CardDescription>
-            {isLogin ? 'Entre na sua conta' : 'Crie sua conta'}
-          </CardDescription>
+          <div className="space-y-2">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
+              Nex Fit
+            </CardTitle>
+            <CardDescription className="text-base">
+              {isLogin ? 'Entre na sua conta' : 'Crie sua conta e comece sua jornada'}
+            </CardDescription>
+          </div>
         </CardHeader>
         
         <CardContent>
