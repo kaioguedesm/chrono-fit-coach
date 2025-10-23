@@ -12,14 +12,10 @@ import Settings from "./Settings";
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  const handleActionClick = (action: string) => {
-    // As funcionalidades são gerenciadas pelo Dashboard
-  };
-
   const renderActiveTab = () => {
     switch (activeTab) {
       case "dashboard":
-        return <Dashboard onActionClick={handleActionClick} onNavigateToTab={setActiveTab} />;
+        return <Dashboard onNavigateToTab={setActiveTab} />;
       case "profile":
         return <Profile />;
       case "workout":
@@ -33,7 +29,7 @@ const Index = () => {
       case "settings":
         return <Settings />;
       default:
-        return <Dashboard onActionClick={handleActionClick} onNavigateToTab={setActiveTab} />;
+        return <Dashboard onNavigateToTab={setActiveTab} />;
     }
   };
 

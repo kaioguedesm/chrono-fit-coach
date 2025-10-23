@@ -40,11 +40,10 @@ const upcomingWorkouts = [
 ];
 
 interface DashboardProps {
-  onActionClick?: (action: string) => void;
   onNavigateToTab?: (tab: string) => void;
 }
 
-export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
+export function Dashboard({ onNavigateToTab }: DashboardProps) {
   const { user } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
@@ -78,8 +77,6 @@ export function Dashboard({ onActionClick, onNavigateToTab }: DashboardProps) {
       default:
         break;
     }
-
-    onActionClick?.(action);
   };
 
   return (
