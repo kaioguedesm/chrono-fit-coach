@@ -63,8 +63,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+    try {
+      // Limpa o estado local primeiro
+      setUser(null);
+      setSession(null);
+      
+      // Tenta fazer logout no Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      // Mesmo com erro, considera sucesso pois já limpamos o estado local
+      return { error: null };
+    } catch (error) {
+      // Em caso de erro, ainda retorna sucesso pois o estado local foi limpo
+      console.error('Erro ao fazer logout:', error);
+      return { error: null };
+    }
   };
 
   const value = {
