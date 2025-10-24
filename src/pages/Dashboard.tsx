@@ -17,7 +17,6 @@ import { Calendar, Clock, CheckCircle2, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
-import nexfitBanner from "@/assets/nexfit-banner-full.png";
 
 const upcomingWorkouts = [
   {
@@ -86,17 +85,6 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
       <Header title="Nex Fit" />
       
       <main className="container mx-auto px-4 pt-20 py-6 space-y-6 max-w-7xl">
-        {/* Banner Nex Fit */}
-        <div className="w-full rounded-2xl overflow-hidden shadow-2xl bg-black border border-primary/10">
-          <div className="flex items-center justify-center p-6 md:p-8">
-            <img 
-              src={nexfitBanner} 
-              alt="Nex Fit - Seu personal trainer inteligente" 
-              className="w-full max-w-sm md:max-w-md object-contain"
-            />
-          </div>
-        </div>
-
         {!user && (
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="py-4">

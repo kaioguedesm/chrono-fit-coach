@@ -15,25 +15,25 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icon-192x192.png", "icon-512x512.png"],
+      includeAssets: ["nexfit-icon-192.png", "nexfit-icon-512.png"],
       manifest: {
         name: "Nex Fit",
         short_name: "NexFit",
         description: "Seu personal trainer inteligente com acompanhamento personalizado",
         theme_color: "#8B5CF6",
-        background_color: "#ffffff",
+        background_color: "#000000",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
         icons: [
           {
-            src: "icon-192x192.png",
+            src: "nexfit-icon-192.png",
             sizes: "192x192",
             type: "image/png",
             purpose: "any maskable"
           },
           {
-            src: "icon-512x512.png",
+            src: "nexfit-icon-512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "any maskable"
