@@ -8,10 +8,14 @@ export function RootRedirect() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('[RootRedirect] Loading:', loading, 'User:', user ? 'Logado' : 'Não logado');
+    
     if (!loading) {
       if (user) {
+        console.log('[RootRedirect] Redirecionando para /app');
         navigate('/app', { replace: true });
       } else {
+        console.log('[RootRedirect] Redirecionando para /auth');
         navigate('/auth', { replace: true });
       }
     }

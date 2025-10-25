@@ -24,14 +24,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get initial session first
     const initAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        console.log('[Auth] Verificando sessão inicial...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('[Auth] Sessão encontrada:', session ? 'Sim' : 'Não', error ? `Erro: ${error.message}` : '');
+        
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
         }
       } catch (error) {
-        console.error('Erro ao verificar sessão:', error);
+        console.error('[Auth] Erro ao verificar sessão:', error);
         if (mounted) {
           setLoading(false);
         }
@@ -43,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('[Auth] Evento de autenticação:', event, session ? 'Sessão ativa' : 'Sem sessão');
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
