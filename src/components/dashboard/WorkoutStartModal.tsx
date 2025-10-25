@@ -5,9 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Play, Dumbbell, Calendar, Sparkles } from 'lucide-react';
-import { MoodSelector } from '@/components/workout/MoodSelector';
-import { useProfile } from '@/hooks/useProfile';
+import { Play, Dumbbell, Calendar } from 'lucide-react';
 
 interface WorkoutPlan {
   id: string;
@@ -25,13 +23,10 @@ interface WorkoutStartModalProps {
 
 export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule, onNavigateToWorkout }: WorkoutStartModalProps) {
   const { user } = useAuth();
-  const { profile } = useProfile();
   const { toast } = useToast();
   const [workouts, setWorkouts] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedWorkout, setSelectedWorkout] = useState<WorkoutPlan | null>(null);
-  const [showMoodSelector, setShowMoodSelector] = useState(false);
-  const [generatingMotivation, setGeneratingMotivation] = useState(false);
+  const [startingWorkout, setStartingWorkout] = useState(false);
 
   useEffect(() => {
     if (open && user) {
@@ -64,73 +59,29 @@ export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule, on
     }
   };
 
-  const handleWorkoutSelect = (workout: WorkoutPlan) => {
-    setSelectedWorkout(workout);
-    setShowMoodSelector(true);
-  };
+  const handleWorkoutSelect = async (workout: WorkoutPlan) => {
+    if (!user) return;
 
-  const handleMoodSelect = async (mood: string, moodIntensity: number) => {
-    if (!user || !selectedWorkout) return;
-
-    setGeneratingMotivation(true);
+    setStartingWorkout(true);
 
     try {
-      // Buscar detalhes do treino
-      const { data: exercises } = await supabase
-        .from('exercises')
-        .select('*')
-        .eq('workout_plan_id', selectedWorkout.id)
-        .order('order_in_workout');
-
-      // Gerar mensagem motivacional com IA
-      const { data: motivationData, error: motivationError } = await supabase.functions.invoke(
-        'generate-workout-motivation',
-        {
-          body: {
-            mood,
-            moodIntensity,
-            workoutName: selectedWorkout.name,
-            exerciseCount: exercises?.length || 0,
-            type: 'pre-workout',
-            userName: profile?.name
-          }
-        }
-      );
-
-      if (motivationError) {
-        console.error('Erro ao gerar motivação:', motivationError);
-      }
-
-      const aiMessage = motivationData?.message || null;
-
-      // Criar sessão com humor e mensagem
-      const { data: session, error } = await supabase
+      // Criar sessão de treino
+      const { error } = await supabase
         .from('workout_sessions')
         .insert({
           user_id: user.id,
-          workout_plan_id: selectedWorkout.id,
-          started_at: new Date().toISOString(),
-          mood,
-          mood_intensity: moodIntensity,
-          ai_pre_workout_message: aiMessage
-        })
-        .select()
-        .single();
+          workout_plan_id: workout.id,
+          started_at: new Date().toISOString()
+        });
 
       if (error) throw error;
 
-      // Mostrar mensagem motivacional
-      if (aiMessage) {
-        toast({
-          title: "💬 Mensagem do seu Personal",
-          description: aiMessage,
-          duration: 6000,
-        });
-      }
+      toast({
+        title: "Treino iniciado! 💪",
+        description: `Bora treinar: ${workout.name}`,
+      });
 
       onOpenChange(false);
-      setShowMoodSelector(false);
-      setSelectedWorkout(null);
       
       // Navigate to workout tab if callback provided
       if (onNavigateToWorkout) {
@@ -143,71 +94,24 @@ export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule, on
         variant: "destructive"
       });
     } finally {
-      setGeneratingMotivation(false);
+      setStartingWorkout(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-      onOpenChange(isOpen);
-      if (!isOpen) {
-        setShowMoodSelector(false);
-        setSelectedWorkout(null);
-      }
-    }}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {showMoodSelector ? (
-              <>
-                <Sparkles className="w-5 h-5 text-primary" />
-                Check-in de Humor
-              </>
-            ) : (
-              <>
-                <Play className="w-5 h-5 text-primary" />
-                Iniciar Treino
-              </>
-            )}
+            <Play className="w-5 h-5 text-primary" />
+            Iniciar Treino
           </DialogTitle>
           <DialogDescription>
-            {showMoodSelector 
-              ? "Me conte como você está se sentindo para eu adaptar seu treino"
-              : "Selecione um treino para começar sua sessão"
-            }
+            Selecione um treino para começar sua sessão
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          {showMoodSelector && selectedWorkout ? (
-            <>
-              {generatingMotivation ? (
-                <div className="text-center py-8 space-y-4">
-                  <Sparkles className="w-12 h-12 mx-auto text-primary animate-pulse" />
-                  <p className="text-muted-foreground">
-                    Preparando uma mensagem especial para você...
-                  </p>
-                </div>
-              ) : (
-                <MoodSelector 
-                  onMoodSelect={handleMoodSelect}
-                  workoutName={selectedWorkout.name}
-                />
-              )}
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => {
-                  setShowMoodSelector(false);
-                  setSelectedWorkout(null);
-                }}
-                disabled={generatingMotivation}
-              >
-                Voltar
-              </Button>
-            </>
-          ) : (
-            <>
               {loading ? (
                 <div className="text-center py-8 text-muted-foreground">
                   Carregando treinos...
@@ -249,9 +153,10 @@ export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule, on
                           <Button
                             onClick={() => handleWorkoutSelect(workout)}
                             size="sm"
+                            disabled={startingWorkout}
                           >
                             <Play className="w-4 h-4 mr-2" />
-                            Iniciar
+                            {startingWorkout ? 'Iniciando...' : 'Iniciar'}
                           </Button>
                         </div>
                       </CardContent>
@@ -275,8 +180,6 @@ export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule, on
                   Ver Agenda Completa
                 </Button>
               </div>
-            </>
-          )}
         </div>
       </DialogContent>
     </Dialog>
