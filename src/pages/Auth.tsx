@@ -170,17 +170,6 @@ export default function Auth() {
               </Button>
             </div>
 
-            <div className="text-center pt-2 border-t">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => navigate('/landing')}
-                disabled={loading}
-                className="text-sm"
-              >
-                Saiba mais sobre o Nex Fit
-              </Button>
-            </div>
           </form>
         </CardContent>
       </Card>

@@ -34,7 +34,6 @@ const App = () => (
                   </ProtectedRoute>
                 } 
               />
-              <Route path="/landing" element={<Home />} />
               <Route path="/shared/:token" element={<SharedWorkout />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
