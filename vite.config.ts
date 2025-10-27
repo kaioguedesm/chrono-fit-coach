@@ -24,7 +24,8 @@ export default defineConfig(({ mode }) => ({
         background_color: "#000000",
         display: "standalone",
         orientation: "portrait",
-        start_url: "/",
+        scope: "/",
+        start_url: "/?standalone=true",
         icons: [
           {
             src: "nexfit-icon-192.png",
