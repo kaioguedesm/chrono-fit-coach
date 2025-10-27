@@ -21,12 +21,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Get initial session first
+    // Verificação otimizada de sessão com autologin
     const initAuth = async () => {
       try {
-        console.log('[Auth] Verificando sessão inicial...');
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('[Auth] Sessão encontrada:', session ? 'Sim' : 'Não', error ? `Erro: ${error.message}` : '');
         
         if (mounted) {
           setSession(session);
@@ -43,10 +41,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     initAuth();
 
-    // Set up auth state listener
+    // Listener para mudanças de autenticação (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('[Auth] Evento de autenticação:', event, session ? 'Sessão ativa' : 'Sem sessão');
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);

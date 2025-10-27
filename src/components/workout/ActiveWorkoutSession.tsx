@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Clock, Weight, X, Save } from 'lucide-react';
+import { CheckCircle2, Clock, Weight, X, Save, SkipForward } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -38,13 +38,15 @@ interface ExerciseProgress {
 export function ActiveWorkoutSession({ 
   sessionId, 
   planName, 
-  exercises,
+  exercises: initialExercises,
   onComplete,
   onCancel 
 }: ActiveWorkoutSessionProps) {
   const { toast } = useToast();
+  const [exercises, setExercises] = useState(initialExercises);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [progress, setProgress] = useState<Record<string, ExerciseProgress>>({});
+  const [skippedExercises, setSkippedExercises] = useState<string[]>([]);
   const [isResting, setIsResting] = useState(false);
   const [restTimeLeft, setRestTimeLeft] = useState(0);
   const [startTime] = useState(new Date());
@@ -67,6 +69,40 @@ export function ActiveWorkoutSession({
     }
   }, [isResting, restTimeLeft]);
 
+  const skipExercise = () => {
+    // Mark exercise as skipped
+    setSkippedExercises([...skippedExercises, currentExercise.id]);
+    
+    // Move to next exercise or re-present skipped ones
+    if (currentExerciseIndex < exercises.length - 1) {
+      setCurrentExerciseIndex(currentExerciseIndex + 1);
+    } else {
+      // At the end, check if there are skipped exercises
+      const skippedList = exercises.filter(ex => 
+        skippedExercises.includes(ex.id) && 
+        (!progress[ex.id] || progress[ex.id].completedSets < ex.sets)
+      );
+      
+      if (skippedList.length > 0) {
+        // Move skipped exercises to the end
+        const completedList = exercises.filter(ex => 
+          !skippedExercises.includes(ex.id) || 
+          (progress[ex.id] && progress[ex.id].completedSets >= ex.sets)
+        );
+        setExercises([...completedList, ...skippedList]);
+        setSkippedExercises([]);
+        setCurrentExerciseIndex(completedList.length);
+        
+        toast({
+          title: "Exercícios pendentes",
+          description: `${skippedList.length} exercício(s) pulado(s) reapresentado(s).`,
+        });
+      }
+    }
+    
+    setIsResting(false);
+  };
+
   const completeSet = (weight: number, reps: number) => {
     const newProgress = {
       ...currentProgress,
@@ -79,6 +115,11 @@ export function ActiveWorkoutSession({
       ...progress,
       [currentExercise.id]: newProgress
     });
+
+    // Remove from skipped list if completing
+    if (skippedExercises.includes(currentExercise.id)) {
+      setSkippedExercises(skippedExercises.filter(id => id !== currentExercise.id));
+    }
 
     // Start rest timer
     if (currentExercise.rest_time && newProgress.completedSets < currentExercise.sets) {
@@ -287,30 +328,44 @@ export function ActiveWorkoutSession({
               </div>
             </div>
 
-            <Button 
-              className="w-full" 
-              size="lg"
-              onClick={() => {
-                const weightInput = document.getElementById(`weight-${currentExercise.id}`) as HTMLInputElement;
-                const repsInput = document.getElementById(`reps-${currentExercise.id}`) as HTMLInputElement;
-                const weight = parseFloat(weightInput?.value || currentExercise.weight?.toString() || '0');
-                const reps = parseInt(repsInput?.value || '10');
-                completeSet(weight, reps);
-              }}
-              disabled={currentProgress.completedSets >= currentExercise.sets}
-            >
-              {currentProgress.completedSets >= currentExercise.sets ? (
-                <>
-                  <CheckCircle2 className="w-5 h-5 mr-2" />
-                  Exercício Concluído
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-5 h-5 mr-2" />
-                  Concluir Série {currentProgress.completedSets + 1}
-                </>
+            <div className="grid grid-cols-2 gap-3">
+              <Button 
+                className="w-full col-span-2" 
+                size="lg"
+                onClick={() => {
+                  const weightInput = document.getElementById(`weight-${currentExercise.id}`) as HTMLInputElement;
+                  const repsInput = document.getElementById(`reps-${currentExercise.id}`) as HTMLInputElement;
+                  const weight = parseFloat(weightInput?.value || currentExercise.weight?.toString() || '0');
+                  const reps = parseInt(repsInput?.value || '10');
+                  completeSet(weight, reps);
+                }}
+                disabled={currentProgress.completedSets >= currentExercise.sets}
+              >
+                {currentProgress.completedSets >= currentExercise.sets ? (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 mr-2" />
+                    Exercício Concluído
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 mr-2" />
+                    Concluir Série {currentProgress.completedSets + 1}
+                  </>
+                )}
+              </Button>
+
+              {currentProgress.completedSets < currentExercise.sets && (
+                <Button 
+                  variant="outline"
+                  className="w-full col-span-2" 
+                  size="lg"
+                  onClick={skipExercise}
+                >
+                  <SkipForward className="w-5 h-5 mr-2" />
+                  Pular Exercício
+                </Button>
               )}
-            </Button>
+            </div>
 
             {currentProgress.completedSets > 0 && (
               <div className="bg-muted p-3 rounded-lg space-y-1">
