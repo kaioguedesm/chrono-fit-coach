@@ -34,9 +34,10 @@ const quickActions = [
 
 interface QuickActionsProps {
   onActionClick: (action: string) => void;
+  isStartingWorkout?: boolean;
 }
 
-export function QuickActions({ onActionClick }: QuickActionsProps) {
+export function QuickActions({ onActionClick, isStartingWorkout }: QuickActionsProps) {
   return (
     <div className="space-y-5 md:space-y-4">
       <h3 className="text-lg md:text-base font-semibold text-foreground">
@@ -49,8 +50,10 @@ export function QuickActions({ onActionClick }: QuickActionsProps) {
           return (
             <Card
               key={index}
-              onClick={() => onActionClick(action.action)}
-              className="cursor-pointer hover:shadow-[var(--shadow-lg)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group"
+              onClick={() => !isStartingWorkout && onActionClick(action.action)}
+              className={`cursor-pointer hover:shadow-[var(--shadow-lg)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group ${
+                isStartingWorkout && action.action === 'start-workout' ? 'opacity-50 cursor-wait' : ''
+              }`}
             >
               <CardContent className="p-5 md:p-4 flex flex-col items-start gap-4 md:gap-3">
                 <div className="w-12 h-12 md:w-11 md:h-11 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">

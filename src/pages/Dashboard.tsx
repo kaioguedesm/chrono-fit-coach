@@ -10,6 +10,7 @@ import { ProgressChart } from "@/components/dashboard/ProgressChart";
 import { StreakCounter } from "@/components/dashboard/StreakCounter";
 import { InsightsCard } from "@/components/dashboard/InsightsCard";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+import { ActiveWorkoutSession } from "@/components/workout/ActiveWorkoutSession";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { Calendar, Clock, CheckCircle2, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
+import { useQuickStartWorkout } from "@/hooks/useQuickStartWorkout";
 
 const upcomingWorkouts = [
   {
@@ -47,15 +49,21 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
   const { user } = useAuth();
   const { profile } = useProfile();
   const navigate = useNavigate();
+  const { quickStartWorkout, isStarting } = useQuickStartWorkout();
   
   const [measurementModalOpen, setMeasurementModalOpen] = useState(false);
   const [timerModalOpen, setTimerModalOpen] = useState(false);
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [workoutModalOpen, setWorkoutModalOpen] = useState(false);
+  const [activeSession, setActiveSession] = useState<{
+    sessionId: string;
+    planName: string;
+    exercises: any[];
+  } | null>(null);
 
   const userName = profile?.name || user?.user_metadata?.name || 'Atleta';
 
-  const handleActionClick = (action: string) => {
+  const handleActionClick = async (action: string) => {
     if (!user) {
       navigate('/auth');
       return;
@@ -63,7 +71,15 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
 
     switch (action) {
       case 'start-workout':
-        setWorkoutModalOpen(true);
+        // Tentar início rápido primeiro
+        const session = await quickStartWorkout();
+        if (session) {
+          // Treino iniciado automaticamente
+          setActiveSession(session);
+        } else {
+          // Sem treinos disponíveis, abrir modal para criar
+          setWorkoutModalOpen(true);
+        }
         break;
       case 'add-measurements':
         setMeasurementModalOpen(true);
@@ -78,6 +94,39 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
         break;
     }
   };
+
+  const handleWorkoutComplete = () => {
+    setActiveSession(null);
+  };
+
+  const handleWorkoutCancel = async () => {
+    if (activeSession) {
+      const { supabase } = await import('@/integrations/supabase/client');
+      await supabase
+        .from('workout_sessions')
+        .delete()
+        .eq('id', activeSession.sessionId);
+    }
+    setActiveSession(null);
+  };
+
+  // Se houver sessão ativa, mostrar interface de treino
+  if (activeSession) {
+    return (
+      <div className="pb-20">
+        <Header title="Treino em Andamento" />
+        <main className="container mx-auto px-4 pt-20 py-6 space-y-6 max-w-7xl">
+          <ActiveWorkoutSession
+            sessionId={activeSession.sessionId}
+            planName={activeSession.planName}
+            exercises={activeSession.exercises}
+            onComplete={handleWorkoutComplete}
+            onCancel={handleWorkoutCancel}
+          />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-20">
@@ -115,7 +164,7 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
         
         <StreakCounter />
         
-        <QuickActions onActionClick={handleActionClick} />
+        <QuickActions onActionClick={handleActionClick} isStartingWorkout={isStarting} />
 
         <ProgressChart />
         
