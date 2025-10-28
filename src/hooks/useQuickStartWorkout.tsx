@@ -12,6 +12,7 @@ interface Exercise {
   rest_time: number | null;
   order_in_workout: number;
   notes: string | null;
+  group_muscle?: string;
 }
 
 interface WorkoutPlan {

@@ -17,6 +17,14 @@ interface Exercise {
   weight: number | null;
   rest_time: number | null;
   notes: string | null;
+  group_muscle?: string; // Grupo muscular (peito, costas, pernas, etc)
+}
+
+interface SkippedExercise {
+  exercise: Exercise;
+  originalIndex: number;
+  timestamp: number;
+  skipCount: number; // Quantas vezes foi pulado
 }
 
 interface ActiveWorkoutSessionProps {
@@ -46,10 +54,11 @@ export function ActiveWorkoutSession({
   const [exercises, setExercises] = useState(initialExercises);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [progress, setProgress] = useState<Record<string, ExerciseProgress>>({});
-  const [skippedExercises, setSkippedExercises] = useState<string[]>([]);
+  const [skippedByGroup, setSkippedByGroup] = useState<Record<string, SkippedExercise[]>>({});
   const [isResting, setIsResting] = useState(false);
   const [restTimeLeft, setRestTimeLeft] = useState(0);
   const [startTime] = useState(new Date());
+  const [processedGroups, setProcessedGroups] = useState<Set<string>>(new Set());
 
   const currentExercise = exercises[currentExerciseIndex];
   const currentProgress = progress[currentExercise?.id] || {
@@ -70,34 +79,92 @@ export function ActiveWorkoutSession({
   }, [isResting, restTimeLeft]);
 
   const skipExercise = () => {
-    // Mark exercise as skipped
-    setSkippedExercises([...skippedExercises, currentExercise.id]);
+    const groupId = currentExercise.group_muscle || 'default';
+    const existingSkipped = skippedByGroup[groupId] || [];
     
-    // Move to next exercise or re-present skipped ones
-    if (currentExerciseIndex < exercises.length - 1) {
-      setCurrentExerciseIndex(currentExerciseIndex + 1);
-    } else {
-      // At the end, check if there are skipped exercises
-      const skippedList = exercises.filter(ex => 
-        skippedExercises.includes(ex.id) && 
-        (!progress[ex.id] || progress[ex.id].completedSets < ex.sets)
+    // Verificar se já foi pulado antes (máximo 1 vez)
+    const alreadySkipped = existingSkipped.find(s => s.exercise.id === currentExercise.id);
+    
+    if (alreadySkipped && alreadySkipped.skipCount >= 1) {
+      // Já foi pulado uma vez, perguntar se quer ignorar definitivamente
+      const confirmIgnore = window.confirm(
+        `Você já pulou "${currentExercise.name}" antes. Deseja ignorá-lo definitivamente?`
       );
       
-      if (skippedList.length > 0) {
-        // Move skipped exercises to the end
-        const completedList = exercises.filter(ex => 
-          !skippedExercises.includes(ex.id) || 
-          (progress[ex.id] && progress[ex.id].completedSets >= ex.sets)
-        );
-        setExercises([...completedList, ...skippedList]);
-        setSkippedExercises([]);
-        setCurrentExerciseIndex(completedList.length);
+      if (confirmIgnore) {
+        toast({
+          title: "Exercício ignorado",
+          description: `${currentExercise.name} foi removido desta sessão.`,
+        });
+        
+        // Remover do array de pulados
+        setSkippedByGroup({
+          ...skippedByGroup,
+          [groupId]: existingSkipped.filter(s => s.exercise.id !== currentExercise.id)
+        });
+      }
+      
+      // Avançar para próximo de qualquer forma
+      if (currentExerciseIndex < exercises.length - 1) {
+        setCurrentExerciseIndex(currentExerciseIndex + 1);
+      }
+      setIsResting(false);
+      return;
+    }
+    
+    // Adicionar aos pulados do grupo
+    const skippedExercise: SkippedExercise = {
+      exercise: currentExercise,
+      originalIndex: currentExerciseIndex,
+      timestamp: Date.now(),
+      skipCount: alreadySkipped ? alreadySkipped.skipCount + 1 : 1
+    };
+    
+    const updatedSkipped = alreadySkipped
+      ? existingSkipped.map(s => s.exercise.id === currentExercise.id ? skippedExercise : s)
+      : [...existingSkipped, skippedExercise];
+    
+    setSkippedByGroup({
+      ...skippedByGroup,
+      [groupId]: updatedSkipped
+    });
+    
+    toast({
+      title: "Exercício pulado",
+      description: "Será reapresentado ao final do grupo muscular.",
+    });
+    
+    // Verificar se é o último exercício do grupo atual
+    const nextExercise = exercises[currentExerciseIndex + 1];
+    const isLastOfGroup = !nextExercise || nextExercise.group_muscle !== groupId;
+    
+    if (isLastOfGroup && updatedSkipped.length > 0 && !processedGroups.has(groupId)) {
+      // Fim do grupo e há exercícios pulados - reapresentar
+      const incompleteSkipped = updatedSkipped.filter(s => {
+        const prog = progress[s.exercise.id];
+        return !prog || prog.completedSets < s.exercise.sets;
+      });
+      
+      if (incompleteSkipped.length > 0) {
+        // Inserir exercícios pulados após o atual
+        const before = exercises.slice(0, currentExerciseIndex + 1);
+        const after = exercises.slice(currentExerciseIndex + 1);
+        const reinsertedExercises = incompleteSkipped.map(s => s.exercise);
+        
+        setExercises([...before, ...reinsertedExercises, ...after]);
+        setProcessedGroups(new Set([...processedGroups, groupId]));
         
         toast({
           title: "Exercícios pendentes",
-          description: `${skippedList.length} exercício(s) pulado(s) reapresentado(s).`,
+          description: `${incompleteSkipped.length} exercício(s) do grupo reapresentado(s).`,
+          duration: 4000,
         });
       }
+    }
+    
+    // Avançar para próximo exercício
+    if (currentExerciseIndex < exercises.length - 1) {
+      setCurrentExerciseIndex(currentExerciseIndex + 1);
     }
     
     setIsResting(false);
@@ -117,8 +184,15 @@ export function ActiveWorkoutSession({
     });
 
     // Remove from skipped list if completing
-    if (skippedExercises.includes(currentExercise.id)) {
-      setSkippedExercises(skippedExercises.filter(id => id !== currentExercise.id));
+    const groupId = currentExercise.group_muscle || 'default';
+    const groupSkipped = skippedByGroup[groupId] || [];
+    const wasSkipped = groupSkipped.find(s => s.exercise.id === currentExercise.id);
+    
+    if (wasSkipped) {
+      setSkippedByGroup({
+        ...skippedByGroup,
+        [groupId]: groupSkipped.filter(s => s.exercise.id !== currentExercise.id)
+      });
     }
 
     // Start rest timer
@@ -240,17 +314,28 @@ export function ActiveWorkoutSession({
     (p, idx) => p.completedSets >= exercises[idx]?.sets
   ).length;
   const overallProgress = (completedExercises / totalExercises) * 100;
+  
+  // Contar exercícios pulados no grupo atual
+  const currentGroupId = currentExercise?.group_muscle || 'default';
+  const currentGroupSkipped = skippedByGroup[currentGroupId]?.length || 0;
 
   return (
     <div className="space-y-4">
       <Card className="border-primary bg-gradient-to-br from-primary/5 to-transparent">
         <CardHeader>
           <div className="flex justify-between items-start">
-            <div>
+            <div className="flex-1">
               <CardTitle className="text-xl">{planName}</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Exercício {currentExerciseIndex + 1} de {totalExercises}
-              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-sm text-muted-foreground">
+                  Exercício {currentExerciseIndex + 1} de {totalExercises}
+                </p>
+                {currentGroupSkipped > 0 && (
+                  <Badge variant="secondary" className="text-xs animate-pulse">
+                    {currentGroupSkipped} pendente{currentGroupSkipped > 1 ? 's' : ''}
+                  </Badge>
+                )}
+              </div>
             </div>
             <Button variant="ghost" size="icon" onClick={onCancel}>
               <X className="w-5 h-5" />
@@ -284,9 +369,16 @@ export function ActiveWorkoutSession({
         <Card>
           <CardHeader>
             <div className="flex justify-between items-start">
-              <div>
-                <CardTitle>{currentExercise.name}</CardTitle>
-                <div className="flex gap-2 mt-2">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <CardTitle>{currentExercise.name}</CardTitle>
+                  {currentExercise.group_muscle && (
+                    <Badge variant="outline" className="text-xs">
+                      {currentExercise.group_muscle}
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex gap-2 flex-wrap">
                   <Badge variant="outline">
                     Série {currentProgress.completedSets + 1}/{currentExercise.sets}
                   </Badge>

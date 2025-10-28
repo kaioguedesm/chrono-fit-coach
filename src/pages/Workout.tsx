@@ -52,6 +52,7 @@ interface Exercise {
   rest_time: number | null;
   order_in_workout: number;
   notes: string | null;
+  group_muscle?: string;
 }
 
 export default function Workout() {
@@ -232,7 +233,8 @@ export default function Workout() {
           weight: 60,
           rest_time: 120,
           order_in_workout: 1,
-          notes: 'Foco na execução'
+          notes: 'Foco na execução',
+          group_muscle: 'peito'
         },
         {
           id: '2',
@@ -242,7 +244,8 @@ export default function Workout() {
           weight: 45,
           rest_time: 90,
           order_in_workout: 2,
-          notes: null
+          notes: null,
+          group_muscle: 'peito'
         },
         {
           id: '3',
@@ -252,7 +255,8 @@ export default function Workout() {
           weight: 15,
           rest_time: 60,
           order_in_workout: 3,
-          notes: null
+          notes: null,
+          group_muscle: 'peito'
         },
         {
           id: '4',
@@ -262,7 +266,8 @@ export default function Workout() {
           weight: 20,
           rest_time: 60,
           order_in_workout: 4,
-          notes: null
+          notes: null,
+          group_muscle: 'tríceps'
         }
       ]
     },
@@ -281,7 +286,8 @@ export default function Workout() {
           weight: 50,
           rest_time: 120,
           order_in_workout: 1,
-          notes: 'Contrair bem as costas'
+          notes: 'Contrair bem as costas',
+          group_muscle: 'costas'
         },
         {
           id: '6',
@@ -291,7 +297,8 @@ export default function Workout() {
           weight: 45,
           rest_time: 90,
           order_in_workout: 2,
-          notes: null
+          notes: null,
+          group_muscle: 'costas'
         }
       ]
     }
