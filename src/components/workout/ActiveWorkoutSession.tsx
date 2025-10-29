@@ -268,6 +268,23 @@ export function ActiveWorkoutSession({
         })
         .eq('id', sessionId);
 
+      // Atualizar Dashboard automaticamente
+      const { dashboardService } = await import('@/services/dashboardService');
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      let updatedDashboard;
+      if (currentUser && sessionData?.workout_plan_id) {
+        await dashboardService.handleWorkoutCompleted({
+          userId: currentUser.id,
+          workoutId: sessionData.workout_plan_id,
+          sessionId,
+          duration: durationMinutes
+        });
+        
+        // Buscar dados atualizados para exibir no toast
+        updatedDashboard = await dashboardService.fetchDashboardData(currentUser.id);
+      }
+
       // Save exercise sessions
       for (const [exerciseId, exerciseProgress] of Object.entries(progress)) {
         if (exerciseProgress.completedSets > 0) {
@@ -293,9 +310,12 @@ export function ActiveWorkoutSession({
           duration: 7000,
         });
       } else {
+        const weekText = updatedDashboard?.weeklyCount 
+          ? ` Você fez ${updatedDashboard.weeklyCount} treinos esta semana!`
+          : '';
         toast({
           title: "Treino concluído! 🎉",
-          description: `Você treinou por ${durationMinutes} minutos. Parabéns!`
+          description: `Você treinou por ${durationMinutes} minutos.${weekText}`
         });
       }
 
