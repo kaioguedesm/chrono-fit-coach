@@ -373,6 +373,29 @@ export const useNotifications = () => {
     );
   };
 
+  // Agendar notificação específica de treino
+  const scheduleWorkoutNotification = (workoutName: string, dateTime: Date, reminderMinutes: number) => {
+    if (permission !== 'granted' || !settings.enabled) return;
+
+    const notificationTime = new Date(dateTime.getTime() - reminderMinutes * 60000);
+    const now = new Date();
+    const delay = notificationTime.getTime() - now.getTime();
+
+    if (delay > 0) {
+      const timerId = setTimeout(() => {
+        sendNotification(
+          "🏋️ Hora do Treino!",
+          `Seu treino "${workoutName}" está agendado para ${reminderMinutes} minutos. Prepare-se!`
+        );
+      }, delay);
+
+      (window as any).__nexfitTimers = (window as any).__nexfitTimers || [];
+      (window as any).__nexfitTimers.push(timerId);
+
+      console.log(`[NOTIFICATION] Scheduled for ${notificationTime.toLocaleString()}`);
+    }
+  };
+
   return {
     settings,
     permission,
@@ -381,6 +404,7 @@ export const useNotifications = () => {
     disableNotifications,
     requestPermission,
     testNotification,
-    sendNotification
+    sendNotification,
+    scheduleWorkoutNotification
   };
 };

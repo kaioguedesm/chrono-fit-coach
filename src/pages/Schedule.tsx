@@ -35,6 +35,7 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { FrequencyReport } from '@/components/schedule/FrequencyReport';
+import { ScheduleWorkoutModal } from '@/components/schedule/ScheduleWorkoutModal';
 import { 
   BarChart, 
   Bar, 
@@ -84,6 +85,7 @@ export default function Schedule() {
   const [completedDates, setCompletedDates] = useState<string[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState('schedule');
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -445,7 +447,7 @@ export default function Schedule() {
                     <CalendarDays className="w-5 h-5" />
                     {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
                   </CardTitle>
-                  <Button size="sm">
+                  <Button size="sm" onClick={() => setShowScheduleModal(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Agendar
                   </Button>
@@ -720,6 +722,18 @@ export default function Schedule() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <ScheduleWorkoutModal
+        open={showScheduleModal}
+        onOpenChange={setShowScheduleModal}
+        preSelectedDate={selectedDate}
+        onScheduled={() => {
+          fetchScheduledWorkouts();
+          fetchWeekStats();
+          fetchFrequencyStats();
+          setRefreshKey(prev => prev + 1);
+        }}
+      />
     </div>
   );
 }
