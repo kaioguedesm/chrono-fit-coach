@@ -30,7 +30,7 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
     try {
       // Buscar todos os dados do usuário
       const [profileData, workoutsData, mealsData, photosData, measurementsData] = await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', user?.id).single(),
+        supabase.from('profiles').select('*').eq('user_id', user?.id).maybeSingle(),
         supabase.from('workout_sessions').select('*').eq('user_id', user?.id),
         supabase.from('meal_logs').select('*').eq('user_id', user?.id),
         supabase.from('progress_photos').select('*').eq('user_id', user?.id),

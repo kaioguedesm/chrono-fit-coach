@@ -69,7 +69,7 @@ export default function SharedWorkout() {
         `)
         .eq('share_token', token)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
 

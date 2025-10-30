@@ -53,7 +53,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
         .from('workout_plans')
         .select('name, type')
         .eq('id', workoutPlanId)
-        .single();
+        .maybeSingle();
 
       if (planError) throw planError;
 

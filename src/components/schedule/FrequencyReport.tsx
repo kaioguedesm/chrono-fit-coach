@@ -36,13 +36,15 @@ export function FrequencyReport() {
   // Subscribe to schedule updates
   useEffect(() => {
     const unsubscribe = subscribeToScheduleUpdates(() => {
-      fetchStats();
+      if (user) {
+        fetchStats();
+      }
     });
 
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [user]);
 
   const fetchStats = async () => {
     if (!user) return;
@@ -88,7 +90,7 @@ export function FrequencyReport() {
         .eq('completed', true)
         .order('completed_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       setStats({
         weeklyCount: weeklyData?.length || 0,

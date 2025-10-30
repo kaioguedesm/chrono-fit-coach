@@ -219,21 +219,21 @@ export function ActiveWorkoutSession({
         .from('workout_sessions')
         .select('mood, mood_intensity, workout_plan_id')
         .eq('id', sessionId)
-        .single();
+        .maybeSingle();
 
       // Buscar nome do treino
       const { data: workoutPlan } = await supabase
         .from('workout_plans')
         .select('name, user_id')
         .eq('id', sessionData?.workout_plan_id)
-        .single();
+        .maybeSingle();
 
       // Buscar nome do usuário
       const { data: profile } = await supabase
         .from('profiles')
         .select('name')
         .eq('user_id', workoutPlan?.user_id)
-        .single();
+        .maybeSingle();
 
       // Gerar dica pós-treino com IA
       let aiPostMessage = null;

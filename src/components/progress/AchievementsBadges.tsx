@@ -127,7 +127,7 @@ export function AchievementsBadges() {
       .select('id')
       .eq('user_id', user.id)
       .eq('achievement_type', type)
-      .single();
+      .maybeSingle();
 
     if (!existing) {
       await supabase.from('user_achievements').insert({

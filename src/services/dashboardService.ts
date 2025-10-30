@@ -105,7 +105,7 @@ class DashboardService {
         .not('completed_at', 'is', null)
         .order('completed_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       const { weeklyCount, weeklyTarget } = await this.computeWeeklyCount(userId);
       const progress = this.computeProgress(weeklyCount, weeklyTarget);
