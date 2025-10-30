@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { subscribeToScheduleUpdates } from '@/services/scheduleService';
 
 interface FrequencyStats {
   weeklyCount: number;
@@ -31,6 +32,17 @@ export function FrequencyReport() {
       fetchStats();
     }
   }, [user]);
+
+  // Subscribe to schedule updates
+  useEffect(() => {
+    const unsubscribe = subscribeToScheduleUpdates(() => {
+      fetchStats();
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const fetchStats = async () => {
     if (!user) return;

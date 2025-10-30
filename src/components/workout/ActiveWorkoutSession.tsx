@@ -283,6 +283,23 @@ export function ActiveWorkoutSession({
         
         // Buscar dados atualizados para exibir no toast
         updatedDashboard = await dashboardService.fetchDashboardData(currentUser.id);
+
+        // Marcar treino agendado de hoje como concluído
+        const today = new Date().toISOString().split('T')[0];
+        await supabase
+          .from('workout_schedule')
+          .update({ 
+            completed: true, 
+            completed_at: new Date().toISOString() 
+          })
+          .eq('user_id', currentUser.id)
+          .eq('scheduled_date', today)
+          .eq('completed', false)
+          .limit(1);
+
+        // Notificar listeners do schedule para atualizar FrequencyReport
+        const { triggerScheduleUpdate } = await import('@/services/scheduleService');
+        triggerScheduleUpdate();
       }
 
       // Save exercise sessions

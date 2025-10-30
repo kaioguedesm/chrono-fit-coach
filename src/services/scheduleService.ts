@@ -1,6 +1,22 @@
 import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, addDays, addWeeks } from 'date-fns';
 
+// Event listeners for schedule updates
+const scheduleUpdateListeners = new Set<() => void>();
+
+export const subscribeToScheduleUpdates = (callback: () => void) => {
+  scheduleUpdateListeners.add(callback);
+  return () => scheduleUpdateListeners.delete(callback);
+};
+
+const notifyScheduleUpdate = () => {
+  scheduleUpdateListeners.forEach(listener => listener());
+};
+
+export const triggerScheduleUpdate = () => {
+  notifyScheduleUpdate();
+};
+
 export interface ScheduledWorkoutData {
   userId: string;
   workoutPlanId: string;
@@ -69,6 +85,9 @@ class ScheduleService {
         })));
 
       if (error) throw error;
+
+      // Notify listeners
+      notifyScheduleUpdate();
 
       // Telemetria
       console.log('[TELEMETRY] workout_scheduled', {
