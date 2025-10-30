@@ -17,11 +17,12 @@ interface WorkoutPlan {
 interface WorkoutStartModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onWorkoutStarted?: (session: { sessionId: string; planName: string; exercises: any[] }) => void;
   onNavigateToSchedule?: () => void;
   onNavigateToWorkout?: () => void;
 }
 
-export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule, onNavigateToWorkout }: WorkoutStartModalProps) {
+export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavigateToSchedule, onNavigateToWorkout }: WorkoutStartModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [workouts, setWorkouts] = useState<WorkoutPlan[]>([]);
@@ -66,15 +67,26 @@ export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule, on
 
     try {
       // Criar sessão de treino
-      const { error } = await supabase
+      const { data: sessionData, error: sessionError } = await supabase
         .from('workout_sessions')
         .insert({
           user_id: user.id,
           workout_plan_id: workout.id,
           started_at: new Date().toISOString()
-        });
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (sessionError) throw sessionError;
+
+      // Buscar exercícios do treino
+      const { data: exercisesData, error: exercisesError } = await supabase
+        .from('exercises')
+        .select('*')
+        .eq('workout_plan_id', workout.id)
+        .order('order_in_workout', { ascending: true });
+
+      if (exercisesError) throw exercisesError;
 
       toast({
         title: "Treino iniciado! 💪",
@@ -83,9 +95,13 @@ export function WorkoutStartModal({ open, onOpenChange, onNavigateToSchedule, on
 
       onOpenChange(false);
       
-      // Navigate to workout tab if callback provided
-      if (onNavigateToWorkout) {
-        onNavigateToWorkout();
+      // Passar dados da sessão para o Dashboard
+      if (onWorkoutStarted) {
+        onWorkoutStarted({
+          sessionId: sessionData.id,
+          planName: workout.name,
+          exercises: exercisesData || []
+        });
       }
     } catch (error: any) {
       toast({

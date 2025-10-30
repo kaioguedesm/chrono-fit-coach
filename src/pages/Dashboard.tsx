@@ -71,15 +71,7 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
 
     switch (action) {
       case 'start-workout':
-        // Tentar início rápido primeiro
-        const session = await quickStartWorkout();
-        if (session) {
-          // Treino iniciado automaticamente
-          setActiveSession(session);
-        } else {
-          // Sem treinos disponíveis, abrir modal para criar
-          setWorkoutModalOpen(true);
-        }
+        setWorkoutModalOpen(true);
         break;
       case 'add-measurements':
         setMeasurementModalOpen(true);
@@ -188,6 +180,7 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
         <WorkoutStartModal 
           open={workoutModalOpen} 
           onOpenChange={setWorkoutModalOpen}
+          onWorkoutStarted={setActiveSession}
           onNavigateToSchedule={() => {
             setWorkoutModalOpen(false);
             onNavigateToTab?.('schedule');
