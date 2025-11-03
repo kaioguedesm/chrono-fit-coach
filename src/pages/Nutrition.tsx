@@ -13,6 +13,7 @@ import { Apple, Upload, Bot, BookOpen, Plus, Trash2 } from 'lucide-react';
 import { AINutritionGenerator } from '@/components/nutrition/AINutritionGenerator';
 import { MealPhotoAnalyzer } from '@/components/nutrition/MealPhotoAnalyzer';
 import { DietUploader } from '@/components/nutrition/DietUploader';
+import { RecipeExplorer } from '@/components/nutrition/RecipeExplorer';
 import { LoadingState } from '@/components/common/LoadingState';
 import { EmptyState } from '@/components/common/EmptyState';
 
@@ -323,26 +324,7 @@ export default function Nutrition() {
           </TabsContent>
 
           <TabsContent value="recipes" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5" />
-                  Banco de Receitas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Receitas Saudáveis</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Descobra receitas rápidas e nutritivas
-                  </p>
-                  <Button>
-                    Explorar Receitas
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <RecipeExplorer />
           </TabsContent>
 
           <TabsContent value="create" className="space-y-4">
