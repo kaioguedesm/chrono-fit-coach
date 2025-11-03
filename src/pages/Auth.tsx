@@ -174,7 +174,7 @@ export default function Auth() {
                 type="button"
                 variant="link"
                 size="sm"
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/home')}
                 className="text-muted-foreground hover:text-primary transition-colors group w-full"
               >
                 <span className="flex items-center justify-center gap-2 text-sm">

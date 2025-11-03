@@ -32,10 +32,11 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Routes>
+            <Routes>
                 <Route path="/" element={<RootRedirect />} />
+                <Route path="/home" element={<Home />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route 
+                <Route
                   path="/app" 
                   element={
                     <ProtectedRoute>
