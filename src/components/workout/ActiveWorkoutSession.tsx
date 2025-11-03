@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { CheckCircle2, Clock, Weight, X, Save, SkipForward } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Exercise3DViewer } from './Exercise3DViewer';
 
 interface Exercise {
   id: string;
@@ -436,6 +437,13 @@ export function ActiveWorkoutSession({
                 💡 {currentExercise.notes}
               </p>
             )}
+
+            {/* Visualização 3D do exercício */}
+            <Exercise3DViewer 
+              exerciseName={currentExercise.name}
+              exerciseDescription="Veja como executar este exercício corretamente na máquina"
+              compact
+            />
 
             <div className="grid grid-cols-2 gap-3">
               <div>
