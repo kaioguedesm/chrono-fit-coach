@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useAuth } from '@/hooks/useAuth';
 import { showToast } from '@/lib/toast-utils';
-import { HelpCircle, MessageSquare, Star, Send, BookOpen, Dumbbell, Apple, Camera, Calendar } from 'lucide-react';
+import { HelpCircle, MessageSquare, Star, Send, BookOpen, Dumbbell, Apple, Camera, Calendar, MessageCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface SupportDialogProps {
@@ -255,9 +255,30 @@ export function SupportDialog({ open, onOpenChange, type }: SupportDialogProps) 
           </TabsContent>
 
           <TabsContent value="contact" className="space-y-4">
+            <Card className="bg-gradient-to-br from-green-500/10 to-green-600/10 border-green-500/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-green-500" />
+                  Fale Conosco no WhatsApp
+                </CardTitle>
+                <CardDescription>
+                  Resposta rápida e atendimento direto via WhatsApp
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => window.open('https://wa.me/5511999999999?text=Olá, preciso de ajuda com o Nex Fit!', '_blank')}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Abrir WhatsApp
+                </Button>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
-                <CardTitle>Entre em Contato</CardTitle>
+                <CardTitle>Ou envie um email</CardTitle>
                 <CardDescription>
                   Envie sua mensagem e responderemos em até 24 horas
                 </CardDescription>
