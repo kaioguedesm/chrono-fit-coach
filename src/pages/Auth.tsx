@@ -156,7 +156,7 @@ export default function Auth() {
               {isLogin ? 'Entrar' : 'Criar conta'}
             </Button>
             
-            <div className="text-center">
+            <div className="text-center space-y-2">
               <Button
                 type="button"
                 variant="link"
@@ -168,26 +168,26 @@ export default function Auth() {
                   : 'Já tem conta? Fazer login'
                 }
               </Button>
+              
+              <div>
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  onClick={() => navigate('/')}
+                  className="text-muted-foreground hover:text-primary transition-colors group"
+                >
+                  <span className="flex items-center gap-2">
+                    ✨ Conheça mais sobre o Nex Fit
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </span>
+                </Button>
+              </div>
             </div>
 
           </form>
         </CardContent>
       </Card>
-
-      {/* Link para página de vendas */}
-      <div className="mt-6 text-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/')}
-          className="text-muted-foreground hover:text-primary transition-colors group"
-        >
-          <span className="flex items-center gap-2">
-            ✨ Conheça mais sobre o Nex Fit
-            <span className="group-hover:translate-x-1 transition-transform">→</span>
-          </span>
-        </Button>
-      </div>
     </div>
   );
 }
