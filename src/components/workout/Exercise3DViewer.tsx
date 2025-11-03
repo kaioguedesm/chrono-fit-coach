@@ -1,6 +1,6 @@
 import { Suspense, useState, useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Environment, PerspectiveCamera, useGLTF, Sphere, Box, Cylinder } from '@react-three/drei';
+import { OrbitControls, Environment, PerspectiveCamera, useGLTF, Sphere, Box, Cylinder, Text, Html } from '@react-three/drei';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -24,6 +24,133 @@ interface Exercise3DViewerProps {
   compact?: boolean;
 }
 
+// Componente da máquina de exercício
+function ExerciseMachine({ type }: { type: string }) {
+  switch (type) {
+    case 'pulldown': // Máquina de puxada
+      return (
+        <group>
+          {/* Estrutura principal */}
+          <Box args={[0.1, 3, 0.1]} position={[-1.5, 1, 0]}>
+            <meshStandardMaterial color="#2c3e50" metalness={0.8} roughness={0.2} />
+          </Box>
+          <Box args={[0.1, 3, 0.1]} position={[1.5, 1, 0]}>
+            <meshStandardMaterial color="#2c3e50" metalness={0.8} roughness={0.2} />
+          </Box>
+          
+          {/* Barra superior */}
+          <Box args={[3.2, 0.12, 0.12]} position={[0, 2.5, 0]}>
+            <meshStandardMaterial color="#34495e" metalness={0.8} roughness={0.2} />
+          </Box>
+          
+          {/* Cabo/Polia */}
+          <Cylinder args={[0.15, 0.15, 0.1, 16]} rotation={[Math.PI / 2, 0, 0]} position={[0, 2.4, 0]}>
+            <meshStandardMaterial color="#95a5a6" metalness={0.9} roughness={0.1} />
+          </Cylinder>
+          
+          {/* Barra de puxada */}
+          <Box args={[1.2, 0.08, 0.08]} position={[0, 1.8, 0]}>
+            <meshStandardMaterial color="#7f8c8d" metalness={0.7} roughness={0.3} />
+          </Box>
+          
+          {/* Banco */}
+          <Box args={[0.5, 0.12, 0.5]} position={[0, 0.5, 0]}>
+            <meshStandardMaterial color="#2c3e50" metalness={0.3} roughness={0.7} />
+          </Box>
+          <Box args={[0.08, 0.5, 0.08]} position={[-0.2, 0.25, -0.2]}>
+            <meshStandardMaterial color="#34495e" metalness={0.8} roughness={0.2} />
+          </Box>
+          <Box args={[0.08, 0.5, 0.08]} position={[0.2, 0.25, -0.2]}>
+            <meshStandardMaterial color="#34495e" metalness={0.8} roughness={0.2} />
+          </Box>
+        </group>
+      );
+
+    case 'bench': // Supino
+      return (
+        <group>
+          {/* Banco */}
+          <Box args={[0.5, 0.15, 1.5]} position={[0, 0.4, 0]}>
+            <meshStandardMaterial color="#2c3e50" metalness={0.3} roughness={0.7} />
+          </Box>
+          
+          {/* Suportes da barra */}
+          <Box args={[0.1, 1, 0.1]} position={[-0.6, 1.3, 0.5]}>
+            <meshStandardMaterial color="#34495e" metalness={0.8} roughness={0.2} />
+          </Box>
+          <Box args={[0.1, 1, 0.1]} position={[0.6, 1.3, 0.5]}>
+            <meshStandardMaterial color="#34495e" metalness={0.8} roughness={0.2} />
+          </Box>
+          
+          {/* Barra */}
+          <Cylinder args={[0.05, 0.05, 1.8, 16]} rotation={[0, 0, Math.PI / 2]} position={[0, 1.6, 0.5]}>
+            <meshStandardMaterial color="#7f8c8d" metalness={0.9} roughness={0.1} />
+          </Cylinder>
+        </group>
+      );
+
+    case 'squat': // Leg Press
+      return (
+        <group>
+          {/* Plataforma inclinada */}
+          <Box args={[1.2, 0.15, 1.2]} position={[0, 1, 0.8]} rotation={[0.3, 0, 0]}>
+            <meshStandardMaterial color="#2c3e50" metalness={0.5} roughness={0.5} />
+          </Box>
+          
+          {/* Estrutura lateral */}
+          <Box args={[0.1, 2, 0.1]} position={[-0.7, 0.8, 0]}>
+            <meshStandardMaterial color="#34495e" metalness={0.8} roughness={0.2} />
+          </Box>
+          <Box args={[0.1, 2, 0.1]} position={[0.7, 0.8, 0]}>
+            <meshStandardMaterial color="#34495e" metalness={0.8} roughness={0.2} />
+          </Box>
+          
+          {/* Banco/Assento */}
+          <Box args={[0.6, 0.15, 0.6]} position={[0, 0.3, -0.5]}>
+            <meshStandardMaterial color="#2c3e50" metalness={0.3} roughness={0.7} />
+          </Box>
+        </group>
+      );
+
+    default:
+      return null;
+  }
+}
+
+// Componente de setas indicadoras de movimento
+function MovementArrows({ type, phase }: { type: string; phase: number }) {
+  const arrowRef = useRef<THREE.Group>(null);
+
+  useFrame(() => {
+    if (arrowRef.current) {
+      arrowRef.current.position.y = Math.sin(phase * 2) * 0.1;
+    }
+  });
+
+  const getArrowPosition = () => {
+    switch (type) {
+      case 'pulldown':
+        return [0, 1.5, 0.5] as [number, number, number];
+      case 'bench':
+        return [0, 1.2, 0.8] as [number, number, number];
+      case 'squat':
+        return [0, 0.8, 0] as [number, number, number];
+      default:
+        return [0, 1, 0.5] as [number, number, number];
+    }
+  };
+
+  return (
+    <group ref={arrowRef} position={getArrowPosition()}>
+      <Html center>
+        <div className="text-primary font-bold text-sm bg-background/90 px-2 py-1 rounded-md shadow-lg backdrop-blur-sm border border-primary/20">
+          ↕️ Movimento
+        </div>
+      </Html>
+    </group>
+  );
+}
+
 // Componente do modelo 3D com animações de exercícios
 function ExerciseModel({ 
   url, 
@@ -40,6 +167,10 @@ function ExerciseModel({
   const rightArmRef = useRef<THREE.Group>(null);
   const leftLegRef = useRef<THREE.Group>(null);
   const rightLegRef = useRef<THREE.Group>(null);
+  const leftShoulderRef = useRef<THREE.Mesh>(null);
+  const rightShoulderRef = useRef<THREE.Mesh>(null);
+  const chestRef = useRef<THREE.Mesh>(null);
+  const backRef = useRef<THREE.Mesh>(null);
   const timeRef = useRef(0);
 
   // Detectar tipo de exercício
@@ -62,6 +193,65 @@ function ExerciseModel({
   };
 
   const exerciseType = getExerciseType(exerciseName);
+
+  // Cores dos músculos baseadas no exercício
+  const getMuscleColors = () => {
+    const activeColor = '#ef4444'; // Vermelho para músculos ativos
+    const inactiveColor = '#8B5CF6'; // Roxo para músculos inativos
+
+    switch (exerciseType) {
+      case 'pulldown':
+        return {
+          back: activeColor,
+          shoulder: activeColor,
+          chest: inactiveColor,
+          arms: activeColor,
+          legs: inactiveColor
+        };
+      case 'bench':
+        return {
+          back: inactiveColor,
+          shoulder: activeColor,
+          chest: activeColor,
+          arms: activeColor,
+          legs: inactiveColor
+        };
+      case 'squat':
+        return {
+          back: inactiveColor,
+          shoulder: inactiveColor,
+          chest: inactiveColor,
+          arms: inactiveColor,
+          legs: activeColor
+        };
+      case 'shoulder':
+        return {
+          back: inactiveColor,
+          shoulder: activeColor,
+          chest: inactiveColor,
+          arms: activeColor,
+          legs: inactiveColor
+        };
+      case 'curl':
+        return {
+          back: inactiveColor,
+          shoulder: inactiveColor,
+          chest: inactiveColor,
+          arms: activeColor,
+          legs: inactiveColor
+        };
+      default:
+        return {
+          back: inactiveColor,
+          shoulder: inactiveColor,
+          chest: inactiveColor,
+          arms: inactiveColor,
+          legs: inactiveColor
+        };
+    }
+  };
+
+  const muscleColors = getMuscleColors();
 
   // Animação frame por frame
   useFrame((state, delta) => {
@@ -144,152 +334,227 @@ function ExerciseModel({
 
   return (
     <group ref={mannequinRef}>
+      {/* Máquina do exercício */}
+      <ExerciseMachine type={exerciseType} />
+      
+      {/* Setas de movimento */}
+      <MovementArrows type={exerciseType} phase={timeRef.current} />
+
       {/* Cabeça */}
       <Sphere args={[0.2, 24, 24]} position={[0, 1.5, 0]} castShadow>
         <meshStandardMaterial 
-          color="#10b981" 
-          metalness={0.4} 
-          roughness={0.6}
-          emissive="#10b981"
-          emissiveIntensity={0.1}
+          color="#fbbf24" 
+          metalness={0.3} 
+          roughness={0.8}
         />
       </Sphere>
 
       {/* Pescoço */}
       <Cylinder args={[0.08, 0.08, 0.15, 16]} position={[0, 1.325, 0]} castShadow>
-        <meshStandardMaterial color="#f59e0b" metalness={0.3} roughness={0.7} />
+        <meshStandardMaterial color="#f59e0b" metalness={0.2} roughness={0.9} />
       </Cylinder>
 
       {/* Torso - grupo articulado */}
       <group ref={torsoRef} position={[0, 0.5, 0]}>
-        <Box args={[0.5, 0.7, 0.3]} castShadow>
+        {/* Peito - destacado quando ativo */}
+        <Box ref={chestRef} args={[0.5, 0.35, 0.25]} position={[0, 0.2, 0.05]} castShadow>
           <meshStandardMaterial 
-            color="#8B5CF6" 
-            metalness={0.5} 
-            roughness={0.4}
-            emissive="#8B5CF6"
-            emissiveIntensity={0.15}
+            color={muscleColors.chest}
+            metalness={0.4} 
+            roughness={0.6}
+            emissive={muscleColors.chest === '#ef4444' ? '#ef4444' : '#8B5CF6'}
+            emissiveIntensity={muscleColors.chest === '#ef4444' ? 0.3 : 0.1}
           />
         </Box>
 
-        {/* Ombros */}
-        <Sphere args={[0.12, 16, 16]} position={[-0.32, 0.25, 0]} castShadow>
-          <meshStandardMaterial color="#6366f1" metalness={0.6} roughness={0.3} />
+        {/* Costas - destacado quando ativo */}
+        <Box ref={backRef} args={[0.5, 0.5, 0.22]} position={[0, 0.1, -0.15]} castShadow>
+          <meshStandardMaterial 
+            color={muscleColors.back}
+            metalness={0.4} 
+            roughness={0.6}
+            emissive={muscleColors.back === '#ef4444' ? '#ef4444' : '#8B5CF6'}
+            emissiveIntensity={muscleColors.back === '#ef4444' ? 0.3 : 0.1}
+          />
+        </Box>
+
+        {/* Abdomen */}
+        <Box args={[0.42, 0.3, 0.22]} position={[0, -0.25, 0]} castShadow>
+          <meshStandardMaterial color="#6366f1" metalness={0.4} roughness={0.6} />
+        </Box>
+
+        {/* Ombros - destacados quando ativos */}
+        <Sphere ref={leftShoulderRef} args={[0.14, 16, 16]} position={[-0.35, 0.28, 0]} castShadow>
+          <meshStandardMaterial 
+            color={muscleColors.shoulder}
+            metalness={0.5} 
+            roughness={0.5}
+            emissive={muscleColors.shoulder === '#ef4444' ? '#ef4444' : '#6366f1'}
+            emissiveIntensity={muscleColors.shoulder === '#ef4444' ? 0.3 : 0.1}
+          />
         </Sphere>
-        <Sphere args={[0.12, 16, 16]} position={[0.32, 0.25, 0]} castShadow>
-          <meshStandardMaterial color="#6366f1" metalness={0.6} roughness={0.3} />
+        <Sphere ref={rightShoulderRef} args={[0.14, 16, 16]} position={[0.35, 0.28, 0]} castShadow>
+          <meshStandardMaterial 
+            color={muscleColors.shoulder}
+            metalness={0.5} 
+            roughness={0.5}
+            emissive={muscleColors.shoulder === '#ef4444' ? '#ef4444' : '#6366f1'}
+            emissiveIntensity={muscleColors.shoulder === '#ef4444' ? 0.3 : 0.1}
+          />
         </Sphere>
 
-        {/* Braço Esquerdo - articulado */}
-        <group ref={leftArmRef} position={[-0.32, 0.15, 0]}>
-          {/* Braço superior */}
-          <Cylinder args={[0.07, 0.06, 0.45, 12]} castShadow>
-            <meshStandardMaterial color="#10b981" metalness={0.4} roughness={0.6} />
+        {/* Braço Esquerdo - articulado com músculos destacados */}
+        <group ref={leftArmRef} position={[-0.35, 0.18, 0]}>
+          {/* Bíceps */}
+          <Cylinder args={[0.075, 0.065, 0.45, 12]} castShadow>
+            <meshStandardMaterial 
+              color={muscleColors.arms}
+              metalness={0.4} 
+              roughness={0.6}
+              emissive={muscleColors.arms === '#ef4444' ? '#ef4444' : '#10b981'}
+              emissiveIntensity={muscleColors.arms === '#ef4444' ? 0.3 : 0.1}
+            />
           </Cylinder>
-          {/* Cotovelo */}
-          <Sphere args={[0.08, 12, 12]} position={[0, -0.25, 0]} castShadow>
-            <meshStandardMaterial color="#f59e0b" metalness={0.5} roughness={0.5} />
+          <Sphere args={[0.09, 12, 12]} position={[0, -0.25, 0]} castShadow>
+            <meshStandardMaterial color="#f59e0b" metalness={0.4} roughness={0.6} />
           </Sphere>
           {/* Antebraço */}
-          <Cylinder args={[0.06, 0.05, 0.4, 12]} position={[0, -0.45, 0]} castShadow>
-            <meshStandardMaterial color="#10b981" metalness={0.4} roughness={0.6} />
+          <Cylinder args={[0.065, 0.055, 0.4, 12]} position={[0, -0.45, 0]} castShadow>
+            <meshStandardMaterial 
+              color={muscleColors.arms}
+              metalness={0.3} 
+              roughness={0.7}
+              emissive={muscleColors.arms === '#ef4444' ? '#ef4444' : '#10b981'}
+              emissiveIntensity={muscleColors.arms === '#ef4444' ? 0.2 : 0.05}
+            />
           </Cylinder>
-          {/* Mão */}
-          <Sphere args={[0.07, 12, 12]} position={[0, -0.68, 0]} castShadow>
-            <meshStandardMaterial color="#f59e0b" metalness={0.3} roughness={0.7} />
+          <Sphere args={[0.075, 12, 12]} position={[0, -0.68, 0]} castShadow>
+            <meshStandardMaterial color="#f59e0b" metalness={0.2} roughness={0.8} />
           </Sphere>
         </group>
 
-        {/* Braço Direito - articulado */}
-        <group ref={rightArmRef} position={[0.32, 0.15, 0]}>
-          {/* Braço superior */}
-          <Cylinder args={[0.07, 0.06, 0.45, 12]} castShadow>
-            <meshStandardMaterial color="#10b981" metalness={0.4} roughness={0.6} />
+        {/* Braço Direito - articulado com músculos destacados */}
+        <group ref={rightArmRef} position={[0.35, 0.18, 0]}>
+          <Cylinder args={[0.075, 0.065, 0.45, 12]} castShadow>
+            <meshStandardMaterial 
+              color={muscleColors.arms}
+              metalness={0.4} 
+              roughness={0.6}
+              emissive={muscleColors.arms === '#ef4444' ? '#ef4444' : '#10b981'}
+              emissiveIntensity={muscleColors.arms === '#ef4444' ? 0.3 : 0.1}
+            />
           </Cylinder>
-          {/* Cotovelo */}
-          <Sphere args={[0.08, 12, 12]} position={[0, -0.25, 0]} castShadow>
-            <meshStandardMaterial color="#f59e0b" metalness={0.5} roughness={0.5} />
+          <Sphere args={[0.09, 12, 12]} position={[0, -0.25, 0]} castShadow>
+            <meshStandardMaterial color="#f59e0b" metalness={0.4} roughness={0.6} />
           </Sphere>
-          {/* Antebraço */}
-          <Cylinder args={[0.06, 0.05, 0.4, 12]} position={[0, -0.45, 0]} castShadow>
-            <meshStandardMaterial color="#10b981" metalness={0.4} roughness={0.6} />
+          <Cylinder args={[0.065, 0.055, 0.4, 12]} position={[0, -0.45, 0]} castShadow>
+            <meshStandardMaterial 
+              color={muscleColors.arms}
+              metalness={0.3} 
+              roughness={0.7}
+              emissive={muscleColors.arms === '#ef4444' ? '#ef4444' : '#10b981'}
+              emissiveIntensity={muscleColors.arms === '#ef4444' ? 0.2 : 0.05}
+            />
           </Cylinder>
-          {/* Mão */}
-          <Sphere args={[0.07, 12, 12]} position={[0, -0.68, 0]} castShadow>
-            <meshStandardMaterial color="#f59e0b" metalness={0.3} roughness={0.7} />
+          <Sphere args={[0.075, 12, 12]} position={[0, -0.68, 0]} castShadow>
+            <meshStandardMaterial color="#f59e0b" metalness={0.2} roughness={0.8} />
           </Sphere>
         </group>
       </group>
 
       {/* Quadril */}
       <Box args={[0.45, 0.25, 0.28]} position={[0, -0.075, 0]} castShadow>
-        <meshStandardMaterial 
-          color="#6366f1" 
-          metalness={0.5} 
-          roughness={0.4}
-          emissive="#6366f1"
-          emissiveIntensity={0.1}
-        />
+        <meshStandardMaterial color="#6366f1" metalness={0.4} roughness={0.6} />
       </Box>
 
-      {/* Perna Esquerda - articulada */}
+      {/* Perna Esquerda - articulada com músculos destacados */}
       <group ref={leftLegRef} position={[-0.15, -0.2, 0]}>
-        {/* Quadril/joelho */}
-        <Sphere args={[0.09, 12, 12]} position={[0, 0, 0]} castShadow>
-          <meshStandardMaterial color="#f59e0b" metalness={0.5} roughness={0.5} />
+        <Sphere args={[0.10, 12, 12]} position={[0, 0, 0]} castShadow>
+          <meshStandardMaterial color="#f59e0b" metalness={0.4} roughness={0.6} />
         </Sphere>
-        {/* Coxa */}
-        <Cylinder args={[0.08, 0.07, 0.5, 12]} position={[0, -0.25, 0]} castShadow>
-          <meshStandardMaterial color="#8B5CF6" metalness={0.4} roughness={0.6} />
+        {/* Coxa - quadríceps */}
+        <Cylinder args={[0.09, 0.075, 0.5, 12]} position={[0, -0.25, 0]} castShadow>
+          <meshStandardMaterial 
+            color={muscleColors.legs}
+            metalness={0.4} 
+            roughness={0.6}
+            emissive={muscleColors.legs === '#ef4444' ? '#ef4444' : '#8B5CF6'}
+            emissiveIntensity={muscleColors.legs === '#ef4444' ? 0.3 : 0.1}
+          />
         </Cylinder>
-        {/* Joelho */}
-        <Sphere args={[0.085, 12, 12]} position={[0, -0.52, 0]} castShadow>
-          <meshStandardMaterial color="#f59e0b" metalness={0.5} roughness={0.5} />
+        <Sphere args={[0.09, 12, 12]} position={[0, -0.52, 0]} castShadow>
+          <meshStandardMaterial color="#f59e0b" metalness={0.4} roughness={0.6} />
         </Sphere>
         {/* Panturrilha */}
-        <Cylinder args={[0.07, 0.06, 0.45, 12]} position={[0, -0.75, 0]} castShadow>
-          <meshStandardMaterial color="#8B5CF6" metalness={0.4} roughness={0.6} />
+        <Cylinder args={[0.075, 0.065, 0.45, 12]} position={[0, -0.75, 0]} castShadow>
+          <meshStandardMaterial 
+            color={muscleColors.legs}
+            metalness={0.3} 
+            roughness={0.7}
+            emissive={muscleColors.legs === '#ef4444' ? '#ef4444' : '#8B5CF6'}
+            emissiveIntensity={muscleColors.legs === '#ef4444' ? 0.2 : 0.05}
+          />
         </Cylinder>
-        {/* Pé */}
-        <Box args={[0.12, 0.08, 0.22]} position={[0, -1.02, 0.08]} castShadow>
-          <meshStandardMaterial color="#10b981" metalness={0.6} roughness={0.3} />
+        <Box args={[0.14, 0.08, 0.24]} position={[0, -1.02, 0.1]} castShadow>
+          <meshStandardMaterial color="#f59e0b" metalness={0.5} roughness={0.5} />
         </Box>
       </group>
 
-      {/* Perna Direita - articulada */}
+      {/* Perna Direita - articulada com músculos destacados */}
       <group ref={rightLegRef} position={[0.15, -0.2, 0]}>
-        {/* Quadril/joelho */}
-        <Sphere args={[0.09, 12, 12]} position={[0, 0, 0]} castShadow>
-          <meshStandardMaterial color="#f59e0b" metalness={0.5} roughness={0.5} />
+        <Sphere args={[0.10, 12, 12]} position={[0, 0, 0]} castShadow>
+          <meshStandardMaterial color="#f59e0b" metalness={0.4} roughness={0.6} />
         </Sphere>
-        {/* Coxa */}
-        <Cylinder args={[0.08, 0.07, 0.5, 12]} position={[0, -0.25, 0]} castShadow>
-          <meshStandardMaterial color="#8B5CF6" metalness={0.4} roughness={0.6} />
+        <Cylinder args={[0.09, 0.075, 0.5, 12]} position={[0, -0.25, 0]} castShadow>
+          <meshStandardMaterial 
+            color={muscleColors.legs}
+            metalness={0.4} 
+            roughness={0.6}
+            emissive={muscleColors.legs === '#ef4444' ? '#ef4444' : '#8B5CF6'}
+            emissiveIntensity={muscleColors.legs === '#ef4444' ? 0.3 : 0.1}
+          />
         </Cylinder>
-        {/* Joelho */}
-        <Sphere args={[0.085, 12, 12]} position={[0, -0.52, 0]} castShadow>
-          <meshStandardMaterial color="#f59e0b" metalness={0.5} roughness={0.5} />
+        <Sphere args={[0.09, 12, 12]} position={[0, -0.52, 0]} castShadow>
+          <meshStandardMaterial color="#f59e0b" metalness={0.4} roughness={0.6} />
         </Sphere>
-        {/* Panturrilha */}
-        <Cylinder args={[0.07, 0.06, 0.45, 12]} position={[0, -0.75, 0]} castShadow>
-          <meshStandardMaterial color="#8B5CF6" metalness={0.4} roughness={0.6} />
+        <Cylinder args={[0.075, 0.065, 0.45, 12]} position={[0, -0.75, 0]} castShadow>
+          <meshStandardMaterial 
+            color={muscleColors.legs}
+            metalness={0.3} 
+            roughness={0.7}
+            emissive={muscleColors.legs === '#ef4444' ? '#ef4444' : '#8B5CF6'}
+            emissiveIntensity={muscleColors.legs === '#ef4444' ? 0.2 : 0.05}
+          />
         </Cylinder>
-        {/* Pé */}
-        <Box args={[0.12, 0.08, 0.22]} position={[0, -1.02, 0.08]} castShadow>
-          <meshStandardMaterial color="#10b981" metalness={0.6} roughness={0.3} />
+        <Box args={[0.14, 0.08, 0.24]} position={[0, -1.02, 0.1]} castShadow>
+          <meshStandardMaterial color="#f59e0b" metalness={0.5} roughness={0.5} />
         </Box>
       </group>
 
-      {/* Plataforma base */}
-      <Cylinder args={[1.2, 1.2, 0.08, 32]} position={[0, -1.15, 0]} receiveShadow>
+      {/* Plataforma base com grid */}
+      <Cylinder args={[1.4, 1.4, 0.08, 32]} position={[0, -1.15, 0]} receiveShadow>
         <meshStandardMaterial 
           color="#1e293b" 
-          metalness={0.8} 
-          roughness={0.2}
-          opacity={0.4}
+          metalness={0.7} 
+          roughness={0.3}
+          opacity={0.5}
           transparent
         />
       </Cylinder>
+
+      {/* Label informativo dos músculos trabalhados */}
+      <Html position={[1.8, 1.5, 0]} center>
+        <div className="bg-background/95 backdrop-blur-sm border-2 border-primary/30 rounded-lg p-3 shadow-2xl min-w-[180px]">
+          <h4 className="text-xs font-bold text-primary mb-2">Músculos Trabalhados:</h4>
+          <ul className="text-[10px] space-y-1">
+            {muscleColors.chest === '#ef4444' && <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500"></span>Peitoral</li>}
+            {muscleColors.back === '#ef4444' && <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500"></span>Costas</li>}
+            {muscleColors.shoulder === '#ef4444' && <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500"></span>Ombros</li>}
+            {muscleColors.arms === '#ef4444' && <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500"></span>Braços</li>}
+            {muscleColors.legs === '#ef4444' && <li className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500"></span>Pernas</li>}
+          </ul>
+        </div>
+      </Html>
     </group>
   );
 }
@@ -307,9 +572,9 @@ export function Exercise3DViewer({
   const controlsRef = useRef<any>(null);
 
   const cameraPositions = {
-    front: [0, 0, 5] as [number, number, number],
-    side: [5, 0, 0] as [number, number, number],
-    top: [0, 5, 0] as [number, number, number],
+    front: [0, 0.8, 4.5] as [number, number, number],
+    side: [4.5, 0.8, 0] as [number, number, number],
+    top: [0, 4, 0.5] as [number, number, number],
   };
 
   const handleCameraReset = () => {
@@ -387,22 +652,46 @@ export function Exercise3DViewer({
             enablePan={false}
             enableZoom={true}
             enableRotate={true}
-            maxPolarAngle={Math.PI / 1.75}
-            minDistance={2}
-            maxDistance={10}
+            maxPolarAngle={Math.PI / 1.6}
+            minPolarAngle={Math.PI / 8}
+            minDistance={3}
+            maxDistance={8}
             autoRotate={isPlaying}
-            autoRotateSpeed={2}
+            autoRotateSpeed={1.5}
+            target={[0, 0.3, 0]}
           />
 
-          <ambientLight intensity={0.6} />
+          <ambientLight intensity={0.7} />
+          
+          {/* Luz principal (sol) */}
           <directionalLight 
-            position={[10, 10, 5]} 
-            intensity={1.2} 
+            position={[10, 12, 8]} 
+            intensity={1.5} 
             castShadow 
             shadow-mapSize={[2048, 2048]}
+            shadow-camera-far={50}
+            shadow-camera-left={-10}
+            shadow-camera-right={10}
+            shadow-camera-top={10}
+            shadow-camera-bottom={-10}
           />
-          <pointLight position={[-5, 5, -5]} intensity={0.6} color="#10b981" />
-          <pointLight position={[5, 3, 5]} intensity={0.4} color="#8B5CF6" />
+          
+          {/* Luzes de preenchimento coloridas */}
+          <pointLight position={[-6, 4, -4]} intensity={0.8} color="#ef4444" />
+          <pointLight position={[6, 4, 4]} intensity={0.6} color="#8B5CF6" />
+          <pointLight position={[0, 2, 6]} intensity={0.5} color="#10b981" />
+          
+          {/* Luz de contorno */}
+          <spotLight
+            position={[0, 8, -5]}
+            angle={0.5}
+            penumbra={1}
+            intensity={0.8}
+            castShadow
+          />
+          
+          {/* Grid helper no chão */}
+          <gridHelper args={[12, 12, '#8B5CF6', '#374151']} position={[0, -1.2, 0]} />
         </Canvas>
 
         {/* Overlay com gradiente */}
@@ -475,7 +764,7 @@ export function Exercise3DViewer({
 
         {/* Dica de interação */}
         <p className="text-[10px] text-muted-foreground mt-2 text-center">
-          Arraste para rotacionar • Scroll para zoom • Pinch para zoom (mobile)
+          🔴 Vermelho = Músculos ativos • Arraste para rotacionar • Scroll para zoom
         </p>
       </div>
     </Card>
