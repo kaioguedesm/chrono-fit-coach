@@ -175,24 +175,29 @@ const Home = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-border/40 backdrop-blur-xl bg-background/95 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/25">
-              <Dumbbell className="h-6 w-6 text-primary-foreground" />
+        <div className="container mx-auto px-4 py-5 md:py-6 flex justify-between items-center">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="p-1.5 md:p-2 rounded-xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/25">
+              <Dumbbell className="h-5 w-5 md:h-6 md:w-6 text-primary-foreground" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
+            <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
               Nex Fit
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <Button 
               variant="ghost"
               onClick={() => navigate('/app')}
+              className="text-sm md:text-base px-3 md:px-4"
             >
               Acessar App
             </Button>
-            <Button onClick={() => navigate('/auth')} className="gap-2 shadow-lg shadow-primary/20">
-              Começar Agora
+            <Button 
+              onClick={() => navigate('/auth')} 
+              className="gap-2 shadow-lg shadow-primary/20 text-sm md:text-base px-4 md:px-6"
+            >
+              <span className="hidden sm:inline">Começar Agora</span>
+              <span className="sm:hidden">Começar</span>
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -200,52 +205,52 @@ const Home = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-background via-primary/5 to-background">
+      <section className="relative overflow-hidden bg-gradient-to-br from-background via-primary/5 to-background pt-8 md:pt-12">
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-        <div className="container mx-auto px-4 py-20 md:py-28 relative">
-          <div className="text-center max-w-5xl mx-auto space-y-8">
-            <Badge className="mx-auto gap-2 px-4 py-2 text-sm font-medium shadow-lg" variant="secondary">
-              <Sparkles className="h-4 w-4" />
+        <div className="container mx-auto px-4 py-16 md:py-24 relative">
+          <div className="text-center max-w-5xl mx-auto space-y-6 md:space-y-8">
+            <Badge className="mx-auto gap-2 px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium shadow-lg" variant="secondary">
+              <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
               Mais de 50.000 vidas transformadas
             </Badge>
             
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold leading-tight tracking-tight px-4">
               Transforme seu corpo
               <span className="block mt-2 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
                 com inteligência
               </span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
               A plataforma de fitness mais inteligente do Brasil. IA avançada que cria treinos e nutrição 
               personalizados que evoluem com você.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center pt-4 md:pt-6 px-4">
               <Button 
                 size="lg" 
                 onClick={() => navigate('/auth')}
-                className="text-lg px-10 py-7 gap-2 shadow-2xl shadow-primary/30 hover:shadow-primary/40 hover:scale-105 transition-all"
+                className="text-base md:text-lg px-6 md:px-10 py-6 md:py-7 gap-2 shadow-2xl shadow-primary/30 hover:shadow-primary/40 hover:scale-105 transition-all"
               >
                 Iniciar Transformação
-                <ArrowRight className="h-5 w-5" />
+                <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
               </Button>
               <Button 
                 size="lg" 
                 variant="outline"
                 onClick={() => document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' })}
-                className="text-lg px-10 py-7 border-2"
+                className="text-base md:text-lg px-6 md:px-10 py-6 md:py-7 border-2"
               >
                 Ver Planos
               </Button>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-12 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 pt-8 md:pt-12 max-w-4xl mx-auto px-4">
               {stats.map((stat, index) => (
-                <div key={index} className="text-center p-4 rounded-xl bg-card/50 backdrop-blur border border-border/50">
-                  <div className="text-3xl md:text-4xl font-bold text-primary mb-1">{stat.value}</div>
-                  <div className="text-sm text-muted-foreground">{stat.label}</div>
+                <div key={index} className="text-center p-3 md:p-4 rounded-xl bg-card/50 backdrop-blur border border-border/50">
+                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1">{stat.value}</div>
+                  <div className="text-xs md:text-sm text-muted-foreground">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -464,46 +469,46 @@ const Home = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="container mx-auto px-4 py-20 md:py-32">
-        <Card className="max-w-5xl mx-auto text-center p-12 md:p-20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 shadow-2xl">
-          <Badge className="mb-6" variant="secondary">
+      <section className="container mx-auto px-4 py-16 md:py-24">
+        <Card className="max-w-5xl mx-auto text-center p-8 md:p-16 lg:p-20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/20 shadow-2xl">
+          <Badge className="mb-4 md:mb-6" variant="secondary">
             <Clock className="h-4 w-4 mr-2" />
             Oferta por tempo limitado
           </Badge>
           
-          <h2 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 md:mb-6 px-4">
             Comece sua transformação
             <span className="block mt-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               hoje mesmo
             </span>
           </h2>
           
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-8">
+          <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto mb-6 md:mb-8 px-4">
             Junte-se a mais de 50.000 pessoas que já alcançaram seus objetivos com Nex Fit
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4">
             <Button 
               size="lg" 
               onClick={() => navigate('/auth')}
-              className="text-lg px-12 py-7 gap-2 shadow-2xl shadow-primary/40 hover:shadow-3xl hover:scale-105 transition-all"
+              className="text-base md:text-lg px-8 md:px-12 py-6 md:py-7 gap-2 shadow-2xl shadow-primary/40 hover:shadow-3xl hover:scale-105 transition-all"
             >
               Garantir Minha Vaga
-              <ArrowRight className="h-5 w-5" />
+              <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
           </div>
 
-          <div className="flex items-center justify-center gap-8 mt-12 flex-wrap">
-            <div className="flex items-center gap-2 text-sm">
-              <Shield className="h-5 w-5 text-primary" />
+          <div className="flex items-center justify-center gap-4 md:gap-8 mt-8 md:mt-12 flex-wrap px-4">
+            <div className="flex items-center gap-2 text-xs md:text-sm">
+              <Shield className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />
               <span className="text-muted-foreground">Garantia de 7 dias</span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Check className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2 text-xs md:text-sm">
+              <Check className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />
               <span className="text-muted-foreground">Sem compromisso</span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Star className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2 text-xs md:text-sm">
+              <Star className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />
               <span className="text-muted-foreground">4.9/5 estrelas</span>
             </div>
           </div>
@@ -512,17 +517,17 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="border-t border-border/40 bg-card/30 backdrop-blur">
-        <div className="container mx-auto px-4 py-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-primary/70">
-                <Dumbbell className="h-5 w-5 text-primary-foreground" />
+        <div className="container mx-auto px-4 py-8 md:py-12">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 md:gap-6">
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="p-1.5 md:p-2 rounded-xl bg-gradient-to-br from-primary to-primary/70">
+                <Dumbbell className="h-4 w-4 md:h-5 md:w-5 text-primary-foreground" />
               </div>
-              <span className="font-bold text-lg">Nex Fit</span>
+              <span className="font-bold text-base md:text-lg">Nex Fit</span>
             </div>
             
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-col items-center gap-1 md:gap-2">
+              <p className="text-xs md:text-sm text-muted-foreground text-center">
                 © 2025 Nex Fit. Transformando vidas através da tecnologia.
               </p>
               <p className="text-xs text-muted-foreground">
