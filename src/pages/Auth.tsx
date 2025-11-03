@@ -84,7 +84,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <Card className="w-full max-w-md border-border/50 shadow-2xl backdrop-blur-sm bg-card/95">
         <CardHeader className="text-center space-y-4 pb-6">
           <div className="flex justify-center">
@@ -162,6 +162,7 @@ export default function Auth() {
                 variant="link"
                 onClick={() => setIsLogin(!isLogin)}
                 disabled={loading}
+                className="w-full"
               >
                 {isLogin
                   ? 'Não tem conta? Criar conta'
@@ -169,20 +170,18 @@ export default function Auth() {
                 }
               </Button>
               
-              <div>
-                <Button
-                  type="button"
-                  variant="link"
-                  size="sm"
-                  onClick={() => navigate('/')}
-                  className="text-muted-foreground hover:text-primary transition-colors group"
-                >
-                  <span className="flex items-center gap-2">
-                    ✨ Conheça mais sobre o Nex Fit
-                    <span className="group-hover:translate-x-1 transition-transform">→</span>
-                  </span>
-                </Button>
-              </div>
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
+                onClick={() => navigate('/')}
+                className="text-muted-foreground hover:text-primary transition-colors group w-full"
+              >
+                <span className="flex items-center justify-center gap-2 text-sm">
+                  ✨ Conheça mais sobre o Nex Fit
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </span>
+              </Button>
             </div>
 
           </form>
