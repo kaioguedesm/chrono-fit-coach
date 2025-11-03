@@ -12,8 +12,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('[ProtectedRoute] Estado:', { loading, hasUser: !!user });
+    
     if (!loading && !user) {
-      navigate('/auth');
+      console.log('[ProtectedRoute] Sem usuário, redirecionando para /auth');
+      navigate('/auth', { replace: true });
     }
   }, [user, loading, navigate]);
 
