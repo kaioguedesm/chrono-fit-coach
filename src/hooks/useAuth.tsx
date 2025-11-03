@@ -20,21 +20,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    console.log('[Auth] Iniciando verificação de autenticação...');
+
+    // Timeout de segurança para garantir que loading nunca fique travado
+    const safetyTimeout = setTimeout(() => {
+      console.log('[Auth] Safety timeout acionado - forçando fim do loading');
+      if (mounted) {
+        setLoading(false);
+      }
+    }, 3000);
 
     // Verificação otimizada de sessão com autologin
     const initAuth = async () => {
       try {
+        console.log('[Auth] Buscando sessão...');
         const { data: { session }, error } = await supabase.auth.getSession();
+        
+        console.log('[Auth] Sessão recuperada:', session ? 'Usuário logado' : 'Sem sessão', error ? `Erro: ${error.message}` : '');
         
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
+          clearTimeout(safetyTimeout);
         }
       } catch (error) {
         console.error('[Auth] Erro ao verificar sessão:', error);
         if (mounted) {
           setLoading(false);
+          clearTimeout(safetyTimeout);
         }
       }
     };
@@ -44,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listener para mudanças de autenticação (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('[Auth] Estado mudou:', event, session ? 'Usuário logado' : 'Sem sessão');
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
@@ -53,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       mounted = false;
+      clearTimeout(safetyTimeout);
       subscription.unsubscribe();
     };
   }, []);
