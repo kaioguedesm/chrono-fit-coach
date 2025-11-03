@@ -438,12 +438,12 @@ export function ActiveWorkoutSession({
               </p>
             )}
 
-            {/* Visualização 3D do exercício */}
-            <Exercise3DViewer 
+            {/* Visualização 3D do exercício - Desabilitado */}
+            {/* <Exercise3DViewer 
               exerciseName={currentExercise.name}
               exerciseDescription="Veja como executar este exercício corretamente na máquina"
               compact
-            />
+            /> */}
 
             <div className="grid grid-cols-2 gap-3">
               <div>
