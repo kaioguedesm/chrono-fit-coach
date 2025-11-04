@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Camera } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -148,6 +148,12 @@ export function PhotoGallery() {
 
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
         <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Visualizar Foto de Progresso</DialogTitle>
+            <DialogDescription className="sr-only">
+              Visualização detalhada da foto de progresso
+            </DialogDescription>
+          </DialogHeader>
           {selectedPhoto && <SelectedPhotoView photo={selectedPhoto} />}
         </DialogContent>
       </Dialog>

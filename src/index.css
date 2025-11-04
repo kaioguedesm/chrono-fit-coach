@@ -138,20 +138,35 @@ All colors MUST be HSL.
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior: none;
   }
   
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
   }
+  
+  /* Smooth scrolling for all devices */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Better performance for animations */
+  * {
+    will-change: auto;
+  }
 }
 
 @layer utilities {
-  /* Professional Animations */
+  /* Professional Animations - Optimized for mobile */
   @keyframes fade-in {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -169,14 +184,17 @@ All colors MUST be HSL.
   
   .animate-fade-in {
     animation: fade-in 0.3s ease-out;
+    animation-fill-mode: both;
   }
   
   .animate-slide-up {
     animation: slide-up 0.4s ease-out;
+    animation-fill-mode: both;
   }
   
   .animate-scale-in {
     animation: scale-in 0.2s ease-out;
+    animation-fill-mode: both;
   }
   
   /* Professional Effects */
@@ -217,10 +235,18 @@ All colors MUST be HSL.
     display: none;
   }
   
-  /* Better touch targets */
+  /* Better touch targets for mobile */
   .touch-manipulation {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+  
+  /* Better button and interactive element performance */
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
   }
   
   /* Safe area for mobile devices */
@@ -228,22 +254,32 @@ All colors MUST be HSL.
     padding-bottom: env(safe-area-inset-bottom);
   }
   
-  /* Hover Effects */
+  /* Hover Effects - Optimized for mobile */
   .hover-scale {
     transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
   }
   
-  .hover-scale:hover {
-    transform: scale(1.02);
+  @media (hover: hover) {
+    .hover-scale:hover {
+      transform: scale(1.02);
+    }
   }
   
-  /* Glow effect on focus */
+  /* Active state for mobile */
+  .hover-scale:active {
+    transform: scale(0.98);
+  }
+  
+  /* Glow effect - Optimized for mobile */
   .glow-on-hover {
     transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  .glow-on-hover:hover {
-    box-shadow: var(--shadow-glow);
+  @media (hover: hover) {
+    .glow-on-hover:hover {
+      box-shadow: var(--shadow-glow);
+    }
   }
   
   /* Stagger children animations */

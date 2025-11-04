@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -206,6 +206,12 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Carregando treino</DialogTitle>
+            <DialogDescription className="sr-only">
+              Aguarde enquanto carregamos os dados do treino
+            </DialogDescription>
+          </DialogHeader>
           <div className="text-center py-8">Carregando...</div>
         </DialogContent>
       </Dialog>
@@ -217,6 +223,9 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
       <DialogContent className="max-w-3xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="text-2xl">Editar Treino</DialogTitle>
+          <DialogDescription>
+            Edite os detalhes e exercícios do seu treino
+          </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="max-h-[60vh] pr-4">

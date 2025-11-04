@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Flame, ChefHat, Beef } from 'lucide-react';
 
@@ -472,6 +472,9 @@ export function RecipeExplorer() {
                   <div className="text-5xl">{selectedRecipe.image}</div>
                   <div>
                     <DialogTitle className="text-xl">{selectedRecipe.name}</DialogTitle>
+                    <DialogDescription className="sr-only">
+                      Detalhes da receita {selectedRecipe.name}
+                    </DialogDescription>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge variant="secondary">{selectedRecipe.difficulty}</Badge>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">

@@ -34,8 +34,8 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-24 pt-16">
-      <div className="h-full">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-24 pt-16 touch-manipulation">
+      <div className="h-full animate-fade-in">
         {renderActiveTab()}
       </div>
       <InstallPWA />

@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
@@ -484,6 +484,9 @@ export default function Settings() {
               <Bell className="w-5 h-5" />
               Configurar Notificações
             </DialogTitle>
+            <DialogDescription>
+              Personalize como você deseja receber notificações do app
+            </DialogDescription>
           </DialogHeader>
           <NotificationSettings />
         </DialogContent>
@@ -494,6 +497,9 @@ export default function Settings() {
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Perfil</DialogTitle>
+            <DialogDescription>
+              Atualize suas informações pessoais e dados do perfil
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -593,6 +599,9 @@ export default function Settings() {
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Preferências Alimentares</DialogTitle>
+            <DialogDescription>
+              Configure suas restrições e preferências dietéticas
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-4">
             <div className="space-y-3">
@@ -643,6 +652,9 @@ export default function Settings() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Alterar Senha</DialogTitle>
+            <DialogDescription>
+              Crie uma nova senha segura para sua conta
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
