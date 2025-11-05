@@ -1,13 +1,14 @@
-import { Home, User, Dumbbell, Calendar, Apple, BarChart3, Settings } from "lucide-react";
+import { Home, User, Dumbbell, Calendar, Apple, BarChart3, Settings, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface NavigationProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  isPersonal?: boolean;
 }
 
-const navigationItems = [
+const baseNavigationItems = [
   { id: "dashboard", label: "Início", icon: Home },
   { id: "profile", label: "Perfil", icon: User },
   { id: "workout", label: "Treino", icon: Dumbbell },
@@ -17,7 +18,12 @@ const navigationItems = [
   { id: "settings", label: "Config", icon: Settings },
 ];
 
-export function Navigation({ activeTab, onTabChange }: NavigationProps) {
+const personalItem = { id: "personal", label: "Personal", icon: Shield };
+
+export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationProps) {
+  const navigationItems = isPersonal 
+    ? [baseNavigationItems[0], personalItem, ...baseNavigationItems.slice(1)]
+    : baseNavigationItems;
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-xl border-t border-border/50 z-[100] shadow-lg pb-safe safe-area-bottom">
       <div className="overflow-x-auto overflow-y-hidden scrollbar-hide">

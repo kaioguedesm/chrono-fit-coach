@@ -539,33 +539,66 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       workout_plans: {
         Row: {
+          approval_status: string | null
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
           created_by: string | null
           id: string
           is_active: boolean | null
           name: string
+          rejection_reason: string | null
           type: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           is_active?: boolean | null
           name: string
+          rejection_reason?: string | null
           type: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           is_active?: boolean | null
           name?: string
+          rejection_reason?: string | null
           type?: string
           updated_at?: string
           user_id?: string
@@ -762,9 +795,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      generate_share_token: {
-        Args: Record<PropertyKey, never>
-        Returns: string
+      generate_share_token: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
       }
       increment_rate_limit: {
         Args: { p_function_name: string; p_limit: number; p_user_id: string }
@@ -772,7 +809,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "personal" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -899,6 +936,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["personal", "user"],
+    },
   },
 } as const

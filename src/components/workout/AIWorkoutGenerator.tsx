@@ -68,14 +68,15 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
         throw new Error('Resposta inválida da IA');
       }
 
-      // Create workout plan
+      // Create workout plan with pending approval status
       const { data: plan, error: planError } = await supabase
         .from('workout_plans')
         .insert({
           user_id: user.id,
           name: functionData.workoutName,
           type: muscleGroup,
-          created_by: 'ai'
+          created_by: 'ai',
+          approval_status: 'pending'
         })
         .select()
         .single();
@@ -102,7 +103,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
 
       toast({
         title: "Treino criado pela IA! 🤖✨",
-        description: `${functionData.workoutName} foi gerado e adicionado aos seus treinos.`
+        description: "Aguardando aprovação do personal trainer para liberar o treino."
       });
 
       onSuccess();

@@ -31,6 +31,7 @@ import { CreateWorkoutForm } from '@/components/workout/CreateWorkoutForm';
 import { AIWorkoutGenerator } from '@/components/workout/AIWorkoutGenerator';
 import { ShareWorkoutModal } from '@/components/workout/ShareWorkoutModal';
 import { EditWorkoutModal } from '@/components/workout/EditWorkoutModal';
+import { WorkoutApprovalBadge } from '@/components/workout/WorkoutApprovalBadge';
 import { LoadingState } from '@/components/common/LoadingState';
 import { EmptyState } from '@/components/common/EmptyState';
 
@@ -40,6 +41,8 @@ interface WorkoutPlan {
   type: string;
   is_active: boolean;
   created_by: string;
+  approval_status?: string;
+  rejection_reason?: string;
   exercises: Exercise[];
 }
 
@@ -128,6 +131,16 @@ export default function Workout() {
 
   const startWorkout = async (plan: WorkoutPlan) => {
     if (!user) return;
+
+    // Check if the workout is approved (for AI workouts)
+    if (plan.created_by === 'ai' && plan.approval_status !== 'approved') {
+      toast({
+        title: "Treino não aprovado",
+        description: "Este treino ainda não foi aprovado pelo personal trainer.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -388,11 +401,18 @@ export default function Workout() {
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <CardTitle className="text-lg">{plan.name}</CardTitle>
                             <Badge variant={plan.created_by === 'ai' ? 'default' : 'secondary'}>
                               {plan.created_by === 'ai' ? '🤖 IA' : '👤 Custom'}
                             </Badge>
+                            {plan.created_by === 'ai' && plan.approval_status && (
+                              <WorkoutApprovalBadge 
+                                status={plan.approval_status}
+                                rejectionReason={plan.rejection_reason}
+                                size="sm"
+                              />
+                            )}
                           </div>
                           <Badge variant="outline">Treino {plan.type}</Badge>
                         </div>
@@ -469,9 +489,12 @@ export default function Workout() {
                         className="w-full" 
                         size="lg"
                         onClick={() => startWorkout(plan)}
+                        disabled={plan.created_by === 'ai' && plan.approval_status !== 'approved'}
                       >
                         <Play className="w-5 h-5 mr-2" />
-                        Iniciar Treino
+                        {plan.created_by === 'ai' && plan.approval_status === 'pending' 
+                          ? 'Aguardando Aprovação' 
+                          : 'Iniciar Treino'}
                       </Button>
                     </CardContent>
                   </Card>

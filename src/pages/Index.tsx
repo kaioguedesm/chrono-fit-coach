@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/layout/Navigation";
 import { InstallPWA } from "@/components/common/InstallPWA";
 import { Dashboard } from "@/pages/Dashboard";
@@ -8,14 +8,19 @@ import Schedule from "./Schedule";
 import Nutrition from "./Nutrition";
 import Progress from "./Progress";
 import Settings from "./Settings";
+import PersonalArea from "./PersonalArea";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const { isPersonal } = useUserRole();
 
   const renderActiveTab = () => {
     switch (activeTab) {
       case "dashboard":
         return <Dashboard onNavigateToTab={setActiveTab} />;
+      case "personal":
+        return <PersonalArea />;
       case "profile":
         return <Profile />;
       case "workout":
@@ -39,7 +44,7 @@ const Index = () => {
         {renderActiveTab()}
       </div>
       <InstallPWA />
-      <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+      <Navigation activeTab={activeTab} onTabChange={setActiveTab} isPersonal={isPersonal} />
     </div>
   );
 };
