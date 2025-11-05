@@ -82,7 +82,7 @@ export default function Profile() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Perfil" />
       
-      <div className="container mx-auto px-4 pt-20 py-6 pb-20 max-w-7xl">
+      <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl">
         <div className="space-y-6">
           {/* Avatar Section */}
           <Card>
