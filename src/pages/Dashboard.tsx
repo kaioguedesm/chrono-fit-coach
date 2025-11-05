@@ -125,7 +125,7 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
       <OnboardingTour />
       <Header title="Nex Fit" />
       
-      <main className="container mx-auto px-4 pt-20 py-6 space-y-6 max-w-7xl">
+      <main className="container mx-auto px-4 pt-24 py-6 space-y-6 max-w-7xl">
         {!user && (
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="py-4">
