@@ -47,9 +47,10 @@ export function OnboardingTour() {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
+    // Tour desabilitado por padrão - marca como completo automaticamente
     const hasSeenTour = localStorage.getItem("nexfit-tour-completed");
     if (!hasSeenTour) {
-      setTimeout(() => setIsVisible(true), 1000);
+      localStorage.setItem("nexfit-tour-completed", "true");
     }
     
     // Handler para fechar com ESC
