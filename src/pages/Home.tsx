@@ -187,6 +187,14 @@ const Home = () => {
           <div className="flex items-center gap-2 md:gap-4">
             <Button 
               variant="ghost"
+              onClick={() => navigate('/personal-login')}
+              className="text-sm md:text-base px-3 md:px-4 gap-2 hover:text-primary"
+            >
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">Área Personal</span>
+            </Button>
+            <Button 
+              variant="ghost"
               onClick={() => navigate('/app')}
               className="text-sm md:text-base px-3 md:px-4"
             >
@@ -513,6 +521,50 @@ const Home = () => {
             </div>
           </div>
         </Card>
+      </section>
+
+      {/* Personal Trainers Section */}
+      <section className="bg-gradient-to-br from-primary/10 via-primary/5 to-background py-16 md:py-24 border-t border-primary/10">
+        <div className="container mx-auto px-4">
+          <Card className="max-w-4xl mx-auto p-8 md:p-12 text-center bg-card/80 backdrop-blur border-primary/20">
+            <div className="mx-auto w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+              <Shield className="w-10 h-10 text-primary" />
+            </div>
+            
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Você é Personal Trainer?
+            </h2>
+            
+            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Acesse a área exclusiva para gerenciar e aprovar treinos gerados pela IA para seus alunos. 
+              Garanta a segurança e eficácia de cada treino antes de liberar para execução.
+            </p>
+
+            <div className="space-y-4 mb-8">
+              <div className="flex items-center justify-center gap-3 text-sm md:text-base">
+                <Check className="h-5 w-5 text-primary shrink-0" />
+                <span>Aprovar treinos gerados pela IA</span>
+              </div>
+              <div className="flex items-center justify-center gap-3 text-sm md:text-base">
+                <Check className="h-5 w-5 text-primary shrink-0" />
+                <span>Garantir segurança dos alunos</span>
+              </div>
+              <div className="flex items-center justify-center gap-3 text-sm md:text-base">
+                <Check className="h-5 w-5 text-primary shrink-0" />
+                <span>Dashboard exclusivo de gestão</span>
+              </div>
+            </div>
+
+            <Button 
+              size="lg" 
+              onClick={() => navigate('/personal-login')}
+              className="gap-2 shadow-lg shadow-primary/30 text-base md:text-lg px-8 py-6"
+            >
+              <Shield className="h-5 w-5" />
+              Acessar Área Personal
+            </Button>
+          </Card>
+        </div>
       </section>
 
       {/* Footer */}

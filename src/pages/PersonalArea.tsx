@@ -282,20 +282,20 @@ export default function PersonalArea() {
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={workout.profiles?.avatar_url} />
-                            <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <CardTitle className="text-xl">{workout.name}</CardTitle>
-                            <CardDescription className="flex items-center gap-2 mt-1">
-                              <span>Aluno: {workout.profiles?.name}</span>
-                              <span>•</span>
-                              <span>{new Date(workout.created_at).toLocaleDateString('pt-BR')}</span>
-                            </CardDescription>
-                          </div>
-                        </div>
+            <div className="flex items-center gap-3">
+              <Avatar>
+                <AvatarImage src={workout.profiles?.avatar_url} />
+                <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
+              </Avatar>
+              <div>
+                <CardTitle className="text-xl">{workout.name}</CardTitle>
+                <CardDescription className="flex items-center gap-2 mt-1">
+                  <span>Aluno: {workout.profiles?.name || 'Usuário'}</span>
+                  <span>•</span>
+                  <span>{new Date(workout.created_at).toLocaleDateString('pt-BR')}</span>
+                </CardDescription>
+              </div>
+            </div>
                       </div>
                       {getStatusBadge(workout.approval_status)}
                     </div>

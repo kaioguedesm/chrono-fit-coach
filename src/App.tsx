@@ -11,6 +11,7 @@ import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import Home from "./pages/Home";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import PersonalAuth from "./pages/PersonalAuth";
 import SharedWorkout from "./pages/SharedWorkout";
 import NotFound from "./pages/NotFound";
 
@@ -36,6 +37,7 @@ const App = () => (
                 <Route path="/" element={<RootRedirect />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/personal-login" element={<PersonalAuth />} />
                 <Route
                   path="/app" 
                   element={

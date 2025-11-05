@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/layout/Navigation";
 import { InstallPWA } from "@/components/common/InstallPWA";
 import { Dashboard } from "@/pages/Dashboard";
@@ -10,10 +11,20 @@ import Progress from "./Progress";
 import Settings from "./Settings";
 import PersonalArea from "./PersonalArea";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const { isPersonal } = useUserRole();
+  const { isPersonal, loading: roleLoading } = useUserRole();
+
+  useEffect(() => {
+    // Personal trainers iniciam na aba personal quando fazem login
+    if (user && !roleLoading && isPersonal && activeTab === "dashboard") {
+      setActiveTab("personal");
+    }
+  }, [user, isPersonal, roleLoading, activeTab]);
 
   const renderActiveTab = () => {
     switch (activeTab) {
