@@ -125,7 +125,7 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
       <OnboardingTour />
       <Header title="Nex Fit" />
       
-      <main className="container mx-auto px-4 pt-24 py-6 space-y-6 max-w-7xl">
+      <main className="container mx-auto px-4 pt-28 py-8 space-y-8 max-w-7xl">
         {!user && (
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="py-4">
@@ -145,11 +145,11 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
           </Card>
         )}
 
-        <div className="space-y-2 md:space-y-4 w-full">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-relaxed break-words whitespace-normal overflow-visible w-full">
+        <div className="space-y-3 md:space-y-4 w-full pt-2">
+          <h2 className="text-2xl sm:text-3xl md:text-3xl font-bold text-foreground leading-relaxed break-words whitespace-normal overflow-visible w-full">
             Olá{user ? ', ' + userName : ''}! 👋
           </h2>
-          <p className="text-sm md:text-base text-muted-foreground">Vamos continuar sua jornada fitness hoje?</p>
+          <p className="text-base md:text-base text-muted-foreground">Vamos continuar sua jornada fitness hoje?</p>
         </div>
 
         <DashboardStats />
