@@ -51,7 +51,17 @@ export function OnboardingTour() {
     if (!hasSeenTour) {
       setTimeout(() => setIsVisible(true), 1000);
     }
-  }, []);
+    
+    // Handler para fechar com ESC
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isVisible) {
+        handleClose();
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isVisible]);
 
   const handleClose = () => {
     localStorage.setItem("nexfit-tour-completed", "true");
@@ -75,8 +85,15 @@ export function OnboardingTour() {
   const step = steps[currentStep];
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in backdrop-blur-sm">
-      <Card className="w-full max-w-md animate-scale-in shadow-2xl">
+    <div 
+      className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 animate-fade-in backdrop-blur-sm"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          handleClose();
+        }
+      }}
+    >
+      <Card className="w-full max-w-md animate-scale-in shadow-2xl relative z-[101] bg-card border-2 border-border">
         <CardContent className="p-6">
           <div className="flex justify-between items-start mb-4">
             <span className="text-4xl">{step.emoji}</span>
