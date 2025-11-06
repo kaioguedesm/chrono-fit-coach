@@ -392,6 +392,33 @@ export type Database = {
         }
         Relationships: []
       }
+      personal_students: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          notes: string | null
+          personal_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          personal_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          personal_id?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null
@@ -676,6 +703,7 @@ export type Database = {
           approved_by: string | null
           created_at: string
           created_by: string | null
+          created_by_user_id: string | null
           id: string
           is_active: boolean | null
           name: string
@@ -690,6 +718,7 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           created_by?: string | null
+          created_by_user_id?: string | null
           id?: string
           is_active?: boolean | null
           name: string
@@ -704,6 +733,7 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           created_by?: string | null
+          created_by_user_id?: string | null
           id?: string
           is_active?: boolean | null
           name?: string

@@ -22,11 +22,13 @@ import {
   Calendar,
   Weight,
   Ruler,
-  Target
+  Target,
+  Plus
 } from 'lucide-react';
 import { LoadingState } from '@/components/common/LoadingState';
 import { WorkoutApprovalBadge } from '@/components/workout/WorkoutApprovalBadge';
 import { NutritionApprovalBadge } from '@/components/nutrition/NutritionApprovalBadge';
+import { PersonalCreateWorkout } from '@/components/personal/PersonalCreateWorkout';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,6 +58,7 @@ interface WorkoutPlan {
   name: string;
   type: string;
   created_at: string;
+  created_by?: string;
   approval_status: string;
   rejection_reason?: string;
   exercises: Array<{
@@ -89,6 +92,7 @@ export default function PersonalStudentDetail() {
   const [selectedItem, setSelectedItem] = useState<{id: string, type: 'workout' | 'nutrition'} | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [showCreateWorkout, setShowCreateWorkout] = useState(false);
 
   useEffect(() => {
     if (!roleLoading && !isPersonal) {
@@ -119,7 +123,7 @@ export default function PersonalStudentDetail() {
       if (profileError) throw profileError;
       setStudent(profile);
 
-      // Buscar treinos
+      // Buscar treinos (incluindo os criados pelo personal)
       const { data: workoutsData, error: workoutsError } = await supabase
         .from('workout_plans')
         .select(`
@@ -127,7 +131,6 @@ export default function PersonalStudentDetail() {
           exercises (name, sets, reps)
         `)
         .eq('user_id', studentId)
-        .eq('created_by', 'ai')
         .order('created_at', { ascending: false });
 
       if (workoutsError) throw workoutsError;
@@ -322,6 +325,17 @@ export default function PersonalStudentDetail() {
           </CardContent>
         </Card>
 
+        {/* Ação rápida: Criar Treino */}
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setShowCreateWorkout(true)}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Criar Treino para {student.name}
+          </Button>
+        </div>
+
         {/* Tabs de treinos e nutrição */}
         <Tabs defaultValue="workouts" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
@@ -358,8 +372,21 @@ export default function PersonalStudentDetail() {
                 <Card key={workout.id}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-lg">{workout.name}</CardTitle>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <CardTitle className="text-lg">{workout.name}</CardTitle>
+                          {workout.created_by === 'personal' && (
+                            <Badge variant="default" className="text-xs gap-1">
+                              <User className="h-3 w-3" />
+                              Criado por você
+                            </Badge>
+                          )}
+                          {workout.created_by === 'ai' && (
+                            <Badge variant="outline" className="text-xs">
+                              Gerado por IA
+                            </Badge>
+                          )}
+                        </div>
                         <CardDescription className="mt-1">
                           {new Date(workout.created_at).toLocaleDateString('pt-BR')} • {workout.type}
                         </CardDescription>
@@ -495,6 +522,14 @@ export default function PersonalStudentDetail() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modal de Criação de Treino */}
+      <PersonalCreateWorkout
+        open={showCreateWorkout}
+        onOpenChange={setShowCreateWorkout}
+        preSelectedStudentId={studentId}
+        onSuccess={fetchStudentData}
+      />
 
       {/* Dialog de rejeição */}
       <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>

@@ -22,8 +22,10 @@ import {
   Apple,
   Info,
   CheckSquare,
-  TrendingUp
+  TrendingUp,
+  Plus
 } from 'lucide-react';
+import { PersonalCreateWorkout } from '@/components/personal/PersonalCreateWorkout';
 import { LoadingState } from '@/components/common/LoadingState';
 import {
   AlertDialog,
@@ -86,6 +88,7 @@ export default function PersonalArea() {
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [activeTab, setActiveTab] = useState('pending');
   const [contentType, setContentType] = useState<'workout' | 'nutrition'>('workout');
+  const [showCreateWorkout, setShowCreateWorkout] = useState(false);
 
   useEffect(() => {
     if (!roleLoading && !isPersonal) {
@@ -323,6 +326,14 @@ export default function PersonalArea() {
           </div>
           
           <div className="flex gap-2">
+            <Button 
+              variant="default"
+              onClick={() => setShowCreateWorkout(true)}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Criar Treino
+            </Button>
             <Button 
               variant="outline" 
               onClick={() => navigate('/personal-students')}
@@ -619,6 +630,17 @@ export default function PersonalArea() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modal de Criação de Treino */}
+      <PersonalCreateWorkout
+        open={showCreateWorkout}
+        onOpenChange={setShowCreateWorkout}
+        onSuccess={() => {
+          if (contentType === 'workout') {
+            fetchWorkouts();
+          }
+        }}
+      />
 
       {/* Reject Dialog */}
       <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
