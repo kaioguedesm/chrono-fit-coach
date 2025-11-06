@@ -9,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { authSchema } from '@/lib/validations';
 import nexfitIcon from "@/assets/nexfit-icon.png";
+import { TermsAcceptanceDialog, CURRENT_TERMS_VERSION } from '@/components/auth/TermsAcceptanceDialog';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,6 +18,8 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [pendingSignupData, setPendingSignupData] = useState<{email: string, password: string, name: string} | null>(null);
   
   const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
@@ -27,6 +31,63 @@ export default function Auth() {
       navigate('/app');
     }
   }, [user, navigate]);
+
+  const handleTermsAccept = async () => {
+    if (!pendingSignupData) return;
+
+    setShowTerms(false);
+    setLoading(true);
+
+    try {
+      const result = await signUp(pendingSignupData.email, pendingSignupData.password, pendingSignupData.name);
+
+      if (result.error) {
+        toast({
+          title: "Erro",
+          description: result.error.message,
+          variant: "destructive"
+        });
+        setPendingSignupData(null);
+        return;
+      }
+
+      // Salvar aceitação dos termos
+      const { data: { user: newUser } } = await supabase.auth.getUser();
+      if (newUser) {
+        await supabase.from('user_terms_acceptance').insert({
+          user_id: newUser.id,
+          terms_version: CURRENT_TERMS_VERSION,
+          ip_address: null,
+          user_agent: navigator.userAgent
+        });
+      }
+
+      toast({
+        title: "Conta criada!",
+        description: "Bem-vindo ao Nex Fit! 🎉"
+      });
+      navigate('/app');
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message || "Ocorreu um erro inesperado.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+      setPendingSignupData(null);
+    }
+  };
+
+  const handleTermsDecline = () => {
+    setShowTerms(false);
+    setPendingSignupData(null);
+    toast({
+      title: "Cadastro cancelado",
+      description: "Você precisa aceitar os termos para continuar.",
+      variant: "default"
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,16 +109,18 @@ export default function Auth() {
       return;
     }
 
+    // Se for signup, mostrar termos primeiro
+    if (!isLogin) {
+      setPendingSignupData({ email, password, name });
+      setShowTerms(true);
+      return;
+    }
+
+    // Login direto
     setLoading(true);
 
     try {
-      let result;
-      
-      if (isLogin) {
-        result = await signIn(email, password);
-      } else {
-        result = await signUp(email, password, name);
-      }
+      const result = await signIn(email, password);
 
       if (result.error) {
         toast({
@@ -67,8 +130,8 @@ export default function Auth() {
         });
       } else {
         toast({
-          title: isLogin ? "Login realizado!" : "Conta criada!",
-          description: isLogin ? "Bem-vindo de volta! 🎉" : "Conta criada com sucesso! 🎉"
+          title: "Login realizado!",
+          description: "Bem-vindo de volta! 🎉"
         });
         navigate('/app');
       }
@@ -187,6 +250,12 @@ export default function Auth() {
           </form>
         </CardContent>
       </Card>
+
+      <TermsAcceptanceDialog
+        open={showTerms}
+        onAccept={handleTermsAccept}
+        onDecline={handleTermsDecline}
+      />
     </div>
   );
 }

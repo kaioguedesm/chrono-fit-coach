@@ -16,6 +16,7 @@ import { DietUploader } from '@/components/nutrition/DietUploader';
 import { RecipeExplorer } from '@/components/nutrition/RecipeExplorer';
 import { LoadingState } from '@/components/common/LoadingState';
 import { EmptyState } from '@/components/common/EmptyState';
+import { NutritionApprovalBadge } from '@/components/nutrition/NutritionApprovalBadge';
 
 interface NutritionPlan {
   id: string;
@@ -24,6 +25,8 @@ interface NutritionPlan {
   file_url: string | null;
   created_by: string;
   is_active: boolean;
+  approval_status?: string;
+  rejection_reason?: string;
   meals: Meal[];
 }
 
@@ -221,21 +224,35 @@ export default function Nutrition() {
                         {plan.title}
                       </CardTitle>
                       <div className="flex items-center gap-2">
-                        <Badge variant={plan.created_by === 'ai' ? 'default' : 'secondary'}>
-                          {plan.created_by === 'ai' ? 'IA Nutricional' : 'Personalizado'}
-                        </Badge>
+                        {plan.approval_status && plan.created_by === 'ai' && (
+                          <NutritionApprovalBadge 
+                            status={plan.approval_status} 
+                            rejectionReason={plan.rejection_reason}
+                          />
+                        )}
+                        {(!plan.approval_status || plan.approval_status === 'approved') && (
+                          <Badge variant={plan.created_by === 'ai' ? 'default' : 'secondary'}>
+                            {plan.created_by === 'ai' ? 'IA Nutricional' : 'Personalizado'}
+                          </Badge>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDeletePlan(plan.id)}
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 w-4" />
                         </Button>
                       </div>
                     </div>
                     {plan.description && (
                       <p className="text-sm text-muted-foreground">{plan.description}</p>
+                    )}
+                    {plan.rejection_reason && (
+                      <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 mt-2">
+                        <p className="text-sm font-medium text-destructive mb-1">Motivo da Rejeição:</p>
+                        <p className="text-xs text-muted-foreground">{plan.rejection_reason}</p>
+                      </div>
                     )}
                   </CardHeader>
                   

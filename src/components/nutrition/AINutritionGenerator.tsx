@@ -110,7 +110,8 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
           user_id: user.id,
           title: functionData.planName,
           description: functionData.description,
-          created_by: 'ai'
+          created_by: 'ai',
+          approval_status: 'pending'
         })
         .select()
         .single();
@@ -138,7 +139,7 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
 
       toast({
         title: "Plano nutricional criado! 🥗✨",
-        description: `${functionData.planName} foi gerado com ${functionData.meals.length} refeições personalizadas.`
+        description: `${functionData.planName} foi gerado e aguarda aprovação do profissional da academia.`
       });
 
       onSuccess();
