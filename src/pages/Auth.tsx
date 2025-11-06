@@ -245,6 +245,24 @@ export default function Auth() {
                   <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </span>
               </Button>
+              
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-muted" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Ou</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate('/personal-login')}
+                className="w-full border-primary/50 hover:bg-primary/10 transition-colors"
+              >
+                🏋️ Área do Personal Trainer
+              </Button>
             </div>
 
           </form>
