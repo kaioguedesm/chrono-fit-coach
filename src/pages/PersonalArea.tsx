@@ -19,7 +19,10 @@ import {
   Dumbbell,
   Shield,
   AlertCircle,
-  Apple
+  Apple,
+  Info,
+  CheckSquare,
+  TrendingUp
 } from 'lucide-react';
 import { LoadingState } from '@/components/common/LoadingState';
 import {
@@ -349,6 +352,56 @@ export default function PersonalArea() {
             </Select>
           </div>
         </div>
+
+        {/* Guia Rápido */}
+        <Card className="bg-primary/5 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Info className="h-5 w-5 text-primary" />
+              Como Funciona
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Como personal trainer, você é responsável por revisar e aprovar conteúdos gerados pela IA para seus alunos.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Clock className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm mb-1">1. Revise Pendentes</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Verifique treinos e planos nutricionais aguardando sua aprovação
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <CheckSquare className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm mb-1">2. Aprove ou Rejeite</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Avalie se o conteúdo está adequado para o aluno
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm mb-1">3. Acompanhe Resultados</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Monitore a evolução dos seus alunos
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

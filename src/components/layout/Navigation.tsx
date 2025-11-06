@@ -21,8 +21,9 @@ const baseNavigationItems = [
 const personalItem = { id: "personal", label: "Personal", icon: Shield };
 
 export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationProps) {
+  // Personal trainers não veem a aba de início (dashboard)
   const navigationItems = isPersonal 
-    ? [baseNavigationItems[0], personalItem, ...baseNavigationItems.slice(1)]
+    ? [personalItem, ...baseNavigationItems.slice(1)] // Remove dashboard (índice 0)
     : baseNavigationItems;
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-xl border-t border-border/50 z-[100] shadow-lg pb-safe safe-area-bottom">

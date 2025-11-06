@@ -27,6 +27,11 @@ const Index = () => {
   }, [user, isPersonal, roleLoading, activeTab]);
 
   const renderActiveTab = () => {
+    // Personal trainers não têm acesso ao dashboard
+    if (isPersonal && activeTab === "dashboard") {
+      return <PersonalArea />;
+    }
+    
     switch (activeTab) {
       case "dashboard":
         return <Dashboard onNavigateToTab={setActiveTab} />;
@@ -45,7 +50,7 @@ const Index = () => {
       case "settings":
         return <Settings />;
       default:
-        return <Dashboard onNavigateToTab={setActiveTab} />;
+        return isPersonal ? <PersonalArea /> : <Dashboard onNavigateToTab={setActiveTab} />;
     }
   };
 
