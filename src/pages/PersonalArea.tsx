@@ -319,25 +319,35 @@ export default function PersonalArea() {
             </div>
           </div>
           
-          <Select value={contentType} onValueChange={(value) => setContentType(value as 'workout' | 'nutrition')}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="workout">
-                <div className="flex items-center gap-2">
-                  <Dumbbell className="h-4 w-4" />
-                  Treinos
-                </div>
-              </SelectItem>
-              <SelectItem value="nutrition">
-                <div className="flex items-center gap-2">
-                  <Apple className="h-4 w-4" />
-                  Nutrição
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/personal-students')}
+              className="gap-2"
+            >
+              <User className="h-4 w-4" />
+              Meus Alunos
+            </Button>
+            <Select value={contentType} onValueChange={(value) => setContentType(value as 'workout' | 'nutrition')}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="workout">
+                  <div className="flex items-center gap-2">
+                    <Dumbbell className="h-4 w-4" />
+                    Treinos
+                  </div>
+                </SelectItem>
+                <SelectItem value="nutrition">
+                  <div className="flex items-center gap-2">
+                    <Apple className="h-4 w-4" />
+                    Nutrição
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Stats Cards */}

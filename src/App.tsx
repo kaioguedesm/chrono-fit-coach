@@ -12,6 +12,9 @@ import Home from "./pages/Home";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import PersonalAuth from "./pages/PersonalAuth";
+import PersonalArea from "./pages/PersonalArea";
+import PersonalStudents from "./pages/PersonalStudents";
+import PersonalStudentDetail from "./pages/PersonalStudentDetail";
 import SharedWorkout from "./pages/SharedWorkout";
 import NotFound from "./pages/NotFound";
 
@@ -43,6 +46,30 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <Index />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/personal-area" 
+                  element={
+                    <ProtectedRoute>
+                      <PersonalArea />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/personal-students" 
+                  element={
+                    <ProtectedRoute>
+                      <PersonalStudents />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/personal-students/:studentId" 
+                  element={
+                    <ProtectedRoute>
+                      <PersonalStudentDetail />
                     </ProtectedRoute>
                   } 
                 />
