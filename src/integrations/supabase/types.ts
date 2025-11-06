@@ -309,36 +309,83 @@ export type Database = {
           },
         ]
       }
+      nutrition_plan_revisions: {
+        Row: {
+          created_at: string
+          id: string
+          nutrition_plan_id: string
+          previous_data: Json
+          revised_by: string
+          revision_notes: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nutrition_plan_id: string
+          previous_data: Json
+          revised_by: string
+          revision_notes?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nutrition_plan_id?: string
+          previous_data?: Json
+          revised_by?: string
+          revision_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nutrition_plan_revisions_nutrition_plan_id_fkey"
+            columns: ["nutrition_plan_id"]
+            isOneToOne: false
+            referencedRelation: "nutrition_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nutrition_plans: {
         Row: {
+          approval_status: string | null
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
           created_by: string | null
           description: string | null
           file_url: string | null
           id: string
           is_active: boolean | null
+          rejection_reason: string | null
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           file_url?: string | null
           id?: string
           is_active?: boolean | null
+          rejection_reason?: string | null
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          approval_status?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
           file_url?: string | null
           id?: string
           is_active?: boolean | null
+          rejection_reason?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -559,6 +606,68 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_terms_acceptance: {
+        Row: {
+          accepted_at: string
+          id: string
+          ip_address: string | null
+          terms_version: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          id?: string
+          ip_address?: string | null
+          terms_version: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          id?: string
+          ip_address?: string | null
+          terms_version?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workout_plan_revisions: {
+        Row: {
+          created_at: string
+          id: string
+          previous_data: Json
+          revised_by: string
+          revision_notes: string | null
+          workout_plan_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          previous_data: Json
+          revised_by: string
+          revision_notes?: string | null
+          workout_plan_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          previous_data?: Json
+          revised_by?: string
+          revision_notes?: string | null
+          workout_plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_plan_revisions_workout_plan_id_fkey"
+            columns: ["workout_plan_id"]
+            isOneToOne: false
+            referencedRelation: "workout_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workout_plans: {
         Row: {
