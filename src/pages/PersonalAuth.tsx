@@ -113,6 +113,14 @@ export default function PersonalAuth() {
         throw new Error('Erro ao criar usuário');
       }
 
+      // Verificar se o usuário já existe (identifierExists)
+      if (data.user.identities && data.user.identities.length === 0) {
+        toast.error('Email já cadastrado', {
+          description: 'Este email já está em uso. Tente fazer login ou use outro email.'
+        });
+        return;
+      }
+
       // Criar role de personal trainer
       const { error: roleError } = await supabase
         .from('user_roles')
@@ -121,10 +129,13 @@ export default function PersonalAuth() {
           role: 'personal'
         });
 
-      if (roleError) throw roleError;
+      if (roleError) {
+        console.error('Role error:', roleError);
+        throw new Error('Erro ao configurar permissões. Entre em contato com o suporte.');
+      }
 
       toast.success('Conta criada com sucesso!', {
-        description: 'Verifique seu email para confirmar o cadastro.'
+        description: 'Bem-vindo! Você já pode fazer login.'
       });
 
       // Limpar formulário
