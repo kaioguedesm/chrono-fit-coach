@@ -95,9 +95,23 @@ export default function PersonalAuth() {
       return;
     }
 
-    if (password.length < 6) {
-      toast.error('Erro', {
-        description: 'A senha deve ter no mínimo 6 caracteres.'
+    if (password.length < 8) {
+      toast.error('Senha muito curta', {
+        description: 'A senha deve ter no mínimo 8 caracteres.'
+      });
+      return;
+    }
+
+    // Validar força da senha
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+      toast.error('Senha muito fraca', {
+        description: 'A senha deve conter letras maiúsculas, minúsculas e números.',
+        duration: 5000
       });
       return;
     }
@@ -156,8 +170,16 @@ export default function PersonalAuth() {
       setActiveTab('login');
     } catch (error: any) {
       console.error('Signup error:', error);
+      
+      let errorMessage = 'Não foi possível criar a conta. Tente novamente.';
+      
+      if (error.message?.includes('weak') || error.message?.includes('password')) {
+        errorMessage = 'Esta senha é muito fraca ou muito comum. Tente uma senha mais forte com letras maiúsculas, minúsculas, números e caracteres especiais.';
+      }
+      
       toast.error('Erro no cadastro', {
-        description: error.message || 'Não foi possível criar a conta. Tente novamente.'
+        description: errorMessage,
+        duration: 6000
       });
     } finally {
       setLoading(false);
@@ -296,14 +318,17 @@ export default function PersonalAuth() {
                       <Input
                         id="signup-password"
                         type="password"
-                        placeholder="Mínimo 6 caracteres"
+                        placeholder="Mínimo 8 caracteres"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="pl-10"
                         required
-                        minLength={6}
+                        minLength={8}
                       />
                     </div>
+                    <p className="text-xs text-muted-foreground">
+                      Use letras maiúsculas, minúsculas e números
+                    </p>
                   </div>
 
                   <div className="space-y-2">
