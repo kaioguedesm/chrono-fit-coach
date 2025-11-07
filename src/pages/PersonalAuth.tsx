@@ -145,7 +145,7 @@ export default function PersonalAuth() {
       }
 
       toast.success('Conta criada com sucesso!', {
-        description: 'Bem-vindo! Você já pode fazer login.'
+        description: 'Sua conta está aguardando aprovação. Você será notificado quando puder fazer login.'
       });
 
       // Limpar formulário
