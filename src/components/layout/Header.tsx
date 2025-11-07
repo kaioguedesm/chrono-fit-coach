@@ -1,7 +1,8 @@
-import { Bell, Menu, LogOut } from "lucide-react";
+import { Bell, Menu, LogOut, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import nexfitIcon from "@/assets/nexfit-icon.png";
@@ -13,6 +14,7 @@ interface HeaderProps {
 
 export function Header({ title, showProfile = true }: HeaderProps) {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useUserRole();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -47,6 +49,17 @@ export function Header({ title, showProfile = true }: HeaderProps) {
         
         {showProfile && (
           <div className="flex items-center gap-1 md:gap-1.5 flex-shrink-0">
+            {isAdmin && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => navigate('/admin/approvals')}
+                title="Admin - Aprovar Personal Trainers"
+                className="h-9 w-9 hover:bg-primary/10 hover:text-primary"
+              >
+                <Shield className="w-4 h-4" />
+              </Button>
+            )}
             <Button variant="ghost" size="icon" className="relative h-9 w-9">
               <Bell className="w-4 h-4" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
