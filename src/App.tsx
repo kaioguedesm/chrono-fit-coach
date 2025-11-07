@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
+import { AdminRoute } from "@/components/common/AdminRoute";
 import { RootRedirect } from "@/components/common/RootRedirect";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import Home from "./pages/Home";
@@ -77,9 +78,9 @@ const App = () => (
                 <Route 
                   path="/admin/approvals" 
                   element={
-                    <ProtectedRoute>
+                    <AdminRoute>
                       <AdminApprovals />
-                    </ProtectedRoute>
+                    </AdminRoute>
                   } 
                 />
                 <Route path="/shared/:token" element={<SharedWorkout />} />
