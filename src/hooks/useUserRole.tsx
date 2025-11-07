@@ -20,15 +20,25 @@ export function useUserRole() {
       try {
         const { data, error } = await supabase
           .from('user_roles')
-          .select('role')
+          .select('role, approved')
           .eq('user_id', user.id)
-          .single();
+          .eq('approved', true);
 
         if (error) {
           console.error('Error fetching user role:', error);
           setRole('user'); // Default role
+        } else if (!data || data.length === 0) {
+          setRole('user'); // Default role
         } else {
-          setRole(data?.role as UserRole);
+          // Se tiver múltiplas roles, priorizar: admin > personal > user
+          const roles = data.map(r => r.role);
+          if (roles.includes('admin')) {
+            setRole('admin');
+          } else if (roles.includes('personal')) {
+            setRole('personal');
+          } else {
+            setRole('user');
+          }
         }
       } catch (err) {
         console.error('Error:', err);
