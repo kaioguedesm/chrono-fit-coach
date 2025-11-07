@@ -44,10 +44,10 @@ export default function PersonalAuth() {
 
       if (error) throw error;
 
-      // Verificar se o usuário é personal trainer
+      // Verificar se o usuário é personal trainer e está aprovado
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
-        .select('role')
+        .select('role, approved')
         .eq('user_id', data.user.id)
         .single();
 
@@ -56,6 +56,16 @@ export default function PersonalAuth() {
         await supabase.auth.signOut();
         toast.error('Acesso negado', {
           description: 'Esta área é exclusiva para personal trainers.'
+        });
+        return;
+      }
+
+      // Verificar se o personal foi aprovado
+      if (!roleData.approved) {
+        await supabase.auth.signOut();
+        toast.warning('Aguardando aprovação', {
+          description: 'Sua conta de personal trainer está aguardando aprovação do administrador. Você receberá um email quando for aprovado.',
+          duration: 6000
         });
         return;
       }

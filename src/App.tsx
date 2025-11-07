@@ -15,6 +15,7 @@ import PersonalAuth from "./pages/PersonalAuth";
 import PersonalArea from "./pages/PersonalArea";
 import PersonalStudents from "./pages/PersonalStudents";
 import PersonalStudentDetail from "./pages/PersonalStudentDetail";
+import AdminApprovals from "./pages/AdminApprovals";
 import SharedWorkout from "./pages/SharedWorkout";
 import NotFound from "./pages/NotFound";
 
@@ -70,6 +71,14 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <PersonalStudentDetail />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/approvals" 
+                  element={
+                    <ProtectedRoute>
+                      <AdminApprovals />
                     </ProtectedRoute>
                   } 
                 />
