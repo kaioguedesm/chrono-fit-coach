@@ -52,6 +52,7 @@ export function WorkoutHistory() {
     if (user) {
       fetchHistory();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchHistory = async () => {

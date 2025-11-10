@@ -14,7 +14,7 @@ interface HeaderProps {
 
 export function Header({ title, showProfile = true }: HeaderProps) {
   const { user, signOut } = useAuth();
-  const { isAdmin } = useUserRole();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -49,7 +49,7 @@ export function Header({ title, showProfile = true }: HeaderProps) {
         
         {showProfile && (
           <div className="flex items-center gap-1 md:gap-1.5 flex-shrink-0">
-            {isAdmin && (
+            {!roleLoading && isAdmin && (
               <Button 
                 variant="ghost" 
                 size="icon" 
