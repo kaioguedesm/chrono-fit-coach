@@ -1,0 +1,8 @@
+-- Mover extensões do schema public para extensions
+DROP EXTENSION IF EXISTS pg_cron CASCADE;
+DROP EXTENSION IF EXISTS pg_net CASCADE;
+
+CREATE SCHEMA IF NOT EXISTS extensions;
+
+CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
