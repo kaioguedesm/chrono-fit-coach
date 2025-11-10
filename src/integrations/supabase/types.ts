@@ -500,6 +500,60 @@ export type Database = {
         }
         Relationships: []
       }
+      recommended_recipes: {
+        Row: {
+          calories: number | null
+          carbs: number | null
+          category: string
+          created_at: string
+          description: string | null
+          difficulty: string | null
+          fat: number | null
+          id: string
+          image_url: string | null
+          ingredients: string[]
+          instructions: string
+          is_active: boolean | null
+          prep_time_minutes: number | null
+          protein: number | null
+          title: string
+        }
+        Insert: {
+          calories?: number | null
+          carbs?: number | null
+          category: string
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          fat?: number | null
+          id?: string
+          image_url?: string | null
+          ingredients: string[]
+          instructions: string
+          is_active?: boolean | null
+          prep_time_minutes?: number | null
+          protein?: number | null
+          title: string
+        }
+        Update: {
+          calories?: number | null
+          carbs?: number | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          difficulty?: string | null
+          fat?: number | null
+          id?: string
+          image_url?: string | null
+          ingredients?: string[]
+          instructions?: string
+          is_active?: boolean | null
+          prep_time_minutes?: number | null
+          protein?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_type: string
