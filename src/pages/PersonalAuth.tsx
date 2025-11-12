@@ -145,22 +145,20 @@ export default function PersonalAuth() {
         return;
       }
 
-      // Criar role de personal trainer (não aprovado)
-      const { error: roleError } = await supabase
-        .from('user_roles')
+      // Registrar solicitação de personal trainer (será processada após confirmação de email)
+      const { error: pendingError } = await supabase
+        .from('pending_personal_signups')
         .insert({
-          user_id: data.user.id,
-          role: 'personal',
-          approved: false
+          user_id: data.user.id
         });
 
-      if (roleError) {
-        console.error('Role error:', roleError);
-        throw new Error('Erro ao configurar permissões. Entre em contato com o suporte.');
+      if (pendingError) {
+        console.error('Pending signup error:', pendingError);
+        // Não bloquear o cadastro, o role será criado via trigger
       }
 
       toast.success('Conta criada com sucesso!', {
-        description: 'Sua conta está aguardando aprovação. Você será notificado quando puder fazer login.'
+        description: 'Verifique seu email para confirmar o cadastro. Após a confirmação, sua conta ficará aguardando aprovação de um administrador.'
       });
 
       // Limpar formulário
