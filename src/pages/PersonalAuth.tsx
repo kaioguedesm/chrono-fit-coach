@@ -49,9 +49,19 @@ export default function PersonalAuth() {
         .from('user_roles')
         .select('role, approved')
         .eq('user_id', data.user.id)
-        .single();
+        .eq('role', 'personal')
+        .maybeSingle();
 
-      if (roleError || !roleData || roleData.role !== 'personal') {
+      if (roleError) {
+        console.error('Role query error:', roleError);
+        await supabase.auth.signOut();
+        toast.error('Erro ao verificar permissões', {
+          description: 'Erro ao consultar o banco de dados. Tente novamente.'
+        });
+        return;
+      }
+
+      if (!roleData || roleData.role !== 'personal') {
         // Se não for personal, faz logout
         await supabase.auth.signOut();
         toast.error('Acesso negado', {
