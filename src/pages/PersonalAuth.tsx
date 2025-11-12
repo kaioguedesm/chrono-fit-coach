@@ -145,12 +145,13 @@ export default function PersonalAuth() {
         return;
       }
 
-      // Criar role de personal trainer
+      // Criar role de personal trainer (não aprovado)
       const { error: roleError } = await supabase
         .from('user_roles')
         .insert({
           user_id: data.user.id,
-          role: 'personal'
+          role: 'personal',
+          approved: false
         });
 
       if (roleError) {
