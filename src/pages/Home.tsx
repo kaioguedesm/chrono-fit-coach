@@ -186,12 +186,13 @@ const Home = () => {
           </div>
           <div className="flex items-center gap-2 md:gap-4">
             <Button 
-              variant="ghost"
+              variant="outline"
               onClick={() => navigate('/personal-login')}
-              className="text-sm md:text-base px-3 md:px-4 gap-2 hover:text-primary"
+              className="text-sm md:text-base px-3 md:px-4 gap-2 border-primary/50 bg-primary/5 hover:bg-primary/10 hover:border-primary font-medium"
             >
-              <Shield className="h-4 w-4" />
+              <Shield className="h-4 w-4 text-primary" />
               <span className="hidden sm:inline">Área Personal</span>
+              <span className="sm:hidden">Personal</span>
             </Button>
             <Button 
               variant="ghost"

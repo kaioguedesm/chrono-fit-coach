@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Shield } from 'lucide-react';
 import { authSchema } from '@/lib/validations';
 import nexfitIcon from "@/assets/nexfit-icon.png";
 import { TermsAcceptanceDialog, CURRENT_TERMS_VERSION } from '@/components/auth/TermsAcceptanceDialog';
@@ -258,11 +258,16 @@ export default function Auth() {
               <Button
                 type="button"
                 variant="outline"
+                size="lg"
                 onClick={() => navigate('/personal-login')}
-                className="w-full border-primary/50 hover:bg-primary/10 transition-colors"
+                className="w-full border-primary bg-primary/5 hover:bg-primary/10 hover:border-primary transition-all shadow-md hover:shadow-lg font-semibold group"
               >
-                🏋️ Área do Personal Trainer
+                <Shield className="mr-2 h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+                <span className="text-base">Área do Personal Trainer</span>
               </Button>
+              <p className="text-xs text-center text-muted-foreground mt-2">
+                Para personal trainers que desejam gerenciar alunos
+              </p>
             </div>
 
           </form>
