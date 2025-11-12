@@ -44,6 +44,9 @@ export default function PersonalAuth() {
 
       if (error) throw error;
 
+      // Aguardar um momento para garantir que a sessão esteja completamente estabelecida
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       // Verificar se o usuário é personal trainer e está aprovado
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
@@ -54,9 +57,15 @@ export default function PersonalAuth() {
 
       if (roleError) {
         console.error('Role query error:', roleError);
+        console.error('Role query details:', {
+          code: roleError.code,
+          message: roleError.message,
+          details: roleError.details,
+          hint: roleError.hint
+        });
         await supabase.auth.signOut();
         toast.error('Erro ao verificar permissões', {
-          description: 'Erro ao consultar o banco de dados. Tente novamente.'
+          description: roleError.message || 'Erro ao consultar o banco de dados. Tente novamente.'
         });
         return;
       }
