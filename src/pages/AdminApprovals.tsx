@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { Shield, CheckCircle, XCircle, Clock, Loader2, Mail, Calendar } from 'lucide-react';
-import { Header } from '@/components/layout/Header';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Shield, CheckCircle, XCircle, Clock, Loader2, Mail, Calendar } from "lucide-react";
+import { Header } from "@/components/layout/Header";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Textarea } from '@/components/ui/textarea';
+import { Textarea } from "@/components/ui/textarea";
 
 interface PendingPersonal {
   id: string;
@@ -36,7 +36,7 @@ export default function AdminApprovals() {
   const [loading, setLoading] = useState(true);
   const [pendingPersonals, setPendingPersonals] = useState<PendingPersonal[]>([]);
   const [selectedPersonal, setSelectedPersonal] = useState<PendingPersonal | null>(null);
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -47,32 +47,32 @@ export default function AdminApprovals() {
   const fetchPendingPersonals = async () => {
     try {
       setLoading(true);
-      
+
       // Buscar user_roles pendentes de aprovação
       const { data: rolesData, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('id, user_id, role, approved, created_at')
-        .eq('role', 'personal')
-        .eq('approved', false)
-        .order('created_at', { ascending: false });
+        .from("user_roles")
+        .select("id, user_id, role, approved, created_at")
+        .eq("role", "personal")
+        .eq("approved", false)
+        .order("created_at", { ascending: false });
 
       if (rolesError) throw rolesError;
 
       // Buscar perfis dos usuários
       if (rolesData && rolesData.length > 0) {
-        const userIds = rolesData.map(r => r.user_id);
-        
+        const userIds = rolesData.map((r) => r.user_id);
+
         const { data: profilesData, error: profilesError } = await supabase
-          .from('profiles')
-          .select('user_id, name')
-          .in('user_id', userIds);
+          .from("profiles")
+          .select("user_id, name")
+          .in("user_id", userIds);
 
         if (profilesError) throw profilesError;
 
         // Combinar dados
-        const combined = rolesData.map(role => ({
+        const combined = rolesData.map((role) => ({
           ...role,
-          profiles: profilesData?.find(p => p.user_id === role.user_id)
+          profiles: profilesData?.find((p) => p.user_id === role.user_id),
         }));
 
         setPendingPersonals(combined);
@@ -80,8 +80,8 @@ export default function AdminApprovals() {
         setPendingPersonals([]);
       }
     } catch (error: any) {
-      console.error('Error fetching pending personals:', error);
-      toast.error('Erro ao carregar aprovações pendentes');
+      console.error("Error fetching pending personals:", error);
+      toast.error("Erro ao carregar aprovações pendentes");
     } finally {
       setLoading(false);
     }
@@ -91,24 +91,35 @@ export default function AdminApprovals() {
     try {
       setActionLoading(true);
 
+      // Obter o ID do usuário atual (admin que está aprovando)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("Usuário não autenticado");
+      }
+
       const { error } = await supabase
-        .from('user_roles')
+        .from("user_roles")
         .update({
           approved: true,
-          approved_at: new Date().toISOString()
+          approved_at: new Date().toISOString(),
+          approved_by: user.id,
         })
-        .eq('id', personal.id);
+        .eq("id", personal.id);
 
       if (error) throw error;
 
-      toast.success('Personal aprovado!', {
-        description: `${personal.profiles?.name} foi aprovado com sucesso.`
+      toast.success("Personal aprovado!", {
+        description: `${personal.profiles?.name} foi aprovado com sucesso.`,
       });
 
       fetchPendingPersonals();
     } catch (error: any) {
-      console.error('Error approving personal:', error);
-      toast.error('Erro ao aprovar personal');
+      console.error("Error approving personal:", error);
+      toast.error("Erro ao aprovar personal", {
+        description: error.message || "Não foi possível aprovar o personal trainer.",
+      });
     } finally {
       setActionLoading(false);
     }
@@ -121,31 +132,28 @@ export default function AdminApprovals() {
       setActionLoading(true);
 
       const { error } = await supabase
-        .from('user_roles')
+        .from("user_roles")
         .update({
-          rejection_reason: rejectionReason
+          rejection_reason: rejectionReason,
         })
-        .eq('id', selectedPersonal.id);
+        .eq("id", selectedPersonal.id);
 
       if (error) throw error;
 
       // Opcionalmente, pode deletar o registro ou apenas marcar como rejeitado
-      await supabase
-        .from('user_roles')
-        .delete()
-        .eq('id', selectedPersonal.id);
+      await supabase.from("user_roles").delete().eq("id", selectedPersonal.id);
 
-      toast.success('Personal rejeitado', {
-        description: 'A conta foi rejeitada e removida.'
+      toast.success("Personal rejeitado", {
+        description: "A conta foi rejeitada e removida.",
       });
 
       setShowRejectDialog(false);
       setSelectedPersonal(null);
-      setRejectionReason('');
+      setRejectionReason("");
       fetchPendingPersonals();
     } catch (error: any) {
-      console.error('Error rejecting personal:', error);
-      toast.error('Erro ao rejeitar personal');
+      console.error("Error rejecting personal:", error);
+      toast.error("Erro ao rejeitar personal");
     } finally {
       setActionLoading(false);
     }
@@ -167,7 +175,7 @@ export default function AdminApprovals() {
   return (
     <div className="min-h-screen bg-background">
       <Header title="Admin" />
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
@@ -212,7 +220,7 @@ export default function AdminApprovals() {
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <CardTitle className="flex items-center gap-2">
-                          {personal.profiles?.name || 'Usuário sem nome'}
+                          {personal.profiles?.name || "Usuário sem nome"}
                           <Badge variant="secondary" className="gap-1">
                             <Clock className="w-3 h-3" />
                             Pendente
@@ -221,7 +229,7 @@ export default function AdminApprovals() {
                         <CardDescription className="flex items-center gap-4">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
-                            Solicitado em: {new Date(personal.created_at).toLocaleDateString('pt-BR')}
+                            Solicitado em: {new Date(personal.created_at).toLocaleDateString("pt-BR")}
                           </span>
                         </CardDescription>
                       </div>
@@ -229,11 +237,7 @@ export default function AdminApprovals() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex gap-2">
-                      <Button
-                        onClick={() => handleApprove(personal)}
-                        disabled={actionLoading}
-                        className="gap-2"
-                      >
+                      <Button onClick={() => handleApprove(personal)} disabled={actionLoading} className="gap-2">
                         <CheckCircle className="w-4 h-4" />
                         Aprovar
                       </Button>
@@ -261,11 +265,11 @@ export default function AdminApprovals() {
           <AlertDialogHeader>
             <AlertDialogTitle>Rejeitar solicitação?</AlertDialogTitle>
             <AlertDialogDescription>
-              Você está prestes a rejeitar a solicitação de {selectedPersonal?.profiles?.name}. 
-              Essa ação removerá a conta do sistema.
+              Você está prestes a rejeitar a solicitação de {selectedPersonal?.profiles?.name}. Essa ação removerá a
+              conta do sistema.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          
+
           <div className="space-y-2 py-4">
             <label className="text-sm font-medium">Motivo da rejeição (opcional)</label>
             <Textarea
@@ -289,7 +293,7 @@ export default function AdminApprovals() {
                   Rejeitando...
                 </>
               ) : (
-                'Confirmar Rejeição'
+                "Confirmar Rejeição"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
