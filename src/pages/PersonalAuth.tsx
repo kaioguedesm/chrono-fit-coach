@@ -197,33 +197,55 @@ export default function PersonalAuth() {
       }
 
       // Registrar solicitação de personal trainer (será processada após confirmação de email)
-      // Tentar inserir diretamente primeiro
-      let pendingError = null;
-      const { error: directInsertError } = await supabase.from("pending_personal_signups").insert({
-        user_id: data.user.id,
+      // Usar a função RPC primeiro (SECURITY DEFINER) que contorna políticas RLS
+      let pendingSignupSuccess = false;
+
+      // Tentar usar a função RPC (mais confiável durante signup)
+      const { error: functionError } = await supabase.rpc("create_pending_personal_signup", {
+        _user_id: data.user.id,
       });
 
-      if (directInsertError) {
-        // Se falhar, usar a função do banco de dados (SECURITY DEFINER)
-        const { error: functionError } = await supabase.rpc("create_pending_personal_signup", {
-          _user_id: data.user.id,
+      if (!functionError) {
+        pendingSignupSuccess = true;
+        console.log("Pending signup criado com sucesso via RPC");
+      } else {
+        console.error("Erro ao criar pending signup via RPC:", functionError);
+
+        // Se a função RPC não existir ou falhar, tentar inserção direta
+        const { error: directInsertError } = await supabase.from("pending_personal_signups").insert({
+          user_id: data.user.id,
         });
 
-        if (functionError) {
-          pendingError = functionError;
-          console.error("Erro ao criar pending signup:", functionError);
+        if (!directInsertError) {
+          pendingSignupSuccess = true;
+          console.log("Pending signup criado com sucesso via inserção direta");
+        } else {
+          console.error("Erro ao criar pending signup via inserção direta:", directInsertError);
 
           // Como último recurso, tentar criar o role diretamente
-          // Isso pode acontecer se o trigger não funcionar ou se houver problemas de RLS
+          // Isso garante que o usuário apareça na lista de aprovações mesmo se pending_personal_signups falhar
           const { error: roleError } = await supabase.from("user_roles").insert({
             user_id: data.user.id,
             role: "personal",
             approved: false,
           });
 
-          if (roleError) {
+          if (!roleError) {
+            console.log("Role criado diretamente como fallback");
+            // Ainda mostrar aviso, mas não bloquear o cadastro
+            toast.warning("Aviso", {
+              description:
+                "Sua solicitação foi registrada, mas pode precisar de verificação manual. Entre em contato com o suporte se necessário.",
+              duration: 8000,
+            });
+          } else {
             console.error("Erro ao criar role diretamente:", roleError);
-            // Não bloquear o cadastro, o admin pode criar o role manualmente se necessário
+            // Não bloquear o cadastro, mas avisar o usuário
+            toast.warning("Aviso", {
+              description:
+                "Sua conta foi criada, mas a solicitação de personal trainer pode precisar ser registrada manualmente. Entre em contato com o suporte.",
+              duration: 8000,
+            });
           }
         }
       }
