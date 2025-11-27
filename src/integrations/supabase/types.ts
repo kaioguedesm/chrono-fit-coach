@@ -1018,6 +1018,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_pending_personal_signup: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       generate_share_token: { Args: never; Returns: string }
       has_role: {
         Args: {
