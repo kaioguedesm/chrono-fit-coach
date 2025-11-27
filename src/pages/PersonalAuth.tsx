@@ -201,7 +201,7 @@ export default function PersonalAuth() {
       let pendingSignupSuccess = false;
 
       // Tentar usar a função RPC (mais confiável durante signup)
-      const { error: functionError } = await supabase.rpc("create_pending_personal_signup", {
+      const { error: functionError } = await (supabase.rpc as any)("create_pending_personal_signup", {
         _user_id: data.user.id,
       });
 
