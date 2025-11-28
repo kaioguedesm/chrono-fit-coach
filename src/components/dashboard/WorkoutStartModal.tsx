@@ -5,13 +5,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Play, Dumbbell, Calendar } from 'lucide-react';
+import { Play, Dumbbell, Calendar, AlertCircle } from 'lucide-react';
+import { WorkoutRefreshAlert } from '@/components/workout/WorkoutRefreshAlert';
+import { WorkoutRefreshDialog } from '@/components/workout/WorkoutRefreshDialog';
 
 interface WorkoutPlan {
   id: string;
   name: string;
   type: string;
   is_active: boolean;
+  workouts_completed_count: number;
+  max_workouts_before_refresh: number;
+  needs_refresh: boolean;
 }
 
 interface WorkoutStartModalProps {
@@ -28,6 +33,8 @@ export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavi
   const [workouts, setWorkouts] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [startingWorkout, setStartingWorkout] = useState(false);
+  const [refreshDialogOpen, setRefreshDialogOpen] = useState(false);
+  const [selectedWorkoutToRefresh, setSelectedWorkoutToRefresh] = useState<WorkoutPlan | null>(null);
 
   useEffect(() => {
     if (open && user) {
@@ -41,7 +48,7 @@ export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavi
     try {
       const { data, error } = await supabase
         .from('workout_plans')
-        .select('id, name, type, is_active')
+        .select('id, name, type, is_active, workouts_completed_count, max_workouts_before_refresh, needs_refresh')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
@@ -62,6 +69,13 @@ export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavi
 
   const handleWorkoutSelect = async (workout: WorkoutPlan) => {
     if (!user) return;
+
+    // Check if workout needs refresh
+    if (workout.needs_refresh) {
+      setSelectedWorkoutToRefresh(workout);
+      setRefreshDialogOpen(true);
+      return;
+    }
 
     setStartingWorkout(true);
 
@@ -153,14 +167,19 @@ export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavi
                 <div className="grid gap-3">
                   {workouts.map((workout) => (
                     <Card key={workout.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4">
+                      <CardContent className="p-4 space-y-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                               <Dumbbell className="w-6 h-6 text-primary" />
                             </div>
                             <div>
-                              <h3 className="font-semibold">{workout.name}</h3>
+                              <h3 className="font-semibold flex items-center gap-2">
+                                {workout.name}
+                                {workout.needs_refresh && (
+                                  <AlertCircle className="w-4 h-4 text-destructive" />
+                                )}
+                              </h3>
                               <p className="text-sm text-muted-foreground capitalize">
                                 {workout.type}
                               </p>
@@ -170,11 +189,22 @@ export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavi
                             onClick={() => handleWorkoutSelect(workout)}
                             size="sm"
                             disabled={startingWorkout}
+                            variant={workout.needs_refresh ? "outline" : "default"}
                           >
                             <Play className="w-4 h-4 mr-2" />
                             {startingWorkout ? 'Iniciando...' : 'Iniciar'}
                           </Button>
                         </div>
+                        
+                        {/* Progress indicator */}
+                        {workout.workouts_completed_count > 0 && (
+                          <WorkoutRefreshAlert
+                            workoutName={workout.name}
+                            completedWorkouts={workout.workouts_completed_count}
+                            maxWorkouts={workout.max_workouts_before_refresh}
+                            needsRefresh={workout.needs_refresh}
+                          />
+                        )}
                       </CardContent>
                     </Card>
                   ))}
@@ -198,6 +228,21 @@ export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavi
               </div>
         </div>
       </DialogContent>
+
+      {selectedWorkoutToRefresh && (
+        <WorkoutRefreshDialog
+          open={refreshDialogOpen}
+          onOpenChange={(open) => {
+            setRefreshDialogOpen(open);
+            if (!open) {
+              setSelectedWorkoutToRefresh(null);
+            }
+          }}
+          workoutPlanId={selectedWorkoutToRefresh.id}
+          workoutName={selectedWorkoutToRefresh.name}
+          completedWorkouts={selectedWorkoutToRefresh.workouts_completed_count}
+        />
+      )}
     </Dialog>
   );
 }
