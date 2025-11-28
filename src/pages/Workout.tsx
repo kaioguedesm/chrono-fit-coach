@@ -32,6 +32,8 @@ import { AIWorkoutGenerator } from '@/components/workout/AIWorkoutGenerator';
 import { ShareWorkoutModal } from '@/components/workout/ShareWorkoutModal';
 import { EditWorkoutModal } from '@/components/workout/EditWorkoutModal';
 import { WorkoutApprovalBadge } from '@/components/workout/WorkoutApprovalBadge';
+import { WorkoutRefreshAlert } from '@/components/workout/WorkoutRefreshAlert';
+import { WorkoutRefreshDialog } from '@/components/workout/WorkoutRefreshDialog';
 import { LoadingState } from '@/components/common/LoadingState';
 import { EmptyState } from '@/components/common/EmptyState';
 
@@ -43,6 +45,9 @@ interface WorkoutPlan {
   created_by: string;
   approval_status?: string;
   rejection_reason?: string;
+  workouts_completed_count?: number;
+  max_workouts_before_refresh?: number;
+  needs_refresh?: boolean;
   exercises: Exercise[];
 }
 
@@ -78,6 +83,8 @@ export default function Workout() {
     planName: string;
     exercises: Exercise[];
   } | null>(null);
+  const [refreshDialogOpen, setRefreshDialogOpen] = useState(false);
+  const [selectedWorkoutToRefresh, setSelectedWorkoutToRefresh] = useState<WorkoutPlan | null>(null);
 
   // Reset selected workout when modal closes
   useEffect(() => {
@@ -131,6 +138,13 @@ export default function Workout() {
 
   const startWorkout = async (plan: WorkoutPlan) => {
     if (!user) return;
+
+    // Check if workout needs refresh
+    if (plan.needs_refresh) {
+      setSelectedWorkoutToRefresh(plan);
+      setRefreshDialogOpen(true);
+      return;
+    }
 
     // Check if the workout is approved (for AI workouts)
     if (plan.created_by === 'ai' && plan.approval_status !== 'approved') {
@@ -463,6 +477,20 @@ export default function Workout() {
                     </CardHeader>
                     
                     <CardContent className="space-y-4">
+                      {/* Workout refresh alert */}
+                      {plan.workouts_completed_count && plan.workouts_completed_count > 0 && (
+                        <WorkoutRefreshAlert
+                          workoutName={plan.name}
+                          completedWorkouts={plan.workouts_completed_count}
+                          maxWorkouts={plan.max_workouts_before_refresh || 35}
+                          needsRefresh={plan.needs_refresh || false}
+                          onRefresh={() => {
+                            setSelectedWorkoutToRefresh(plan);
+                            setRefreshDialogOpen(true);
+                          }}
+                        />
+                      )}
+
                       <div className="space-y-2">
                         {plan.exercises.slice(0, 4).map((exercise) => (
                           <div key={exercise.id} className="flex justify-between items-center text-sm bg-muted/50 p-2 rounded">
@@ -530,6 +558,21 @@ export default function Workout() {
             onOpenChange={setEditModalOpen}
             workoutPlanId={selectedWorkoutToEdit}
             onSuccess={fetchWorkoutPlans}
+          />
+        )}
+
+        {selectedWorkoutToRefresh && (
+          <WorkoutRefreshDialog
+            open={refreshDialogOpen}
+            onOpenChange={(open) => {
+              setRefreshDialogOpen(open);
+              if (!open) {
+                setSelectedWorkoutToRefresh(null);
+              }
+            }}
+            workoutPlanId={selectedWorkoutToRefresh.id}
+            workoutName={selectedWorkoutToRefresh.name}
+            completedWorkouts={selectedWorkoutToRefresh.workouts_completed_count || 0}
           />
         )}
 
