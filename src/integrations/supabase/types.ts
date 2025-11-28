@@ -790,11 +790,15 @@ export type Database = {
           created_by_user_id: string | null
           id: string
           is_active: boolean | null
+          last_refresh_date: string | null
+          max_workouts_before_refresh: number | null
           name: string
+          needs_refresh: boolean | null
           rejection_reason: string | null
           type: string
           updated_at: string
           user_id: string
+          workouts_completed_count: number | null
         }
         Insert: {
           approval_status?: string | null
@@ -805,11 +809,15 @@ export type Database = {
           created_by_user_id?: string | null
           id?: string
           is_active?: boolean | null
+          last_refresh_date?: string | null
+          max_workouts_before_refresh?: number | null
           name: string
+          needs_refresh?: boolean | null
           rejection_reason?: string | null
           type: string
           updated_at?: string
           user_id: string
+          workouts_completed_count?: number | null
         }
         Update: {
           approval_status?: string | null
@@ -820,11 +828,15 @@ export type Database = {
           created_by_user_id?: string | null
           id?: string
           is_active?: boolean | null
+          last_refresh_date?: string | null
+          max_workouts_before_refresh?: number | null
           name?: string
+          needs_refresh?: boolean | null
           rejection_reason?: string | null
           type?: string
           updated_at?: string
           user_id?: string
+          workouts_completed_count?: number | null
         }
         Relationships: []
       }
