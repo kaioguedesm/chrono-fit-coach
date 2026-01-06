@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,18 +13,77 @@ import { toast } from "sonner";
 import { Shield, Loader2, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
+interface Gym {
+  id: string;
+  name: string;
+}
+
 export default function PersonalAuth() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isPersonal, loading: roleLoading } = useUserRole();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
+  const [gyms, setGyms] = useState<Gym[]>([]);
+  const [loadingGyms, setLoadingGyms] = useState(false);
 
   // Form states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [gymId, setGymId] = useState("");
+
+  // Buscar academias do banco
+  useEffect(() => {
+    const fetchGyms = async () => {
+      setLoadingGyms(true);
+      console.log("🔍 [PersonalAuth] Iniciando busca de academias...");
+
+      try {
+        // Tentar primeiro via RPC
+        console.log("📡 [PersonalAuth] Tentando buscar via RPC get_gyms...");
+        const { data: rpcData, error: rpcError } = await (supabase.rpc as any)("get_gyms");
+
+        console.log("📡 [PersonalAuth] Resposta RPC:", { rpcData, rpcError });
+
+        if (!rpcError && rpcData && Array.isArray(rpcData) && rpcData.length > 0) {
+          console.log("✅ [PersonalAuth] Academias carregadas via RPC:", rpcData);
+          setGyms(rpcData.map((g: any) => ({ id: g.id, name: g.name })));
+          setLoadingGyms(false);
+          return;
+        }
+
+        // Tentar via query normal
+        console.log("📡 [PersonalAuth] Tentando buscar via query normal...");
+        const { data, error } = await supabase.from("gyms").select("id, name").order("name", { ascending: true });
+
+        console.log("📡 [PersonalAuth] Resposta query:", { data, error });
+
+        if (!error && data && Array.isArray(data) && data.length > 0) {
+          console.log("✅ [PersonalAuth] Academias carregadas:", data);
+          setGyms(data);
+          setLoadingGyms(false);
+          return;
+        }
+
+        // Se ambos falharem
+        console.error("❌ [PersonalAuth] Não foi possível carregar academias");
+        setGyms([]);
+        toast.error("Erro ao carregar academias", {
+          description: "Verifique se a tabela foi criada corretamente.",
+        });
+      } catch (error: any) {
+        console.error("❌ [PersonalAuth] Erro:", error);
+        setGyms([]);
+        toast.error("Erro ao carregar academias");
+      } finally {
+        setLoadingGyms(false);
+      }
+    };
+
+    fetchGyms();
+  }, []);
 
   useEffect(() => {
     // Se já estiver logado como personal, redireciona
@@ -34,6 +94,15 @@ export default function PersonalAuth() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validar gym_id no login
+    if (!gymId.trim()) {
+      toast.error("Academia obrigatória", {
+        description: "Por favor, selecione a academia.",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -50,7 +119,7 @@ export default function PersonalAuth() {
       // Verificar se o usuário é personal trainer e está aprovado
       const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
-        .select("role, approved")
+        .select("role, approved, gym_id")
         .eq("user_id", data.user.id)
         .eq("role", "personal")
         .maybeSingle();
@@ -88,6 +157,32 @@ export default function PersonalAuth() {
           duration: 6000,
         });
         return;
+      }
+
+      // Atualizar gym_id se foi selecionado (igual ao Auth.tsx para usuários comuns)
+      if (gymId.trim()) {
+        // Atualizar o user_roles com o gym_id (igual ao que é feito em profiles no Auth.tsx)
+        const { error: gymUpdateError } = await supabase
+          .from("user_roles")
+          .update({ gym_id: gymId.trim() })
+          .eq("user_id", data.user.id)
+          .eq("role", "personal");
+
+        if (gymUpdateError) {
+          console.error("Erro ao atualizar gym_id:", gymUpdateError);
+          // Tentar upsert caso o registro não exista (igual ao Auth.tsx)
+          await supabase.from("user_roles").upsert(
+            {
+              user_id: data.user.id,
+              role: "personal",
+              approved: roleData.approved,
+              gym_id: gymId.trim(),
+            },
+            {
+              onConflict: "user_id,role",
+            },
+          );
+        }
       }
 
       toast.success("Bem-vindo de volta!", {
@@ -136,6 +231,16 @@ export default function PersonalAuth() {
       return;
     }
 
+    // Validar gym_id no cadastro
+    if (!gymId || !gymId.trim()) {
+      toast.error("Academia obrigatória", {
+        description: "Por favor, selecione a academia.",
+      });
+      return;
+    }
+
+    console.log("✅ [Signup] gym_id validado:", gymId.trim());
+
     setLoading(true);
 
     try {
@@ -168,6 +273,31 @@ export default function PersonalAuth() {
       // Aguardar um momento para garantir que a sessão esteja estabelecida e o perfil seja criado pelo trigger
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
+      // Criar role 'personal' ANTES de fazer upsert no perfil
+      // Isso evita que o trigger crie role 'user' para personal trainers
+      const { error: roleError } = await supabase.from("user_roles").upsert(
+        {
+          user_id: data.user.id,
+          role: "personal",
+          approved: false,
+          gym_id: gymId.trim(),
+        },
+        {
+          onConflict: "user_id,role",
+        },
+      );
+
+      if (roleError) {
+        console.error("Erro ao criar role:", roleError);
+        // Tentar inserção direta como fallback
+        await supabase.from("user_roles").insert({
+          user_id: data.user.id,
+          role: "personal",
+          approved: false,
+          gym_id: gymId.trim(),
+        });
+      }
+
       // Atualizar o perfil com o nome fornecido (usar upsert para garantir que funcione)
       if (name.trim()) {
         const { error: profileError } = await supabase.from("profiles").upsert(
@@ -196,60 +326,6 @@ export default function PersonalAuth() {
         }
       }
 
-      // Registrar solicitação de personal trainer (será processada após confirmação de email)
-      // Usar a função RPC primeiro (SECURITY DEFINER) que contorna políticas RLS
-      let pendingSignupSuccess = false;
-
-      // Tentar usar a função RPC (mais confiável durante signup)
-      const { error: functionError } = await (supabase.rpc as any)("create_pending_personal_signup", {
-        _user_id: data.user.id,
-      });
-
-      if (!functionError) {
-        pendingSignupSuccess = true;
-        console.log("Pending signup criado com sucesso via RPC");
-      } else {
-        console.error("Erro ao criar pending signup via RPC:", functionError);
-
-        // Se a função RPC não existir ou falhar, tentar inserção direta
-        const { error: directInsertError } = await supabase.from("pending_personal_signups").insert({
-          user_id: data.user.id,
-        });
-
-        if (!directInsertError) {
-          pendingSignupSuccess = true;
-          console.log("Pending signup criado com sucesso via inserção direta");
-        } else {
-          console.error("Erro ao criar pending signup via inserção direta:", directInsertError);
-
-          // Como último recurso, tentar criar o role diretamente
-          // Isso garante que o usuário apareça na lista de aprovações mesmo se pending_personal_signups falhar
-          const { error: roleError } = await supabase.from("user_roles").insert({
-            user_id: data.user.id,
-            role: "personal",
-            approved: false,
-          });
-
-          if (!roleError) {
-            console.log("Role criado diretamente como fallback");
-            // Ainda mostrar aviso, mas não bloquear o cadastro
-            toast.warning("Aviso", {
-              description:
-                "Sua solicitação foi registrada, mas pode precisar de verificação manual. Entre em contato com o suporte se necessário.",
-              duration: 8000,
-            });
-          } else {
-            console.error("Erro ao criar role diretamente:", roleError);
-            // Não bloquear o cadastro, mas avisar o usuário
-            toast.warning("Aviso", {
-              description:
-                "Sua conta foi criada, mas a solicitação de personal trainer pode precisar ser registrada manualmente. Entre em contato com o suporte.",
-              duration: 8000,
-            });
-          }
-        }
-      }
-
       toast.success("Conta criada com sucesso!", {
         description:
           "Verifique seu email para confirmar o cadastro. Após a confirmação, sua conta ficará aguardando aprovação de um administrador.",
@@ -260,6 +336,7 @@ export default function PersonalAuth() {
       setPassword("");
       setName("");
       setConfirmPassword("");
+      setGymId("");
       setActiveTab("login");
     } catch (error: any) {
       console.error("Signup error:", error);
@@ -347,6 +424,52 @@ export default function PersonalAuth() {
                     </div>
                   </div>
 
+                  <div className="space-y-2">
+                    <Label htmlFor="login-gymId">Academia</Label>
+                    {loadingGyms ? (
+                      <div className="flex items-center justify-center py-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <span className="ml-2 text-sm text-muted-foreground">Carregando academias...</span>
+                      </div>
+                    ) : gyms.length > 0 ? (
+                      <Select
+                        value={gymId}
+                        onValueChange={(value) => {
+                          console.log("📝 [PersonalAuth] Academia selecionada no login:", value);
+                          setGymId(value);
+                        }}
+                        disabled={loading || loadingGyms}
+                        required
+                      >
+                        <SelectTrigger id="login-gymId" className="w-full">
+                          <SelectValue placeholder="Selecione a academia" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {gyms.map((gym) => (
+                            <SelectItem key={gym.id} value={gym.id}>
+                              {gym.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <>
+                        <Input
+                          id="login-gymId"
+                          type="text"
+                          placeholder="Digite o ID da academia"
+                          value={gymId}
+                          onChange={(e) => setGymId(e.target.value)}
+                          className="pl-10"
+                          required
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Nenhuma academia cadastrada. Entre em contato com o administrador.
+                        </p>
+                      </>
+                    )}
+                  </div>
+
                   <Button type="submit" className="w-full" size="lg" disabled={loading}>
                     {loading ? (
                       <>
@@ -430,6 +553,57 @@ export default function PersonalAuth() {
                         required
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-gymId">Academia</Label>
+                    {loadingGyms ? (
+                      <div className="flex items-center justify-center py-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <span className="ml-2 text-sm text-muted-foreground">Carregando academias...</span>
+                      </div>
+                    ) : gyms.length > 0 ? (
+                      <Select
+                        value={gymId}
+                        onValueChange={(value) => {
+                          console.log("📝 [PersonalAuth] Academia selecionada:", value);
+                          setGymId(value);
+                        }}
+                        disabled={loading || loadingGyms}
+                        required
+                      >
+                        <SelectTrigger id="signup-gymId" className="w-full">
+                          <SelectValue placeholder="Selecione a academia" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {gyms.map((gym) => (
+                            <SelectItem key={gym.id} value={gym.id}>
+                              {gym.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <>
+                        <Input
+                          id="signup-gymId"
+                          type="text"
+                          placeholder="Digite o ID da academia"
+                          value={gymId}
+                          onChange={(e) => setGymId(e.target.value)}
+                          className="pl-10"
+                          required
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Nenhuma academia cadastrada. Entre em contato com o administrador.
+                        </p>
+                      </>
+                    )}
+                    {!loadingGyms && gyms.length === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Nenhuma academia cadastrada. Entre em contato com o administrador.
+                      </p>
+                    )}
                   </div>
 
                   <Button type="submit" className="w-full" size="lg" disabled={loading}>
