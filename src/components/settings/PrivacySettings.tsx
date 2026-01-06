@@ -44,19 +44,48 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
   const [loadingSignature, setLoadingSignature] = useState(true);
   const [signedSignature, setSignedSignature] = useState<string | null>(null);
   const [signedDate, setSignedDate] = useState<string | null>(null);
+  const [termsPdfUrl, setTermsPdfUrl] = useState<string | null>(null);
 
-  // Verificar se o usuário já assinou quando o dialog abrir
+  // Verificar se o usuário já assinou quando o dialog abrir e carregar URL do PDF
   useEffect(() => {
-    if (open && type === "terms" && user) {
-      checkExistingSignature();
+    if (open && type === "terms") {
+      // Carregar URL do PDF do storage
+      loadTermsPdfUrl();
+
+      if (user) {
+        checkExistingSignature();
+      }
     } else if (!open) {
       // Resetar estados quando fechar
       setHasSigned(false);
       setSignedPdfUrl(null);
       setSignedSignature(null);
       setSignedDate(null);
+      setTermsPdfUrl(null);
     }
   }, [open, type, user]);
+
+  const loadTermsPdfUrl = async () => {
+    try {
+      // Obter URL pública do storage
+      const { data: publicUrlData } = supabase.storage
+        .from("public-documents")
+        .getPublicUrl("Termo_de_Uso_Profissional_App_Fitnes.pdf");
+
+      if (publicUrlData?.publicUrl) {
+        console.log("✅ URL do PDF do storage:", publicUrlData.publicUrl);
+        setTermsPdfUrl(publicUrlData.publicUrl);
+      } else {
+        console.warn("⚠️ URL pública não encontrada, usando fallback local");
+        // Fallback para caminho local se storage não funcionar
+        setTermsPdfUrl("/Termo_de_Uso_Profissional_App_Fitnes.pdf");
+      }
+    } catch (error) {
+      console.error("❌ Erro ao carregar URL do PDF:", error);
+      // Fallback para caminho local
+      setTermsPdfUrl("/Termo_de_Uso_Profissional_App_Fitnes.pdf");
+    }
+  };
 
   const checkExistingSignature = async () => {
     if (!user) return;
@@ -255,8 +284,8 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
       // Importar pdf-lib dinamicamente para evitar erros de carregamento
       const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
 
-      // Carregar o PDF original
-      const pdfUrl = "/Termo_de_Uso_Profissional_App_Fitnes.pdf";
+      // Carregar o PDF original do storage ou fallback local
+      const pdfUrl = termsPdfUrl || "/Termo_de_Uso_Profissional_App_Fitnes.pdf";
       const response = await fetch(pdfUrl);
       const pdfBytes = await response.arrayBuffer();
 
@@ -492,7 +521,7 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
           <CardContent>
             <div className="border rounded-lg overflow-hidden">
               <iframe
-                src="/Termo_de_Uso_Profissional_App_Fitnes.pdf"
+                src={termsPdfUrl || "/Termo_de_Uso_Profissional_App_Fitnes.pdf"}
                 className="w-full h-[500px]"
                 title="Termo de Uso PDF"
               />
