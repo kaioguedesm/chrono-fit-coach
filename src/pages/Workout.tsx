@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Header } from '@/components/layout/Header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState, useEffect } from "react";
+import { Header } from "@/components/layout/Header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,29 +13,29 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical, Edit, Dumbbell } from 'lucide-react';
-import { ActiveWorkoutSession } from '@/components/workout/ActiveWorkoutSession';
-import { WorkoutHistory } from '@/components/workout/WorkoutHistory';
-import { CreateWorkoutForm } from '@/components/workout/CreateWorkoutForm';
-import { AIWorkoutGenerator } from '@/components/workout/AIWorkoutGenerator';
-import { ShareWorkoutModal } from '@/components/workout/ShareWorkoutModal';
-import { EditWorkoutModal } from '@/components/workout/EditWorkoutModal';
-import { WorkoutApprovalBadge } from '@/components/workout/WorkoutApprovalBadge';
-import { WorkoutRefreshAlert } from '@/components/workout/WorkoutRefreshAlert';
-import { WorkoutRefreshDialog } from '@/components/workout/WorkoutRefreshDialog';
-import { LoadingState } from '@/components/common/LoadingState';
-import { EmptyState } from '@/components/common/EmptyState';
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical, Edit, Dumbbell } from "lucide-react";
+import { ActiveWorkoutSession } from "@/components/workout/ActiveWorkoutSession";
+import { WorkoutHistory } from "@/components/workout/WorkoutHistory";
+import { CreateWorkoutForm } from "@/components/workout/CreateWorkoutForm";
+import { AIWorkoutGenerator } from "@/components/workout/AIWorkoutGenerator";
+import { ShareWorkoutModal } from "@/components/workout/ShareWorkoutModal";
+import { EditWorkoutModal } from "@/components/workout/EditWorkoutModal";
+import { WorkoutApprovalBadge } from "@/components/workout/WorkoutApprovalBadge";
+import { WorkoutRefreshAlert } from "@/components/workout/WorkoutRefreshAlert";
+import { WorkoutRefreshDialog } from "@/components/workout/WorkoutRefreshDialog";
+import { LoadingState } from "@/components/common/LoadingState";
+import { EmptyState } from "@/components/common/EmptyState";
 
 interface WorkoutPlan {
   id: string;
@@ -68,7 +68,8 @@ export default function Workout() {
   const { toast } = useToast();
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('plans');
+  const [hasSignedTerms, setHasSignedTerms] = useState<boolean | null>(null);
+  const [activeTab, setActiveTab] = useState("plans");
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedWorkoutToShare, setSelectedWorkoutToShare] = useState<{
     id: string;
@@ -102,25 +103,47 @@ export default function Workout() {
   useEffect(() => {
     if (user) {
       fetchWorkoutPlans();
+      checkSignedTerms();
     } else {
       // Se não houver usuário (modo demo), apenas seta loading como false
       setLoading(false);
     }
   }, [user]);
 
+  const checkSignedTerms = async () => {
+    if (!user) return;
+
+    try {
+      const { data: termsData } = await supabase
+        .from("user_terms_acceptance")
+        .select("signed_pdf_url, signed_pdf_base64")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      // Usar type assertion para evitar erros de TypeScript quando as colunas não existem
+      const signatureData = termsData as any;
+      setHasSignedTerms(!!(signatureData?.signed_pdf_url || signatureData?.signed_pdf_base64));
+    } catch (error) {
+      console.error("Erro ao verificar termo assinado:", error);
+      setHasSignedTerms(false);
+    }
+  };
+
   const fetchWorkoutPlans = async () => {
     if (!user) return;
 
     try {
       const { data: plans, error } = await supabase
-        .from('workout_plans')
-        .select(`
+        .from("workout_plans")
+        .select(
+          `
           *,
           exercises (*)
-        `)
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        `,
+        )
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
@@ -129,7 +152,7 @@ export default function Workout() {
       toast({
         title: "Erro",
         description: "Não foi possível carregar os treinos.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -147,22 +170,36 @@ export default function Workout() {
     }
 
     // Check if the workout is approved (for AI workouts)
-    if (plan.created_by === 'ai' && plan.approval_status !== 'approved') {
-      toast({
-        title: "Treino não aprovado",
-        description: "Este treino ainda não foi aprovado pelo personal trainer.",
-        variant: "destructive"
-      });
-      return;
+    // Se o usuário tiver termo assinado, pode usar treinos não aprovados
+    if (plan.created_by === "ai" && plan.approval_status !== "approved") {
+      // Verificar se o usuário tem termo assinado
+      const { data: termsData } = await supabase
+        .from("user_terms_acceptance")
+        .select("signed_pdf_url, signed_pdf_base64")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      // Usar type assertion para evitar erros de TypeScript quando as colunas não existem
+      const signatureData = termsData as any;
+      const hasSignedTerms = !!(signatureData?.signed_pdf_url || signatureData?.signed_pdf_base64);
+
+      if (!hasSignedTerms) {
+        toast({
+          title: "Treino não aprovado",
+          description: "Este treino ainda não foi aprovado pelo personal trainer.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     try {
       const { data, error } = await supabase
-        .from('workout_sessions')
+        .from("workout_sessions")
         .insert({
           user_id: user.id,
           workout_plan_id: plan.id,
-          started_at: new Date().toISOString()
+          started_at: new Date().toISOString(),
         })
         .select()
         .single();
@@ -172,18 +209,18 @@ export default function Workout() {
       setActiveSession({
         sessionId: data.id,
         planName: plan.name,
-        exercises: plan.exercises.sort((a, b) => a.order_in_workout - b.order_in_workout)
+        exercises: plan.exercises.sort((a, b) => a.order_in_workout - b.order_in_workout),
       });
 
       toast({
         title: "Treino iniciado!",
-        description: "Boa sorte com seu treino 💪"
+        description: "Boa sorte com seu treino 💪",
       });
     } catch (error: any) {
       toast({
         title: "Erro",
         description: "Não foi possível iniciar o treino.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -191,16 +228,13 @@ export default function Workout() {
   const handleWorkoutComplete = () => {
     setActiveSession(null);
     fetchWorkoutPlans();
-    setActiveTab('history');
+    setActiveTab("history");
   };
 
   const handleWorkoutCancel = async () => {
     if (activeSession) {
       // Delete incomplete session
-      await supabase
-        .from('workout_sessions')
-        .delete()
-        .eq('id', activeSession.sessionId);
+      await supabase.from("workout_sessions").delete().eq("id", activeSession.sessionId);
     }
     setActiveSession(null);
   };
@@ -210,33 +244,27 @@ export default function Workout() {
 
     try {
       // Delete exercises first (due to foreign key constraints)
-      const { error: exercisesError } = await supabase
-        .from('exercises')
-        .delete()
-        .eq('workout_plan_id', planToDelete);
+      const { error: exercisesError } = await supabase.from("exercises").delete().eq("workout_plan_id", planToDelete);
 
       if (exercisesError) throw exercisesError;
 
       // Then delete the workout plan
-      const { error: planError } = await supabase
-        .from('workout_plans')
-        .delete()
-        .eq('id', planToDelete);
+      const { error: planError } = await supabase.from("workout_plans").delete().eq("id", planToDelete);
 
       if (planError) throw planError;
 
       toast({
         title: "Treino excluído",
-        description: "O treino foi removido com sucesso."
+        description: "O treino foi removido com sucesso.",
       });
 
       // Update local state
-      setWorkoutPlans(workoutPlans.filter(p => p.id !== planToDelete));
+      setWorkoutPlans(workoutPlans.filter((p) => p.id !== planToDelete));
     } catch (error: any) {
       toast({
         title: "Erro",
         description: "Não foi possível excluir o treino.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setDeleteDialogOpen(false);
@@ -246,89 +274,89 @@ export default function Workout() {
 
   const samplePlans: WorkoutPlan[] = [
     {
-      id: 'sample-1',
-      name: 'Treino A - Peito e Tríceps',
-      type: 'A',
+      id: "sample-1",
+      name: "Treino A - Peito e Tríceps",
+      type: "A",
       is_active: true,
-      created_by: 'ai',
+      created_by: "ai",
       exercises: [
         {
-          id: '1',
-          name: 'Supino Reto',
+          id: "1",
+          name: "Supino Reto",
           sets: 4,
-          reps: '8-12',
+          reps: "8-12",
           weight: 60,
           rest_time: 120,
           order_in_workout: 1,
-          notes: 'Foco na execução',
-          group_muscle: 'peito'
+          notes: "Foco na execução",
+          group_muscle: "peito",
         },
         {
-          id: '2',
-          name: 'Supino Inclinado',
+          id: "2",
+          name: "Supino Inclinado",
           sets: 3,
-          reps: '10-12',
+          reps: "10-12",
           weight: 45,
           rest_time: 90,
           order_in_workout: 2,
           notes: null,
-          group_muscle: 'peito'
+          group_muscle: "peito",
         },
         {
-          id: '3',
-          name: 'Crucifixo',
+          id: "3",
+          name: "Crucifixo",
           sets: 3,
-          reps: '12-15',
+          reps: "12-15",
           weight: 15,
           rest_time: 60,
           order_in_workout: 3,
           notes: null,
-          group_muscle: 'peito'
+          group_muscle: "peito",
         },
         {
-          id: '4',
-          name: 'Tríceps Testa',
+          id: "4",
+          name: "Tríceps Testa",
           sets: 3,
-          reps: '10-12',
+          reps: "10-12",
           weight: 20,
           rest_time: 60,
           order_in_workout: 4,
           notes: null,
-          group_muscle: 'tríceps'
-        }
-      ]
+          group_muscle: "tríceps",
+        },
+      ],
     },
     {
-      id: 'sample-2',
-      name: 'Treino B - Costas e Bíceps',
-      type: 'B',
+      id: "sample-2",
+      name: "Treino B - Costas e Bíceps",
+      type: "B",
       is_active: true,
-      created_by: 'ai',
+      created_by: "ai",
       exercises: [
         {
-          id: '5',
-          name: 'Puxada Frontal',
+          id: "5",
+          name: "Puxada Frontal",
           sets: 4,
-          reps: '8-12',
+          reps: "8-12",
           weight: 50,
           rest_time: 120,
           order_in_workout: 1,
-          notes: 'Contrair bem as costas',
-          group_muscle: 'costas'
+          notes: "Contrair bem as costas",
+          group_muscle: "costas",
         },
         {
-          id: '6',
-          name: 'Remada Sentado',
+          id: "6",
+          name: "Remada Sentado",
           sets: 3,
-          reps: '10-12',
+          reps: "10-12",
           weight: 45,
           rest_time: 90,
           order_in_workout: 2,
           notes: null,
-          group_muscle: 'costas'
-        }
-      ]
-    }
+          group_muscle: "costas",
+        },
+      ],
+    },
   ];
 
   const displayPlans = workoutPlans.length > 0 ? workoutPlans : samplePlans;
@@ -365,7 +393,7 @@ export default function Workout() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Treinos" />
-      
+
       <div className="container mx-auto px-4 pt-28 py-8 pb-20 space-y-8 max-w-7xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
@@ -393,7 +421,7 @@ export default function Workout() {
                 <h2 className="text-xl font-bold">Seus Treinos</h2>
                 <p className="text-sm text-muted-foreground">Escolha um treino para começar</p>
               </div>
-              <Button size="sm" onClick={() => setActiveTab('create')}>
+              <Button size="sm" onClick={() => setActiveTab("create")}>
                 <Plus className="w-4 h-4 mr-2" />
                 Novo
               </Button>
@@ -406,7 +434,7 @@ export default function Workout() {
                 description="Crie seu primeiro treino personalizado ou use a IA para gerar um plano completo adaptado aos seus objetivos."
                 motivation="O primeiro passo é sempre o mais importante!"
                 actionLabel="Criar Primeiro Treino"
-                onAction={() => setActiveTab('create')}
+                onAction={() => setActiveTab("create")}
               />
             ) : (
               <div className="space-y-4">
@@ -417,11 +445,11 @@ export default function Workout() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
                             <CardTitle className="text-lg">{plan.name}</CardTitle>
-                            <Badge variant={plan.created_by === 'ai' ? 'default' : 'secondary'}>
-                              {plan.created_by === 'ai' ? '🤖 IA' : '👤 Custom'}
+                            <Badge variant={plan.created_by === "ai" ? "default" : "secondary"}>
+                              {plan.created_by === "ai" ? "🤖 IA" : "👤 Custom"}
                             </Badge>
-                            {plan.created_by === 'ai' && plan.approval_status && (
-                              <WorkoutApprovalBadge 
+                            {plan.created_by === "ai" && plan.approval_status && (
+                              <WorkoutApprovalBadge
                                 status={plan.approval_status}
                                 rejectionReason={plan.rejection_reason}
                                 size="sm"
@@ -475,7 +503,7 @@ export default function Workout() {
                         )}
                       </div>
                     </CardHeader>
-                    
+
                     <CardContent className="space-y-4">
                       {/* Workout refresh alert */}
                       {plan.workouts_completed_count && plan.workouts_completed_count > 0 && (
@@ -493,10 +521,15 @@ export default function Workout() {
 
                       <div className="space-y-2">
                         {plan.exercises.slice(0, 4).map((exercise) => (
-                          <div key={exercise.id} className="flex justify-between items-center text-sm bg-muted/50 p-2 rounded">
+                          <div
+                            key={exercise.id}
+                            className="flex justify-between items-center text-sm bg-muted/50 p-2 rounded"
+                          >
                             <span className="font-medium">{exercise.name}</span>
                             <div className="flex items-center gap-2 text-muted-foreground">
-                              <span>{exercise.sets}×{exercise.reps}</span>
+                              <span>
+                                {exercise.sets}×{exercise.reps}
+                              </span>
                               {exercise.weight && (
                                 <Badge variant="secondary" className="text-xs">
                                   <Weight className="w-3 h-3 mr-1" />
@@ -513,16 +546,18 @@ export default function Workout() {
                         )}
                       </div>
 
-                      <Button 
-                        className="w-full" 
+                      <Button
+                        className="w-full"
                         size="lg"
                         onClick={() => startWorkout(plan)}
-                        disabled={plan.created_by === 'ai' && plan.approval_status !== 'approved'}
+                        disabled={
+                          plan.created_by === "ai" && plan.approval_status !== "approved" && hasSignedTerms === false
+                        }
                       >
                         <Play className="w-5 h-5 mr-2" />
-                        {plan.created_by === 'ai' && plan.approval_status === 'pending' 
-                          ? 'Aguardando Aprovação' 
-                          : 'Iniciar Treino'}
+                        {plan.created_by === "ai" && plan.approval_status === "pending" && hasSignedTerms === false
+                          ? "Aguardando Aprovação"
+                          : "Iniciar Treino"}
                       </Button>
                     </CardContent>
                   </Card>
@@ -536,10 +571,12 @@ export default function Workout() {
           </TabsContent>
 
           <TabsContent value="create">
-            <CreateWorkoutForm onSuccess={() => {
-              fetchWorkoutPlans();
-              setActiveTab('plans');
-            }} />
+            <CreateWorkoutForm
+              onSuccess={() => {
+                fetchWorkoutPlans();
+                setActiveTab("plans");
+              }}
+            />
           </TabsContent>
         </Tabs>
 
@@ -586,9 +623,7 @@ export default function Workout() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeletePlan}>
-                Excluir
-              </AlertDialogAction>
+              <AlertDialogAction onClick={handleDeletePlan}>Excluir</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
