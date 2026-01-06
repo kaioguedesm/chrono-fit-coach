@@ -766,6 +766,11 @@ export type Database = {
           accepted_at: string
           id: string
           ip_address: string | null
+          is_over_18: boolean | null
+          signature: string | null
+          signed_at: string | null
+          signed_pdf_base64: string | null
+          signed_pdf_url: string | null
           terms_version: string
           user_agent: string | null
           user_id: string
@@ -774,6 +779,11 @@ export type Database = {
           accepted_at?: string
           id?: string
           ip_address?: string | null
+          is_over_18?: boolean | null
+          signature?: string | null
+          signed_at?: string | null
+          signed_pdf_base64?: string | null
+          signed_pdf_url?: string | null
           terms_version: string
           user_agent?: string | null
           user_id: string
@@ -782,6 +792,11 @@ export type Database = {
           accepted_at?: string
           id?: string
           ip_address?: string | null
+          is_over_18?: boolean | null
+          signature?: string | null
+          signed_at?: string | null
+          signed_pdf_base64?: string | null
+          signed_pdf_url?: string | null
           terms_version?: string
           user_agent?: string | null
           user_id?: string
