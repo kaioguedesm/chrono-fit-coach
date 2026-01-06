@@ -214,27 +214,6 @@ export type Database = {
           },
         ]
       }
-      gyms: {
-        Row: {
-          created_at: string
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       meal_logs: {
         Row: {
           ai_analysis: string | null
@@ -468,7 +447,6 @@ export type Database = {
           experience_level: string | null
           gender: string | null
           goal: string | null
-          gym_id: string | null
           height: number | null
           id: string
           name: string
@@ -485,7 +463,6 @@ export type Database = {
           experience_level?: string | null
           gender?: string | null
           goal?: string | null
-          gym_id?: string | null
           height?: number | null
           id?: string
           name: string
@@ -502,7 +479,6 @@ export type Database = {
           experience_level?: string | null
           gender?: string | null
           goal?: string | null
-          gym_id?: string | null
           height?: number | null
           id?: string
           name?: string
@@ -510,15 +486,7 @@ export type Database = {
           user_id?: string
           weight?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_gym_id_fkey"
-            columns: ["gym_id"]
-            isOneToOne: false
-            referencedRelation: "gyms"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       progress_photos: {
         Row: {
@@ -723,7 +691,6 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           created_at: string
-          gym_id: string | null
           id: string
           rejection_reason: string | null
           role: Database["public"]["Enums"]["app_role"]
@@ -734,7 +701,6 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
-          gym_id?: string | null
           id?: string
           rejection_reason?: string | null
           role: Database["public"]["Enums"]["app_role"]
@@ -745,21 +711,12 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
-          gym_id?: string | null
           id?: string
           rejection_reason?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_gym_id_fkey"
-            columns: ["gym_id"]
-            isOneToOne: false
-            referencedRelation: "gyms"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_terms_acceptance: {
         Row: {

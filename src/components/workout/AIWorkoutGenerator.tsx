@@ -48,23 +48,18 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
     try {
       const selectedGroup = muscleGroups.find(g => g.value === muscleGroup);
       
-      // Build request body, only including optional fields if they have values
-      const requestBody: Record<string, any> = {
-        goal: userGoal,
-        experience: userExperience,
-        muscleGroup: selectedGroup?.label || 'Peito',
-        muscleGroupDescription: selectedGroup?.description || '',
-        duration: parseInt(duration),
-        equipment: 'equipamentos de academia completa',
-        customDescription: customDescription.trim() || null
-      };
-      
-      // Only add userWeight and userAge if they exist (avoids sending null)
-      if (profile?.weight) requestBody.userWeight = profile.weight;
-      if (profile?.age) requestBody.userAge = profile.age;
-
       const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-workout', {
-        body: requestBody
+        body: {
+          goal: userGoal,
+          experience: userExperience,
+          muscleGroup: selectedGroup?.label || 'Peito',
+          muscleGroupDescription: selectedGroup?.description || '',
+          duration: parseInt(duration),
+          equipment: 'equipamentos de academia completa',
+          userWeight: profile?.weight || null,
+          userAge: profile?.age || null,
+          customDescription: customDescription.trim() || null
+        }
       });
 
       if (functionError) throw functionError;

@@ -48,8 +48,6 @@ export default function AdminApprovals() {
     try {
       setLoading(true);
 
-      console.log("🔍 Buscando personal trainers pendentes de aprovação...");
-
       // Buscar user_roles pendentes de aprovação
       const { data: rolesData, error: rolesError } = await supabase
         .from("user_roles")
@@ -58,95 +56,32 @@ export default function AdminApprovals() {
         .eq("approved", false)
         .order("created_at", { ascending: false });
 
-      if (rolesError) {
-        console.error("❌ Erro ao buscar user_roles:", rolesError);
-        throw rolesError;
-      }
-
-      console.log("📊 Registros encontrados em user_roles:", rolesData?.length || 0);
-
-      // Se não encontrar em user_roles, buscar em pending_personal_signups como fallback
-      let allUserIds: string[] = [];
-
-      if (rolesData && rolesData.length > 0) {
-        allUserIds = rolesData.map((r) => r.user_id);
-      } else {
-        console.log("⚠️ Nenhum registro em user_roles, buscando em pending_personal_signups...");
-        const { data: pendingData, error: pendingError } = await supabase
-          .from("pending_personal_signups")
-          .select("user_id, created_at")
-          .order("created_at", { ascending: false });
-
-        if (!pendingError && pendingData) {
-          console.log("📊 Registros encontrados em pending_personal_signups:", pendingData.length);
-          // Converter para o formato esperado
-          const convertedRoles = pendingData.map((p) => ({
-            id: `pending_${p.user_id}`, // ID temporário
-            user_id: p.user_id,
-            role: "personal",
-            approved: false,
-            created_at: p.created_at,
-          }));
-
-          // Adicionar aos rolesData
-          allUserIds = convertedRoles.map((r) => r.user_id);
-          if (rolesData) {
-            rolesData.push(...convertedRoles);
-          } else {
-            // Se rolesData for null, criar novo array
-            const newRolesData = convertedRoles;
-            // Buscar perfis
-            if (allUserIds.length > 0) {
-              const { data: profilesData, error: profilesError } = await supabase
-                .from("profiles")
-                .select("user_id, name")
-                .in("user_id", allUserIds);
-
-              if (profilesError) throw profilesError;
-
-              const combined = newRolesData.map((role) => ({
-                ...role,
-                profiles: profilesData?.find((p) => p.user_id === role.user_id),
-              }));
-
-              setPendingPersonals(combined);
-              return;
-            }
-          }
-        }
-      }
+      if (rolesError) throw rolesError;
 
       // Buscar perfis dos usuários
-      if (allUserIds.length > 0) {
+      if (rolesData && rolesData.length > 0) {
+        const userIds = rolesData.map((r) => r.user_id);
+
         const { data: profilesData, error: profilesError } = await supabase
           .from("profiles")
           .select("user_id, name")
-          .in("user_id", allUserIds);
+          .in("user_id", userIds);
 
-        if (profilesError) {
-          console.error("❌ Erro ao buscar perfis:", profilesError);
-          throw profilesError;
-        }
-
-        console.log("👤 Perfis encontrados:", profilesData?.length || 0);
+        if (profilesError) throw profilesError;
 
         // Combinar dados
-        const combined = (rolesData || []).map((role) => ({
+        const combined = rolesData.map((role) => ({
           ...role,
           profiles: profilesData?.find((p) => p.user_id === role.user_id),
         }));
 
-        console.log("✅ Total de personais pendentes:", combined.length);
         setPendingPersonals(combined);
       } else {
-        console.log("ℹ️ Nenhum personal trainer pendente encontrado");
         setPendingPersonals([]);
       }
     } catch (error: any) {
-      console.error("❌ Error fetching pending personals:", error);
-      toast.error("Erro ao carregar aprovações pendentes", {
-        description: error.message || "Verifique o console para mais detalhes",
-      });
+      console.error("Error fetching pending personals:", error);
+      toast.error("Erro ao carregar aprovações pendentes");
     } finally {
       setLoading(false);
     }
@@ -164,51 +99,16 @@ export default function AdminApprovals() {
         throw new Error("Usuário não autenticado");
       }
 
-      // Se o ID começar com "pending_", significa que veio de pending_personal_signups
-      // Nesse caso, criar o registro em user_roles primeiro
-      if (personal.id.startsWith("pending_")) {
-        const { error: createError } = await supabase
-          .from("user_roles")
-          .insert({
-            user_id: personal.user_id,
-            role: "personal",
-            approved: true,
-            approved_at: new Date().toISOString(),
-            approved_by: user.id,
-          })
-          .select()
-          .single();
+      const { error } = await supabase
+        .from("user_roles")
+        .update({
+          approved: true,
+          approved_at: new Date().toISOString(),
+          approved_by: user.id,
+        })
+        .eq("id", personal.id);
 
-        if (createError) {
-          // Se já existir, apenas atualizar
-          const { error: updateError } = await supabase
-            .from("user_roles")
-            .update({
-              approved: true,
-              approved_at: new Date().toISOString(),
-              approved_by: user.id,
-            })
-            .eq("user_id", personal.user_id)
-            .eq("role", "personal");
-
-          if (updateError) throw updateError;
-        }
-
-        // Remover de pending_personal_signups
-        await supabase.from("pending_personal_signups").delete().eq("user_id", personal.user_id);
-      } else {
-        // Atualizar registro existente em user_roles
-        const { error } = await supabase
-          .from("user_roles")
-          .update({
-            approved: true,
-            approved_at: new Date().toISOString(),
-            approved_by: user.id,
-          })
-          .eq("id", personal.id);
-
-        if (error) throw error;
-      }
+      if (error) throw error;
 
       toast.success("Personal aprovado!", {
         description: `${personal.profiles?.name} foi aprovado com sucesso.`,
@@ -231,26 +131,17 @@ export default function AdminApprovals() {
     try {
       setActionLoading(true);
 
-      // Se o ID começar com "pending_", apenas remover de pending_personal_signups
-      if (selectedPersonal.id.startsWith("pending_")) {
-        await supabase.from("pending_personal_signups").delete().eq("user_id", selectedPersonal.user_id);
+      const { error } = await supabase
+        .from("user_roles")
+        .update({
+          rejection_reason: rejectionReason,
+        })
+        .eq("id", selectedPersonal.id);
 
-        // Também remover de user_roles se existir
-        await supabase.from("user_roles").delete().eq("user_id", selectedPersonal.user_id).eq("role", "personal");
-      } else {
-        // Atualizar com motivo da rejeição e depois deletar
-        const { error } = await supabase
-          .from("user_roles")
-          .update({
-            rejection_reason: rejectionReason,
-          })
-          .eq("id", selectedPersonal.id);
+      if (error) throw error;
 
-        if (error) throw error;
-
-        // Deletar o registro
-        await supabase.from("user_roles").delete().eq("id", selectedPersonal.id);
-      }
+      // Opcionalmente, pode deletar o registro ou apenas marcar como rejeitado
+      await supabase.from("user_roles").delete().eq("id", selectedPersonal.id);
 
       toast.success("Personal rejeitado", {
         description: "A conta foi rejeitada e removida.",
@@ -262,9 +153,7 @@ export default function AdminApprovals() {
       fetchPendingPersonals();
     } catch (error: any) {
       console.error("Error rejecting personal:", error);
-      toast.error("Erro ao rejeitar personal", {
-        description: error.message || "Não foi possível rejeitar o personal trainer.",
-      });
+      toast.error("Erro ao rejeitar personal");
     } finally {
       setActionLoading(false);
     }
