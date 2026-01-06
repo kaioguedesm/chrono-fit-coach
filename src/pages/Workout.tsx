@@ -448,13 +448,15 @@ export default function Workout() {
                             <Badge variant={plan.created_by === "ai" ? "default" : "secondary"}>
                               {plan.created_by === "ai" ? "🤖 IA" : "👤 Custom"}
                             </Badge>
-                            {plan.created_by === "ai" && plan.approval_status && (
-                              <WorkoutApprovalBadge
-                                status={plan.approval_status}
-                                rejectionReason={plan.rejection_reason}
-                                size="sm"
-                              />
-                            )}
+                            {plan.created_by === "ai" &&
+                              plan.approval_status &&
+                              !(hasSignedTerms && plan.approval_status === "pending") && (
+                                <WorkoutApprovalBadge
+                                  status={plan.approval_status}
+                                  rejectionReason={plan.rejection_reason}
+                                  size="sm"
+                                />
+                              )}
                           </div>
                           <Badge variant="outline">Treino {plan.type}</Badge>
                         </div>
