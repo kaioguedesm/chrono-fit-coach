@@ -142,11 +142,13 @@ export default function Auth() {
         // Garantir que o perfil seja criado/atualizado com o nome fornecido
         if (pendingSignupData.name.trim()) {
           const { error: profileError } = await supabase.from("profiles").upsert(
-            {
-              user_id: newUser.id,
-              name: pendingSignupData.name.trim(),
-              experience_level: "iniciante",
-            },
+            [
+              {
+                user_id: newUser.id,
+                name: pendingSignupData.name.trim(),
+                experience_level: "iniciante",
+              },
+            ],
             {
               onConflict: "user_id",
             },
@@ -274,11 +276,14 @@ export default function Auth() {
             console.error("Erro ao atualizar gym_id:", profileError);
             // Tentar upsert caso o perfil não exista
             await supabase.from("profiles").upsert(
-              {
-                user_id: loggedUser.id,
-                gym_id: gymId.trim(),
-                experience_level: "iniciante",
-              },
+              [
+                {
+                  user_id: loggedUser.id,
+                  name: "Usuário",
+                  gym_id: gymId.trim(),
+                  experience_level: "iniciante",
+                },
+              ],
               {
                 onConflict: "user_id",
               },
