@@ -48,22 +48,37 @@ export default function AdminApprovals() {
     try {
       setLoading(true);
 
-      console.log("🔍 Buscando personal trainers pendentes de aprovação...");
+      console.log("🔍 [AdminApprovals] Buscando personal trainers pendentes de aprovação...");
+
+      // Verificar se o usuário atual é admin
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      console.log("👤 [AdminApprovals] Usuário atual:", user?.id);
 
       // Buscar user_roles pendentes de aprovação
       const { data: rolesData, error: rolesError } = await supabase
         .from("user_roles")
-        .select("id, user_id, role, approved, created_at")
+        .select("id, user_id, role, approved, created_at, gym_id")
         .eq("role", "personal")
         .eq("approved", false)
         .order("created_at", { ascending: false });
 
       if (rolesError) {
-        console.error("❌ Erro ao buscar user_roles:", rolesError);
+        console.error("❌ [AdminApprovals] Erro ao buscar user_roles:", rolesError);
+        console.error("❌ [AdminApprovals] Detalhes do erro:", {
+          code: rolesError.code,
+          message: rolesError.message,
+          details: rolesError.details,
+          hint: rolesError.hint,
+        });
         throw rolesError;
       }
 
-      console.log("📊 Registros encontrados em user_roles:", rolesData?.length || 0);
+      console.log("📊 [AdminApprovals] Registros encontrados em user_roles:", rolesData?.length || 0);
+      if (rolesData && rolesData.length > 0) {
+        console.log("📋 [AdminApprovals] Dados encontrados:", rolesData);
+      }
 
       // Se não encontrar em user_roles, buscar em pending_personal_signups como fallback
       let allUserIds: string[] = [];
