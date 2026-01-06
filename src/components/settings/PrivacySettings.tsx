@@ -256,7 +256,7 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
       const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
 
       // Carregar o PDF original
-      const pdfUrl = "/Termo de Uso Profissional App Fitnes.pdf";
+      const pdfUrl = "/Termo_de_Uso_Profissional_App_Fitnes.pdf";
       const response = await fetch(pdfUrl);
       const pdfBytes = await response.arrayBuffer();
 
@@ -492,7 +492,7 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
           <CardContent>
             <div className="border rounded-lg overflow-hidden">
               <iframe
-                src="/Termo de Uso Profissional App Fitnes.pdf"
+                src="/Termo_de_Uso_Profissional_App_Fitnes.pdf"
                 className="w-full h-[500px]"
                 title="Termo de Uso PDF"
               />
