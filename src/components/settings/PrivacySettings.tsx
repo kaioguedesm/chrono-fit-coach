@@ -485,7 +485,11 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
             </CardHeader>
             <CardContent>
               <div className="border rounded-lg overflow-hidden">
-                <iframe src={signedPdfUrl} className="w-full h-[600px]" title="Termo de Uso PDF Assinado" />
+                <iframe
+                  src={signedPdfUrl}
+                  className="w-full h-[400px] sm:h-[500px] md:h-[600px]"
+                  title="Termo de Uso PDF Assinado"
+                />
               </div>
             </CardContent>
           </Card>
@@ -507,13 +511,17 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
           </CardHeader>
           <CardContent>
             <div className="border rounded-lg overflow-hidden">
-              <iframe src={TERMS_PDF_STORAGE_URL} className="w-full h-[500px]" title="Termo de Uso PDF" />
+              <iframe
+                src={TERMS_PDF_STORAGE_URL}
+                className="w-full h-[300px] sm:h-[400px] md:h-[500px]"
+                title="Termo de Uso PDF"
+              />
             </div>
           </CardContent>
         </Card>
 
         {/* Formulário de Assinatura */}
-        <Card>
+        <Card className="mb-4 sm:mb-0">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Pen className="w-5 h-5" />
@@ -523,7 +531,7 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
               Se você for maior de 18 anos, assine para liberar o app para usar sem personal
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pb-6 sm:pb-4">
             <div className="space-y-2">
               <Label htmlFor="signature">Sua Assinatura (Nome Completo)</Label>
               <Input
@@ -542,16 +550,22 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
                 checked={isOver18}
                 onCheckedChange={(checked) => setIsOver18(checked as boolean)}
                 disabled={signingPdf}
+                className="mt-1"
               />
               <Label
                 htmlFor="over18"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
               >
                 Confirmo que sou maior de 18 anos e tenho capacidade legal para assinar este termo
               </Label>
             </div>
 
-            <Button onClick={handleSignPdf} disabled={signingPdf || !signature.trim() || !isOver18} className="w-full">
+            <Button
+              onClick={handleSignPdf}
+              disabled={signingPdf || !signature.trim() || !isOver18}
+              className="w-full mb-4 sm:mb-0"
+              size="lg"
+            >
               {signingPdf ? (
                 <>
                   <Save className="w-4 h-4 mr-2 animate-spin" />
@@ -708,7 +722,9 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={type === "terms" ? "max-w-5xl max-h-[95vh]" : "max-w-3xl max-h-[90vh]"}>
+      <DialogContent
+        className={`${type === "terms" ? "max-w-5xl max-h-[95vh] w-[95vw] sm:w-full" : "max-w-3xl max-h-[90vh] w-[95vw] sm:w-full"} z-[110] sm:translate-y-[-50%] translate-y-[-45%] top-[45%] sm:top-[50%]`}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="w-5 h-5" />
@@ -717,7 +733,11 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
             {type === "data" && "Gerenciar Dados"}
           </DialogTitle>
         </DialogHeader>
-        <div className={type === "terms" ? "py-4 overflow-y-auto max-h-[85vh]" : "py-4"}>
+        <div
+          className={
+            type === "terms" ? "py-4 overflow-y-auto max-h-[calc(85vh-120px)] sm:max-h-[85vh] pb-28 sm:pb-4" : "py-4"
+          }
+        >
           {type === "terms" && renderTermsContent()}
           {type === "privacy" && renderPrivacyContent()}
           {type === "data" && renderDataManagement()}
