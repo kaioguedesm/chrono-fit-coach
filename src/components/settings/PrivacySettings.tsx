@@ -18,7 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { showToast } from "@/lib/toast-utils";
-import { Download, Trash2, FileText, Shield, AlertTriangle, Pen, Save, ExternalLink, Maximize2 } from "lucide-react";
+import { Download, Trash2, FileText, Shield, AlertTriangle, Pen, Save } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -477,61 +477,19 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
           {/* Visualizador de PDF Assinado */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
-                    Termo de Uso Assinado
-                  </CardTitle>
-                  <CardDescription>Documento assinado digitalmente</CardDescription>
-                </div>
-                {signedPdfUrl && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(signedPdfUrl, "_blank")}
-                    className="gap-2"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    <span className="hidden sm:inline">Abrir em nova aba</span>
-                    <span className="sm:hidden">Abrir</span>
-                  </Button>
-                )}
-              </div>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Termo de Uso Assinado
+              </CardTitle>
+              <CardDescription>Documento assinado digitalmente</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="border rounded-lg overflow-hidden bg-muted/30">
-                {/* No mobile, mostrar apenas um botão para abrir o PDF */}
-                <div className="block sm:hidden p-8 text-center space-y-4">
-                  <FileText className="w-12 h-12 mx-auto text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium mb-2">Visualizar PDF Assinado</p>
-                    <p className="text-xs text-muted-foreground mb-4">
-                      Abra o PDF em uma nova aba para melhor visualização
-                    </p>
-                    {signedPdfUrl && (
-                      <Button onClick={() => window.open(signedPdfUrl, "_blank")} className="w-full gap-2" size="lg">
-                        <Maximize2 className="w-4 h-4" />
-                        Abrir PDF Completo
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                {/* No desktop, mostrar o iframe */}
-                <div className="hidden sm:block">
-                  {signedPdfUrl && (
-                    <iframe
-                      src={`${signedPdfUrl}#view=FitH&toolbar=0&navpanes=0`}
-                      className="w-full h-[500px] md:h-[600px]"
-                      title="Termo de Uso PDF Assinado"
-                      style={{
-                        border: "none",
-                        transform: "scale(1)",
-                        transformOrigin: "top left",
-                      }}
-                    />
-                  )}
-                </div>
+              <div className="border rounded-lg overflow-hidden">
+                <iframe
+                  src={signedPdfUrl}
+                  className="w-full h-[400px] sm:h-[500px] md:h-[600px]"
+                  title="Termo de Uso PDF Assinado"
+                />
               </div>
             </CardContent>
           </Card>
@@ -545,59 +503,19 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
         {/* Visualizador de PDF Original */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Termo de Uso Profissional
-                </CardTitle>
-                <CardDescription>Leia o documento completo antes de assinar</CardDescription>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.open(TERMS_PDF_STORAGE_URL, "_blank")}
-                className="gap-2"
-              >
-                <ExternalLink className="w-4 h-4" />
-                <span className="hidden sm:inline">Abrir em nova aba</span>
-                <span className="sm:hidden">Abrir</span>
-              </Button>
-            </div>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Termo de Uso Profissional
+            </CardTitle>
+            <CardDescription>Leia o documento completo antes de assinar</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="border rounded-lg overflow-hidden bg-muted/30">
-              {/* No mobile, mostrar apenas um botão para abrir o PDF */}
-              <div className="block sm:hidden p-8 text-center space-y-4">
-                <FileText className="w-12 h-12 mx-auto text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium mb-2">Para melhor visualização no mobile</p>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    Abra o PDF em uma nova aba para ler com zoom e rolagem otimizados
-                  </p>
-                  <Button
-                    onClick={() => window.open(TERMS_PDF_STORAGE_URL, "_blank")}
-                    className="w-full gap-2"
-                    size="lg"
-                  >
-                    <Maximize2 className="w-4 h-4" />
-                    Abrir PDF Completo
-                  </Button>
-                </div>
-              </div>
-              {/* No desktop, mostrar o iframe */}
-              <div className="hidden sm:block">
-                <iframe
-                  src={`${TERMS_PDF_STORAGE_URL}#view=FitH&toolbar=0&navpanes=0`}
-                  className="w-full h-[400px] md:h-[500px]"
-                  title="Termo de Uso PDF"
-                  style={{
-                    border: "none",
-                    transform: "scale(1)",
-                    transformOrigin: "top left",
-                  }}
-                />
-              </div>
+            <div className="border rounded-lg overflow-hidden">
+              <iframe
+                src={TERMS_PDF_STORAGE_URL}
+                className="w-full h-[300px] sm:h-[400px] md:h-[500px]"
+                title="Termo de Uso PDF"
+              />
             </div>
           </CardContent>
         </Card>
