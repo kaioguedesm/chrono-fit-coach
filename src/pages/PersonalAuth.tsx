@@ -273,29 +273,73 @@ export default function PersonalAuth() {
       // Aguardar um momento para garantir que a sessão esteja estabelecida e o perfil seja criado pelo trigger
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      // Criar role 'personal' ANTES de fazer upsert no perfil
-      // Isso evita que o trigger crie role 'user' para personal trainers
-      const { error: roleError } = await supabase.from("user_roles").upsert(
-        {
-          user_id: data.user.id,
-          role: "personal",
-          approved: false,
-          gym_id: gymId.trim(),
-        },
-        {
-          onConflict: "user_id,role",
-        },
-      );
+      console.log("🔐 [Signup] Criando role 'personal' para:", data.user.id);
+      console.log("🏋️ [Signup] gym_id:", gymId.trim());
 
-      if (roleError) {
-        console.error("Erro ao criar role:", roleError);
-        // Tentar inserção direta como fallback
-        await supabase.from("user_roles").insert({
-          user_id: data.user.id,
-          role: "personal",
-          approved: false,
-          gym_id: gymId.trim(),
-        });
+      // Tentar usar a função RPC primeiro (mais confiável e contorna políticas RLS)
+      // A função aceita _gym_id como parâmetro opcional
+      const rpcParams: { _user_id: string; _gym_id?: string } = {
+        _user_id: data.user.id,
+      };
+      if (gymId.trim()) {
+        rpcParams._gym_id = gymId.trim();
+      }
+      // Usar type assertion porque o tipo gerado pode não incluir o parâmetro opcional
+      const { error: rpcError } = await (supabase.rpc as any)("create_pending_personal_signup", rpcParams);
+
+      if (rpcError) {
+        console.error("❌ Erro ao criar via RPC:", rpcError);
+        // Fallback: criar role 'personal' diretamente ANTES de fazer upsert no perfil
+        // Isso evita que o trigger crie role 'user' para personal trainers
+        const { error: roleError } = await supabase.from("user_roles").upsert(
+          {
+            user_id: data.user.id,
+            role: "personal",
+            approved: false,
+            gym_id: gymId.trim() || null,
+          },
+          {
+            onConflict: "user_id,role",
+          },
+        );
+
+        if (roleError) {
+          console.error("❌ Erro ao criar role via upsert:", roleError);
+          // Tentar inserção direta como último fallback
+          const { error: insertError } = await supabase.from("user_roles").insert({
+            user_id: data.user.id,
+            role: "personal",
+            approved: false,
+            gym_id: gymId.trim() || null,
+          });
+
+          if (insertError) {
+            console.error("❌ Erro ao criar role via insert:", insertError);
+            throw new Error(`Não foi possível criar a solicitação de personal trainer: ${insertError.message}`);
+          } else {
+            console.log("✅ Role criada via insert (fallback)");
+          }
+        } else {
+          console.log("✅ Role criada via upsert (fallback)");
+        }
+      } else {
+        console.log("✅ Role criada via RPC com sucesso");
+      }
+
+      // Verificar se o registro foi criado corretamente
+      const { data: verifyData, error: verifyError } = await supabase
+        .from("user_roles")
+        .select("id, user_id, role, approved, gym_id")
+        .eq("user_id", data.user.id)
+        .eq("role", "personal")
+        .maybeSingle();
+
+      if (verifyError) {
+        console.error("⚠️ Erro ao verificar role criada:", verifyError);
+      } else if (verifyData) {
+        console.log("✅ Verificação: Role criada com sucesso:", verifyData);
+      } else {
+        console.error("❌ Verificação: Role NÃO foi criada!");
       }
 
       // Atualizar o perfil com o nome fornecido (usar upsert para garantir que funcione)
