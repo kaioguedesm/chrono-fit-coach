@@ -1,35 +1,32 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Header } from '@/components/layout/Header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
-import { useToast } from '@/hooks/use-toast';
-import { useTheme } from '@/hooks/useTheme';
-import { useStorageUrl } from '@/hooks/useStorageUrl';
-import { supabase } from '@/integrations/supabase/client';
-import { NotificationSettings } from '@/components/settings/NotificationSettings';
-import { PrivacySettings } from '@/components/settings/PrivacySettings';
-import { SupportDialog } from '@/components/settings/SupportDialog';
-import { 
-  Bell, 
-  Shield, 
-  Smartphone, 
-  LogOut,
-  User,
-  Database,
-  Camera,
-  Lock,
-  HelpCircle
-} from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Header } from "@/components/layout/Header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
+import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/hooks/useTheme";
+import { useStorageUrl } from "@/hooks/useStorageUrl";
+import { supabase } from "@/integrations/supabase/client";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
+import { PrivacySettings } from "@/components/settings/PrivacySettings";
+import { SupportDialog } from "@/components/settings/SupportDialog";
+import { Bell, Shield, Smartphone, LogOut, User, Database, Camera, Lock, HelpCircle } from "lucide-react";
 
 export default function Settings() {
   const { signOut, user } = useAuth();
@@ -37,50 +34,50 @@ export default function Settings() {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
-  
+
   // Get signed URL for avatar display
-  const { url: avatarUrl } = useStorageUrl('avatars', profile?.avatar_url || null, 3600);
-  
+  const { url: avatarUrl } = useStorageUrl("avatars", profile?.avatar_url || null, 3600);
+
   // Profile edit states
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [editDietOpen, setEditDietOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  
+
   // Form states
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const [age, setAge] = useState<number | null>(null);
-  const [gender, setGender] = useState('');
+  const [gender, setGender] = useState("");
   const [weight, setWeight] = useState<number | null>(null);
   const [height, setHeight] = useState<number | null>(null);
-  const [goal, setGoal] = useState('');
-  const [experienceLevel, setExperienceLevel] = useState('');
-  
+  const [goal, setGoal] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState("");
+
   // Password states
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   // Dietary preferences
   const [dietaryPreferences, setDietaryPreferences] = useState<string[]>([]);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
-  
+
   // View state
   const [showNotificationSettings, setShowNotificationSettings] = useState(false);
   const [privacyDialogOpen, setPrivacyDialogOpen] = useState(false);
-  const [privacyType, setPrivacyType] = useState<'terms' | 'privacy' | 'data'>('terms');
+  const [privacyType, setPrivacyType] = useState<"terms" | "privacy" | "data">("terms");
   const [supportDialogOpen, setSupportDialogOpen] = useState(false);
-  const [supportType, setSupportType] = useState<'help' | 'contact' | 'rate'>('help');
+  const [supportType, setSupportType] = useState<"help" | "contact" | "rate">("help");
 
   useEffect(() => {
     if (profile) {
-      setName(profile.name || '');
+      setName(profile.name || "");
       setAge(profile.age);
-      setGender(profile.gender || '');
+      setGender(profile.gender || "");
       setWeight(profile.weight);
       setHeight(profile.height);
-      setGoal(profile.goal || '');
-      setExperienceLevel(profile.experience_level || '');
+      setGoal(profile.goal || "");
+      setExperienceLevel(profile.experience_level || "");
       setDietaryPreferences(profile.dietary_preferences || []);
       setDietaryRestrictions(profile.dietary_restrictions || []);
     }
@@ -91,14 +88,14 @@ export default function Settings() {
     if (!error) {
       toast({
         title: "Desconectado",
-        description: "Até logo! 👋"
+        description: "Até logo! 👋",
       });
-      navigate('/auth');
+      navigate("/auth");
     } else {
       toast({
         title: "Erro",
         description: "Não foi possível desconectar.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -111,20 +108,20 @@ export default function Settings() {
       weight,
       height,
       goal,
-      experience_level: experienceLevel
+      experience_level: experienceLevel,
     });
 
     if (!error) {
       toast({
         title: "Perfil atualizado",
-        description: "Suas informações foram salvas com sucesso!"
+        description: "Suas informações foram salvas com sucesso!",
       });
       setEditProfileOpen(false);
     } else {
       toast({
         title: "Erro",
         description: "Não foi possível atualizar o perfil.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -132,20 +129,20 @@ export default function Settings() {
   const handleUpdateDietaryInfo = async () => {
     const { error } = await updateProfile({
       dietary_preferences: dietaryPreferences,
-      dietary_restrictions: dietaryRestrictions
+      dietary_restrictions: dietaryRestrictions,
     });
 
     if (!error) {
       toast({
         title: "Preferências atualizadas",
-        description: "Suas preferências alimentares foram salvas!"
+        description: "Suas preferências alimentares foram salvas!",
       });
       setEditDietOpen(false);
     } else {
       toast({
         title: "Erro",
         description: "Não foi possível atualizar as preferências.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -155,15 +152,13 @@ export default function Settings() {
     if (!file || !user) return;
 
     setUploadingAvatar(true);
-    
+
     try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true });
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
@@ -171,22 +166,22 @@ export default function Settings() {
       const avatarPath = filePath;
 
       const { error: updateError } = await updateProfile({
-        avatar_url: avatarPath
+        avatar_url: avatarPath,
       });
 
       if (updateError) throw updateError;
 
       toast({
         title: "Foto atualizada",
-        description: "Sua foto de perfil foi alterada com sucesso!"
+        description: "Sua foto de perfil foi alterada com sucesso!",
       });
-      
+
       await refreshProfile();
     } catch (error) {
       toast({
         title: "Erro",
         description: "Não foi possível fazer upload da foto.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setUploadingAvatar(false);
@@ -198,7 +193,7 @@ export default function Settings() {
       toast({
         title: "Erro",
         description: "As senhas não coincidem.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -207,46 +202,42 @@ export default function Settings() {
       toast({
         title: "Erro",
         description: "A senha deve ter pelo menos 6 caracteres.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
     try {
       const { error } = await supabase.auth.updateUser({
-        password: newPassword
+        password: newPassword,
       });
 
       if (error) throw error;
 
       toast({
         title: "Senha alterada",
-        description: "Sua senha foi atualizada com sucesso!"
+        description: "Sua senha foi atualizada com sucesso!",
       });
-      
+
       setChangePasswordOpen(false);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (error) {
       toast({
         title: "Erro",
         description: "Não foi possível alterar a senha.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
 
   const toggleDietaryPreference = (pref: string) => {
-    setDietaryPreferences(prev => 
-      prev.includes(pref) ? prev.filter(p => p !== pref) : [...prev, pref]
-    );
+    setDietaryPreferences((prev) => (prev.includes(pref) ? prev.filter((p) => p !== pref) : [...prev, pref]));
   };
 
   const toggleDietaryRestriction = (rest: string) => {
-    setDietaryRestrictions(prev => 
-      prev.includes(rest) ? prev.filter(r => r !== rest) : [...prev, rest]
-    );
+    setDietaryRestrictions((prev) => (prev.includes(rest) ? prev.filter((r) => r !== rest) : [...prev, rest]));
   };
 
   const settingsSections = [
@@ -256,101 +247,101 @@ export default function Settings() {
       items: [
         { label: "Editar perfil", action: () => setEditProfileOpen(true), hasSwitch: false },
         { label: "Alterar senha", action: () => setChangePasswordOpen(true), hasSwitch: false },
-        { label: "Preferências alimentares", action: () => setEditDietOpen(true), hasSwitch: false }
-      ]
+        { label: "Preferências alimentares", action: () => setEditDietOpen(true), hasSwitch: false },
+      ],
     },
     {
       title: "Notificações",
       icon: Bell,
       items: [
-        { 
-          label: "Configurar notificações", 
+        {
+          label: "Configurar notificações",
           hasSwitch: false,
-          action: () => setShowNotificationSettings(true)
-        }
-      ]
+          action: () => setShowNotificationSettings(true),
+        },
+      ],
     },
     {
       title: "Aplicativo",
       icon: Smartphone,
       items: [
-        { 
-          label: "Modo claro", 
-          hasSwitch: true, 
-          value: theme === 'light', 
-          onChange: (value: boolean) => setTheme(value ? 'light' : 'dark')
+        {
+          label: "Modo claro",
+          hasSwitch: true,
+          value: theme === "light",
+          onChange: (value: boolean) => setTheme(value ? "light" : "dark"),
         },
         { label: "Sons e vibração", hasSwitch: true, value: true, onChange: () => {} },
         { label: "Idioma", action: () => {}, hasSwitch: false },
-        { label: "Unidades de medida", action: () => {}, hasSwitch: false }
-      ]
+        { label: "Unidades de medida", action: () => {}, hasSwitch: false },
+      ],
     },
     {
       title: "Privacidade e Segurança",
       icon: Shield,
       items: [
-        { 
-          label: "Termos de uso", 
-          action: () => { 
-            setPrivacyType('terms'); 
-            setPrivacyDialogOpen(true); 
-          }, 
-          hasSwitch: false 
+        {
+          label: "Termos de uso",
+          action: () => {
+            setPrivacyType("terms");
+            setPrivacyDialogOpen(true);
+          },
+          hasSwitch: false,
         },
-        { 
-          label: "Política de privacidade", 
-          action: () => { 
-            setPrivacyType('privacy'); 
-            setPrivacyDialogOpen(true); 
-          }, 
-          hasSwitch: false 
+        {
+          label: "Política de privacidade",
+          action: () => {
+            setPrivacyType("privacy");
+            setPrivacyDialogOpen(true);
+          },
+          hasSwitch: false,
         },
-        { 
-          label: "Gerenciar dados", 
-          action: () => { 
-            setPrivacyType('data'); 
-            setPrivacyDialogOpen(true); 
-          }, 
-          hasSwitch: false 
-        }
-      ]
+        {
+          label: "Gerenciar dados",
+          action: () => {
+            setPrivacyType("data");
+            setPrivacyDialogOpen(true);
+          },
+          hasSwitch: false,
+        },
+      ],
     },
     {
       title: "Suporte",
       icon: HelpCircle,
       items: [
-        { 
-          label: "Central de ajuda", 
-          action: () => { 
-            setSupportType('help'); 
-            setSupportDialogOpen(true); 
-          }, 
-          hasSwitch: false 
+        {
+          label: "Central de ajuda",
+          action: () => {
+            setSupportType("help");
+            setSupportDialogOpen(true);
+          },
+          hasSwitch: false,
         },
-        { 
-          label: "Fale conosco", 
-          action: () => { 
-            setSupportType('contact'); 
-            setSupportDialogOpen(true); 
-          }, 
-          hasSwitch: false 
+        {
+          label: "Fale conosco",
+          action: () => {
+            setSupportType("contact");
+            setSupportDialogOpen(true);
+          },
+          hasSwitch: false,
         },
-        { 
-          label: "Avaliar app", 
-          action: () => { 
-            setSupportType('rate'); 
-            setSupportDialogOpen(true); 
-          }, 
-          hasSwitch: false 
-        }
-      ]
-    }
+        {
+          label: "Avaliar app",
+          action: () => {
+            setSupportType("rate");
+            setSupportDialogOpen(true);
+          },
+          hasSwitch: false,
+        },
+      ],
+    },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Configurações" />
-      
+
       <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl">
         <div className="space-y-6">
           {/* User Info Card */}
@@ -365,8 +356,8 @@ export default function Settings() {
                         <User className="w-8 h-8 text-primary" />
                       </AvatarFallback>
                     </Avatar>
-                    <label 
-                      htmlFor="avatar-upload" 
+                    <label
+                      htmlFor="avatar-upload"
                       className="absolute bottom-0 right-0 w-6 h-6 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/90 transition-colors"
                     >
                       <Camera className="w-3 h-3 text-primary-foreground" />
@@ -382,15 +373,11 @@ export default function Settings() {
                   </div>
                   <div>
                     <div className="font-semibold text-lg">
-                      {profile?.name || user?.email?.split('@')[0] || 'Usuário'}
+                      {profile?.name || user?.email?.split("@")[0] || "Usuário"}
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {user?.email || 'usuario@email.com'}
-                    </div>
+                    <div className="text-sm text-muted-foreground">{user?.email || "usuario@email.com"}</div>
                     {profile?.goal && (
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Objetivo: {profile.goal}
-                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">Objetivo: {profile.goal}</div>
                     )}
                   </div>
                 </div>
@@ -411,14 +398,14 @@ export default function Settings() {
                 {section.items.map((item, itemIndex) => (
                   <div key={itemIndex}>
                     <div className="flex items-center justify-between py-2">
-                      <Label className="text-sm font-normal cursor-pointer">
+                      <Label
+                        className="text-sm font-normal cursor-pointer flex-1"
+                        onClick={!item.hasSwitch ? item.action : undefined}
+                      >
                         {item.label}
                       </Label>
                       {item.hasSwitch ? (
-                        <Switch
-                          checked={item.value || false}
-                          onCheckedChange={item.onChange}
-                        />
+                        <Switch checked={item.value || false} onCheckedChange={item.onChange} />
                       ) : (
                         <Button
                           variant="ghost"
@@ -459,11 +446,7 @@ export default function Settings() {
           </Card>
 
           {/* Logout Button */}
-          <Button 
-            variant="destructive" 
-            className="w-full"
-            onClick={handleSignOut}
-          >
+          <Button variant="destructive" className="w-full" onClick={handleSignOut}>
             <LogOut className="w-4 h-4 mr-2" />
             Sair da Conta
           </Button>
@@ -484,9 +467,7 @@ export default function Settings() {
               <Bell className="w-5 h-5" />
               Configurar Notificações
             </DialogTitle>
-            <DialogDescription>
-              Personalize como você deseja receber notificações do app
-            </DialogDescription>
+            <DialogDescription>Personalize como você deseja receber notificações do app</DialogDescription>
           </DialogHeader>
           <NotificationSettings />
         </DialogContent>
@@ -497,19 +478,12 @@ export default function Settings() {
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Perfil</DialogTitle>
-            <DialogDescription>
-              Atualize suas informações pessoais e dados do perfil
-            </DialogDescription>
+            <DialogDescription>Atualize suas informações pessoais e dados do perfil</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nome</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Seu nome"
-              />
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -517,7 +491,7 @@ export default function Settings() {
                 <Input
                   id="age"
                   type="number"
-                  value={age || ''}
+                  value={age || ""}
                   onChange={(e) => setAge(e.target.value ? Number(e.target.value) : null)}
                   placeholder="25"
                 />
@@ -542,7 +516,7 @@ export default function Settings() {
                 <Input
                   id="weight"
                   type="number"
-                  value={weight || ''}
+                  value={weight || ""}
                   onChange={(e) => setWeight(e.target.value ? Number(e.target.value) : null)}
                   placeholder="70"
                   step="0.1"
@@ -553,7 +527,7 @@ export default function Settings() {
                 <Input
                   id="height"
                   type="number"
-                  value={height || ''}
+                  value={height || ""}
                   onChange={(e) => setHeight(e.target.value ? Number(e.target.value) : null)}
                   placeholder="175"
                 />
@@ -599,15 +573,13 @@ export default function Settings() {
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Preferências Alimentares</DialogTitle>
-            <DialogDescription>
-              Configure suas restrições e preferências dietéticas
-            </DialogDescription>
+            <DialogDescription>Configure suas restrições e preferências dietéticas</DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-4">
             <div className="space-y-3">
               <Label className="text-base font-semibold">Preferências Dietéticas</Label>
               <div className="space-y-2">
-                {['Vegetariana', 'Vegana', 'Low Carb', 'Paleo', 'Mediterrânea', 'Cetogênica'].map((pref) => (
+                {["Vegetariana", "Vegana", "Low Carb", "Paleo", "Mediterrânea", "Cetogênica"].map((pref) => (
                   <div key={pref} className="flex items-center space-x-2">
                     <Switch
                       checked={dietaryPreferences.includes(pref)}
@@ -620,13 +592,13 @@ export default function Settings() {
                 ))}
               </div>
             </div>
-            
+
             <Separator />
-            
+
             <div className="space-y-3">
               <Label className="text-base font-semibold">Restrições Alimentares</Label>
               <div className="space-y-2">
-                {['Lactose', 'Glúten', 'Frutos do mar', 'Nozes', 'Soja', 'Ovo'].map((rest) => (
+                {["Lactose", "Glúten", "Frutos do mar", "Nozes", "Soja", "Ovo"].map((rest) => (
                   <div key={rest} className="flex items-center space-x-2">
                     <Switch
                       checked={dietaryRestrictions.includes(rest)}
@@ -639,7 +611,7 @@ export default function Settings() {
                 ))}
               </div>
             </div>
-            
+
             <Button onClick={handleUpdateDietaryInfo} className="w-full">
               Salvar Preferências
             </Button>
@@ -652,9 +624,7 @@ export default function Settings() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Alterar Senha</DialogTitle>
-            <DialogDescription>
-              Crie uma nova senha segura para sua conta
-            </DialogDescription>
+            <DialogDescription>Crie uma nova senha segura para sua conta</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -677,9 +647,7 @@ export default function Settings() {
                 placeholder="Confirme a nova senha"
               />
             </div>
-            <div className="text-sm text-muted-foreground">
-              A senha deve ter pelo menos 6 caracteres
-            </div>
+            <div className="text-sm text-muted-foreground">A senha deve ter pelo menos 6 caracteres</div>
             <Button onClick={handleChangePassword} className="w-full">
               <Lock className="w-4 h-4 mr-2" />
               Alterar Senha
@@ -689,18 +657,10 @@ export default function Settings() {
       </Dialog>
 
       {/* Privacy Settings Dialog */}
-      <PrivacySettings 
-        open={privacyDialogOpen} 
-        onOpenChange={setPrivacyDialogOpen}
-        type={privacyType}
-      />
+      <PrivacySettings open={privacyDialogOpen} onOpenChange={setPrivacyDialogOpen} type={privacyType} />
 
       {/* Support Dialog */}
-      <SupportDialog 
-        open={supportDialogOpen} 
-        onOpenChange={setSupportDialogOpen}
-        type={supportType}
-      />
+      <SupportDialog open={supportDialogOpen} onOpenChange={setSupportDialogOpen} type={supportType} />
     </div>
   );
 }
