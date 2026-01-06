@@ -67,9 +67,18 @@ export default function AdminApprovals() {
 
       // Se não encontrar em user_roles, buscar em pending_personal_signups como fallback
       let allUserIds: string[] = [];
+      let allRolesData: PendingPersonal[] = [];
 
       if (rolesData && rolesData.length > 0) {
         allUserIds = rolesData.map((r) => r.user_id);
+        // Converter rolesData para PendingPersonal com cast correto
+        allRolesData = rolesData.map((r) => ({
+          id: r.id,
+          user_id: r.user_id,
+          role: r.role as "admin" | "personal" | "user",
+          approved: r.approved,
+          created_at: r.created_at,
+        }));
       } else {
         console.log("⚠️ Nenhum registro em user_roles, buscando em pending_personal_signups...");
         const { data: pendingData, error: pendingError } = await supabase
@@ -88,31 +97,8 @@ export default function AdminApprovals() {
             created_at: p.created_at,
           }));
 
-          // Adicionar aos rolesData
           allUserIds = convertedRoles.map((r) => r.user_id);
-          if (rolesData) {
-            rolesData.push(...convertedRoles);
-          } else {
-            // Se rolesData for null, criar novo array
-            const newRolesData = convertedRoles;
-            // Buscar perfis
-            if (allUserIds.length > 0) {
-              const { data: profilesData, error: profilesError } = await supabase
-                .from("profiles")
-                .select("user_id, name")
-                .in("user_id", allUserIds);
-
-              if (profilesError) throw profilesError;
-
-              const combined = newRolesData.map((role) => ({
-                ...role,
-                profiles: profilesData?.find((p) => p.user_id === role.user_id),
-              }));
-
-              setPendingPersonals(combined);
-              return;
-            }
-          }
+          allRolesData = convertedRoles;
         }
       }
 
@@ -131,7 +117,7 @@ export default function AdminApprovals() {
         console.log("👤 Perfis encontrados:", profilesData?.length || 0);
 
         // Combinar dados
-        const combined = (rolesData || []).map((role) => ({
+        const combined: PendingPersonal[] = allRolesData.map((role) => ({
           ...role,
           profiles: profilesData?.find((p) => p.user_id === role.user_id),
         }));
