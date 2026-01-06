@@ -26,6 +26,7 @@ export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationPro
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [isScrolling, setIsScrolling] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const hoverDisabledRef = useRef(false);
 
   // Personal trainers não veem a aba de início (dashboard)
   const navigationItems = isPersonal
@@ -39,6 +40,7 @@ export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationPro
       const container = scrollContainerRef.current;
 
       setIsScrolling(true);
+      hoverDisabledRef.current = true;
       setHoveredItem(null); // Limpar hover durante scroll
 
       // Aguardar um pouco para garantir que o DOM está atualizado
@@ -57,16 +59,21 @@ export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationPro
           behavior: "smooth",
         });
 
-        // Aguardar o scroll terminar
+        // Aguardar o scroll terminar e manter hover desabilitado por mais tempo
         setTimeout(() => {
           setIsScrolling(false);
-        }, 500);
+          setTimeout(() => {
+            hoverDisabledRef.current = false;
+          }, 300); // Manter desabilitado por mais 300ms após scroll
+        }, 600);
       }, 100);
     }
   }, [activeTab]);
 
   const handleTabClick = (tabId: string) => {
-    setHoveredItem(null); // Limpar hover imediatamente ao clicar
+    // Desabilitar hover imediatamente e por um tempo
+    hoverDisabledRef.current = true;
+    setHoveredItem(null);
     onTabChange(tabId);
 
     // Scroll adicional no clique para garantir que funcione
@@ -83,16 +90,25 @@ export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationPro
           inline: "center",
         });
 
-        // Aguardar o scroll terminar
+        // Aguardar o scroll terminar e manter hover desabilitado
         setTimeout(() => {
           setIsScrolling(false);
-        }, 500);
+          setTimeout(() => {
+            hoverDisabledRef.current = false;
+          }, 400); // Manter desabilitado por mais 400ms após scroll
+        }, 600);
       }, 50);
+    } else {
+      // Se não houver scroll, ainda desabilitar hover por um tempo
+      setTimeout(() => {
+        hoverDisabledRef.current = false;
+      }, 500);
     }
   };
 
   const handleMouseEnter = (itemId: string) => {
-    if (!isScrolling) {
+    // Só permitir hover se não estiver em scroll, hover não estiver desabilitado, e o item não estiver ativo
+    if (!isScrolling && !hoverDisabledRef.current && activeTab !== itemId) {
       setHoveredItem(itemId);
     }
   };
@@ -113,7 +129,8 @@ export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationPro
             const Icon = item.icon;
             const isActive = activeTab === item.id;
 
-            const isHovered = hoveredItem === item.id && !isScrolling;
+            // Só mostrar hover se não estiver ativo, não estiver em scroll, e hover não estiver desabilitado
+            const isHovered = hoveredItem === item.id && !isActive && !isScrolling && !hoverDisabledRef.current;
 
             return (
               <Button
@@ -125,9 +142,17 @@ export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationPro
                 onClick={() => handleTabClick(item.id)}
                 onMouseEnter={() => handleMouseEnter(item.id)}
                 onMouseLeave={handleMouseLeave}
+                onTouchStart={() => {
+                  // Desabilitar hover imediatamente em touch
+                  hoverDisabledRef.current = true;
+                  setHoveredItem(null);
+                }}
                 onTouchEnd={() => {
-                  // Limpar hover em dispositivos touch
-                  setTimeout(() => setHoveredItem(null), 100);
+                  // Limpar hover em dispositivos touch e manter desabilitado por um tempo
+                  setHoveredItem(null);
+                  setTimeout(() => {
+                    hoverDisabledRef.current = false;
+                  }, 300);
                 }}
                 className={cn(
                   "flex flex-col items-center gap-1.5 h-auto py-3 px-4 min-w-[70px] rounded-xl transition-all duration-200 flex-shrink-0",
