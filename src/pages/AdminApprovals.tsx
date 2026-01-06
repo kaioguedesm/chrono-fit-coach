@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 interface PendingPersonal {
   id: string;
   user_id: string;
-  role: "personal" | "user" | "admin";
+  role: string;
   approved: boolean;
   created_at: string;
   profiles?: {
@@ -83,7 +83,7 @@ export default function AdminApprovals() {
           const convertedRoles = pendingData.map((p) => ({
             id: `pending_${p.user_id}`, // ID temporário
             user_id: p.user_id,
-            role: "personal" as const,
+            role: "personal",
             approved: false,
             created_at: p.created_at,
           }));
