@@ -24,7 +24,19 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical, Edit, Dumbbell } from "lucide-react";
+import {
+  Play,
+  Plus,
+  Weight,
+  RotateCcw,
+  TrendingUp,
+  Share2,
+  Trash2,
+  MoreVertical,
+  Edit,
+  Dumbbell,
+  Lock,
+} from "lucide-react";
 import { ActiveWorkoutSession } from "@/components/workout/ActiveWorkoutSession";
 import { WorkoutHistory } from "@/components/workout/WorkoutHistory";
 import { CreateWorkoutForm } from "@/components/workout/CreateWorkoutForm";
@@ -438,132 +450,176 @@ export default function Workout() {
               />
             ) : (
               <div className="space-y-4">
-                {displayPlans.map((plan) => (
-                  <Card key={plan.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <CardTitle className="text-lg">{plan.name}</CardTitle>
-                            <Badge variant={plan.created_by === "ai" ? "default" : "secondary"}>
-                              {plan.created_by === "ai" ? "🤖 IA" : "👤 Custom"}
-                            </Badge>
-                            {plan.created_by === "ai" &&
-                              plan.approval_status &&
-                              !(hasSignedTerms && plan.approval_status === "pending") && (
-                                <WorkoutApprovalBadge
-                                  status={plan.approval_status}
-                                  rejectionReason={plan.rejection_reason}
-                                  size="sm"
-                                />
-                              )}
-                          </div>
-                          <Badge variant="outline">Treino {plan.type}</Badge>
-                        </div>
-                        {user && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedWorkoutToEdit(plan.id);
-                                  setEditModalOpen(true);
-                                }}
-                              >
-                                <Edit className="w-4 h-4 mr-2" />
-                                Visualizar e Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedWorkoutToShare({ id: plan.id, name: plan.name });
-                                  setShareModalOpen(true);
-                                }}
-                              >
-                                <Share2 className="w-4 h-4 mr-2" />
-                                Compartilhar
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setPlanToDelete(plan.id);
-                                  setDeleteDialogOpen(true);
-                                }}
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Excluir treino
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
-                      </div>
-                    </CardHeader>
+                {displayPlans.map((plan) => {
+                  // Verificar se o treino está bloqueado (IA pendente e usuário sem termo assinado)
+                  const isBlocked =
+                    plan.created_by === "ai" && plan.approval_status === "pending" && hasSignedTerms === false;
 
-                    <CardContent className="space-y-4">
-                      {/* Workout refresh alert */}
-                      {plan.workouts_completed_count && plan.workouts_completed_count > 0 && (
-                        <WorkoutRefreshAlert
-                          workoutName={plan.name}
-                          completedWorkouts={plan.workouts_completed_count}
-                          maxWorkouts={plan.max_workouts_before_refresh || 35}
-                          needsRefresh={plan.needs_refresh || false}
-                          onRefresh={() => {
-                            setSelectedWorkoutToRefresh(plan);
-                            setRefreshDialogOpen(true);
-                          }}
-                        />
-                      )}
-
-                      <div className="space-y-2">
-                        {plan.exercises.slice(0, 4).map((exercise) => (
-                          <div
-                            key={exercise.id}
-                            className="flex justify-between items-center text-sm bg-muted/50 p-2 rounded"
-                          >
-                            <span className="font-medium">{exercise.name}</span>
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <span>
-                                {exercise.sets}×{exercise.reps}
-                              </span>
-                              {exercise.weight && (
-                                <Badge variant="secondary" className="text-xs">
-                                  <Weight className="w-3 h-3 mr-1" />
-                                  {exercise.weight}kg
-                                </Badge>
-                              )}
+                  return (
+                    <Card
+                      key={plan.id}
+                      className={`hover:shadow-lg transition-shadow relative ${isBlocked ? "opacity-60" : ""}`}
+                    >
+                      {/* Overlay de bloqueio */}
+                      {isBlocked && (
+                        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 rounded-lg flex items-center justify-center">
+                          <div className="text-center p-6 space-y-3">
+                            <Lock className="w-12 h-12 mx-auto text-muted-foreground" />
+                            <div>
+                              <h3 className="font-semibold text-lg mb-1">Treino Aguardando Aprovação</h3>
+                              <p className="text-sm text-muted-foreground max-w-sm">
+                                Este treino foi gerado pela IA e está aguardando aprovação do seu personal trainer para
+                                garantir sua segurança.
+                              </p>
                             </div>
                           </div>
-                        ))}
-                        {plan.exercises.length > 4 && (
-                          <div className="text-sm text-muted-foreground text-center">
-                            +{plan.exercises.length - 4} exercícios
+                        </div>
+                      )}
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                              <CardTitle className="text-lg">{plan.name}</CardTitle>
+                              <Badge variant={plan.created_by === "ai" ? "default" : "secondary"}>
+                                {plan.created_by === "ai" ? "🤖 IA" : "👤 Custom"}
+                              </Badge>
+                              {plan.created_by === "ai" &&
+                                plan.approval_status &&
+                                !(hasSignedTerms && plan.approval_status === "pending") && (
+                                  <WorkoutApprovalBadge
+                                    status={plan.approval_status}
+                                    rejectionReason={plan.rejection_reason}
+                                    size="sm"
+                                  />
+                                )}
+                            </div>
+                            <Badge variant="outline">Treino {plan.type}</Badge>
+                          </div>
+                          {user && !isBlocked && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedWorkoutToEdit(plan.id);
+                                    setEditModalOpen(true);
+                                  }}
+                                >
+                                  <Edit className="w-4 h-4 mr-2" />
+                                  Visualizar e Editar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedWorkoutToShare({ id: plan.id, name: plan.name });
+                                    setShareModalOpen(true);
+                                  }}
+                                >
+                                  <Share2 className="w-4 h-4 mr-2" />
+                                  Compartilhar
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setPlanToDelete(plan.id);
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Excluir treino
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="space-y-4">
+                        {/* Workout refresh alert */}
+                        {plan.workouts_completed_count && plan.workouts_completed_count > 0 && (
+                          <WorkoutRefreshAlert
+                            workoutName={plan.name}
+                            completedWorkouts={plan.workouts_completed_count}
+                            maxWorkouts={plan.max_workouts_before_refresh || 35}
+                            needsRefresh={plan.needs_refresh || false}
+                            onRefresh={() => {
+                              setSelectedWorkoutToRefresh(plan);
+                              setRefreshDialogOpen(true);
+                            }}
+                          />
+                        )}
+
+                        {!isBlocked ? (
+                          <div className="space-y-2">
+                            {plan.exercises.slice(0, 4).map((exercise) => (
+                              <div
+                                key={exercise.id}
+                                className="flex justify-between items-center text-sm bg-muted/50 p-2 rounded"
+                              >
+                                <span className="font-medium">{exercise.name}</span>
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <span>
+                                    {exercise.sets}×{exercise.reps}
+                                  </span>
+                                  {exercise.weight && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <Weight className="w-3 h-3 mr-1" />
+                                      {exercise.weight}kg
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                            {plan.exercises.length > 4 && (
+                              <div className="text-sm text-muted-foreground text-center">
+                                +{plan.exercises.length - 4} exercícios
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-2 opacity-50 pointer-events-none">
+                            <div className="flex justify-between items-center text-sm bg-muted/50 p-2 rounded blur-sm">
+                              <span className="font-medium">Exercício bloqueado</span>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <span>---</span>
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-center text-sm bg-muted/50 p-2 rounded blur-sm">
+                              <span className="font-medium">Exercício bloqueado</span>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <span>---</span>
+                              </div>
+                            </div>
+                            <div className="text-sm text-muted-foreground text-center blur-sm">
+                              +{plan.exercises.length - 2} exercícios bloqueados
+                            </div>
                           </div>
                         )}
-                      </div>
 
-                      <Button
-                        className="w-full"
-                        size="lg"
-                        onClick={() => startWorkout(plan)}
-                        disabled={
-                          plan.created_by === "ai" && plan.approval_status !== "approved" && hasSignedTerms === false
-                        }
-                      >
-                        <Play className="w-5 h-5 mr-2" />
-                        {plan.created_by === "ai" && plan.approval_status === "pending" && hasSignedTerms === false
-                          ? "Aguardando Aprovação"
-                          : "Iniciar Treino"}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
+                        <Button
+                          className="w-full"
+                          size="lg"
+                          onClick={() => startWorkout(plan)}
+                          disabled={
+                            plan.created_by === "ai" && plan.approval_status !== "approved" && hasSignedTerms === false
+                          }
+                        >
+                          <Play className="w-5 h-5 mr-2" />
+                          {plan.created_by === "ai" && plan.approval_status === "pending" && hasSignedTerms === false
+                            ? "Aguardando Aprovação"
+                            : "Iniciar Treino"}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </TabsContent>
