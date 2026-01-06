@@ -22,6 +22,10 @@ import { Download, Trash2, FileText, Shield, AlertTriangle, Pen, Save } from "lu
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+// URL do PDF de termos no Supabase Storage
+const TERMS_PDF_STORAGE_URL =
+  "https://gztjiknpddlkcxuavoeg.supabase.co/storage/v1/object/public/public-documents/Termo_de_Uso_Profissional_App_Fitnes.pdf";
+
 interface PrivacySettingsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -66,25 +70,8 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
   }, [open, type, user]);
 
   const loadTermsPdfUrl = async () => {
-    try {
-      // Obter URL pública do storage
-      const { data: publicUrlData } = supabase.storage
-        .from("public-documents")
-        .getPublicUrl("Termo_de_Uso_Profissional_App_Fitnes.pdf");
-
-      if (publicUrlData?.publicUrl) {
-        console.log("✅ URL do PDF do storage:", publicUrlData.publicUrl);
-        setTermsPdfUrl(publicUrlData.publicUrl);
-      } else {
-        console.warn("⚠️ URL pública não encontrada, usando fallback local");
-        // Fallback para caminho local se storage não funcionar
-        setTermsPdfUrl("/Termo_de_Uso_Profissional_App_Fitnes.pdf");
-      }
-    } catch (error) {
-      console.error("❌ Erro ao carregar URL do PDF:", error);
-      // Fallback para caminho local
-      setTermsPdfUrl("/Termo_de_Uso_Profissional_App_Fitnes.pdf");
-    }
+    // Usar URL direta do storage
+    setTermsPdfUrl(TERMS_PDF_STORAGE_URL);
   };
 
   const checkExistingSignature = async () => {
@@ -284,8 +271,8 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
       // Importar pdf-lib dinamicamente para evitar erros de carregamento
       const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
 
-      // Carregar o PDF original do storage ou fallback local
-      const pdfUrl = termsPdfUrl || "/Termo_de_Uso_Profissional_App_Fitnes.pdf";
+      // Carregar o PDF original do storage
+      const pdfUrl = TERMS_PDF_STORAGE_URL;
       const response = await fetch(pdfUrl);
       const pdfBytes = await response.arrayBuffer();
 
@@ -520,11 +507,7 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
           </CardHeader>
           <CardContent>
             <div className="border rounded-lg overflow-hidden">
-              <iframe
-                src={termsPdfUrl || "/Termo_de_Uso_Profissional_App_Fitnes.pdf"}
-                className="w-full h-[500px]"
-                title="Termo de Uso PDF"
-              />
+              <iframe src={TERMS_PDF_STORAGE_URL} className="w-full h-[500px]" title="Termo de Uso PDF" />
             </div>
           </CardContent>
         </Card>
