@@ -142,13 +142,11 @@ export default function Auth() {
         // Garantir que o perfil seja criado/atualizado com o nome fornecido
         if (pendingSignupData.name.trim()) {
           const { error: profileError } = await supabase.from("profiles").upsert(
-            [
-              {
-                user_id: newUser.id,
-                name: pendingSignupData.name.trim(),
-                experience_level: "iniciante",
-              },
-            ],
+            {
+              user_id: newUser.id,
+              name: pendingSignupData.name.trim(),
+              experience_level: "iniciante",
+            },
             {
               onConflict: "user_id",
             },
@@ -166,6 +164,28 @@ export default function Auth() {
               console.error("Erro ao atualizar perfil (tentativa 2):", updateError);
             }
           }
+        }
+
+        // Criar role 'user' automaticamente para usuários comuns
+        const { error: roleError } = await supabase.from("user_roles").upsert(
+          {
+            user_id: newUser.id,
+            role: "user",
+            approved: true,
+          },
+          {
+            onConflict: "user_id,role",
+          },
+        );
+
+        if (roleError) {
+          console.error("Erro ao criar role 'user':", roleError);
+          // Tentar inserção direta como fallback
+          await supabase.from("user_roles").insert({
+            user_id: newUser.id,
+            role: "user",
+            approved: true,
+          });
         }
 
         // Salvar aceitação dos termos
@@ -275,15 +295,19 @@ export default function Auth() {
           if (profileError) {
             console.error("Erro ao atualizar gym_id:", profileError);
             // Tentar upsert caso o perfil não exista
+            const { data: existingProfile } = await supabase
+              .from("profiles")
+              .select("name")
+              .eq("user_id", loggedUser.id)
+              .maybeSingle();
+
             await supabase.from("profiles").upsert(
-              [
-                {
-                  user_id: loggedUser.id,
-                  name: "Usuário",
-                  gym_id: gymId.trim(),
-                  experience_level: "iniciante",
-                },
-              ],
+              {
+                user_id: loggedUser.id,
+                name: existingProfile?.name || loggedUser.email?.split("@")[0] || "Usuário",
+                gym_id: gymId.trim(),
+                experience_level: "iniciante",
+              },
               {
                 onConflict: "user_id",
               },
