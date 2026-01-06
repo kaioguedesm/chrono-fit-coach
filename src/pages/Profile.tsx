@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Header } from '@/components/layout/Header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { useProfile } from '@/hooks/useProfile';
-import { Camera, Upload } from 'lucide-react';
-import { profileSchema } from '@/lib/validations';
-import { AvatarUpload } from '@/components/profile/AvatarUpload';
-import { PhotoUploadModal } from '@/components/dashboard/PhotoUploadModal';
+import { useState, useEffect } from "react";
+import { Header } from "@/components/layout/Header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useProfile } from "@/hooks/useProfile";
+import { Camera, Upload, Building2 } from "lucide-react";
+import { profileSchema } from "@/lib/validations";
+import { AvatarUpload } from "@/components/profile/AvatarUpload";
+import { PhotoUploadModal } from "@/components/dashboard/PhotoUploadModal";
 
 export default function Profile() {
   const { toast } = useToast();
@@ -18,7 +18,7 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [localProfile, setLocalProfile] = useState({
-    name: '',
+    name: "",
     age: null as number | null,
     gender: null as string | null,
     weight: null as number | null,
@@ -47,11 +47,11 @@ export default function Profile() {
     try {
       profileSchema.parse(localProfile);
     } catch (error: any) {
-      const errorMessage = error.errors?.[0]?.message || 'Dados inválidos';
+      const errorMessage = error.errors?.[0]?.message || "Dados inválidos";
       toast({
         title: "Erro de validação",
         description: errorMessage,
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -65,13 +65,13 @@ export default function Profile() {
 
       toast({
         title: "Perfil atualizado!",
-        description: "Suas informações foram salvas com sucesso."
+        description: "Suas informações foram salvas com sucesso.",
       });
     } catch (error: any) {
       toast({
         title: "Erro",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
@@ -81,7 +81,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Perfil" />
-      
+
       <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl">
         <div className="space-y-6">
           {/* Avatar Section */}
@@ -92,11 +92,21 @@ export default function Profile() {
             <CardContent>
               <AvatarUpload
                 currentAvatarUrl={profile?.avatar_url || null}
-                userName={profile?.name || ''}
+                userName={profile?.name || ""}
                 onUploadSuccess={(url) => {
                   // Profile will be refreshed automatically
                 }}
               />
+              {/* Academia */}
+              {profile?.gym_name && (
+                <div className="mt-4 flex items-center gap-2 p-3 bg-muted rounded-lg">
+                  <Building2 className="w-5 h-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Academia</p>
+                    <p className="text-sm text-muted-foreground">{profile.gym_name}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -122,15 +132,20 @@ export default function Profile() {
                   <Input
                     id="age"
                     type="number"
-                    value={localProfile.age || ''}
-                    onChange={(e) => setLocalProfile({ ...localProfile, age: e.target.value ? parseInt(e.target.value) : null })}
+                    value={localProfile.age || ""}
+                    onChange={(e) =>
+                      setLocalProfile({ ...localProfile, age: e.target.value ? parseInt(e.target.value) : null })
+                    }
                     placeholder="Sua idade"
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label>Gênero</Label>
-                  <Select value={localProfile.gender || ''} onValueChange={(value) => setLocalProfile({ ...localProfile, gender: value })}>
+                  <Select
+                    value={localProfile.gender || ""}
+                    onValueChange={(value) => setLocalProfile({ ...localProfile, gender: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecionar" />
                     </SelectTrigger>
@@ -148,8 +163,10 @@ export default function Profile() {
                     id="weight"
                     type="number"
                     step="0.1"
-                    value={localProfile.weight || ''}
-                    onChange={(e) => setLocalProfile({ ...localProfile, weight: e.target.value ? parseFloat(e.target.value) : null })}
+                    value={localProfile.weight || ""}
+                    onChange={(e) =>
+                      setLocalProfile({ ...localProfile, weight: e.target.value ? parseFloat(e.target.value) : null })
+                    }
                     placeholder="Seu peso"
                   />
                 </div>
@@ -159,8 +176,10 @@ export default function Profile() {
                   <Input
                     id="height"
                     type="number"
-                    value={localProfile.height || ''}
-                    onChange={(e) => setLocalProfile({ ...localProfile, height: e.target.value ? parseFloat(e.target.value) : null })}
+                    value={localProfile.height || ""}
+                    onChange={(e) =>
+                      setLocalProfile({ ...localProfile, height: e.target.value ? parseFloat(e.target.value) : null })
+                    }
                     placeholder="Sua altura"
                   />
                 </div>
@@ -168,7 +187,7 @@ export default function Profile() {
                 <div className="space-y-2">
                   <Label>IMC</Label>
                   <div className="p-2 bg-muted rounded-md text-sm">
-                    {calculateIMC() ? `${calculateIMC()} kg/m²` : 'Informe peso e altura'}
+                    {calculateIMC() ? `${calculateIMC()} kg/m²` : "Informe peso e altura"}
                   </div>
                 </div>
               </div>
@@ -184,7 +203,10 @@ export default function Profile() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Objetivo Principal</Label>
-                  <Select value={localProfile.goal || ''} onValueChange={(value) => setLocalProfile({ ...localProfile, goal: value })}>
+                  <Select
+                    value={localProfile.goal || ""}
+                    onValueChange={(value) => setLocalProfile({ ...localProfile, goal: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecionar objetivo" />
                     </SelectTrigger>
@@ -199,7 +221,10 @@ export default function Profile() {
 
                 <div className="space-y-2">
                   <Label>Nível de Experiência</Label>
-                  <Select value={localProfile.experience_level || ''} onValueChange={(value) => setLocalProfile({ ...localProfile, experience_level: value })}>
+                  <Select
+                    value={localProfile.experience_level || ""}
+                    onValueChange={(value) => setLocalProfile({ ...localProfile, experience_level: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecionar nível" />
                     </SelectTrigger>
@@ -221,7 +246,7 @@ export default function Profile() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
-                {['Frente', 'Lado', 'Costas'].map((type) => (
+                {["Frente", "Lado", "Costas"].map((type) => (
                   <div key={type} className="text-center">
                     <div className="w-full aspect-[3/4] bg-muted rounded-lg flex items-center justify-center mb-2">
                       <Upload className="w-8 h-8 text-muted-foreground" />
@@ -230,11 +255,7 @@ export default function Profile() {
                   </div>
                 ))}
               </div>
-              <Button 
-                variant="outline" 
-                className="w-full mt-4"
-                onClick={() => setShowPhotoModal(true)}
-              >
+              <Button variant="outline" className="w-full mt-4" onClick={() => setShowPhotoModal(true)}>
                 <Camera className="w-4 h-4 mr-2" />
                 Adicionar Fotos
               </Button>
@@ -242,15 +263,12 @@ export default function Profile() {
           </Card>
 
           <Button onClick={handleSave} disabled={saving} className="w-full">
-            {saving ? 'Salvando...' : 'Salvar Perfil'}
+            {saving ? "Salvando..." : "Salvar Perfil"}
           </Button>
         </div>
       </div>
 
-      <PhotoUploadModal
-        open={showPhotoModal}
-        onOpenChange={setShowPhotoModal}
-      />
+      <PhotoUploadModal open={showPhotoModal} onOpenChange={setShowPhotoModal} />
     </div>
   );
 }
