@@ -213,19 +213,14 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
 
     setLoading(true);
     try {
-      // Deletar dados do usuário (as RLS policies garantem que apenas dados próprios são deletados)
-      await Promise.all([
-        supabase.from("workout_sessions").delete().eq("user_id", user?.id),
-        supabase.from("meal_logs").delete().eq("user_id", user?.id),
-        supabase.from("progress_photos").delete().eq("user_id", user?.id),
-        supabase.from("body_measurements").delete().eq("user_id", user?.id),
-        supabase.from("profiles").delete().eq("user_id", user?.id),
-      ]);
-
-      // Deletar conta de autenticação
-      const { error } = await supabase.auth.admin.deleteUser(user?.id || "");
+      // Call the Edge Function to delete the account securely
+      const { data, error } = await supabase.functions.invoke("delete-account");
 
       if (error) throw error;
+
+      if (!data?.success) {
+        throw new Error(data?.error || "Failed to delete account");
+      }
 
       showToast({
         title: "Conta excluída",
@@ -233,12 +228,13 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
         variant: "success",
       });
 
-      // Deslogar usuário
+      // Sign out the user
       await supabase.auth.signOut();
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Error deleting account:", error);
       showToast({
         title: "Erro ao excluir",
-        description: "Não foi possível excluir sua conta. Entre em contato com o suporte.",
+        description: error?.message || "Não foi possível excluir sua conta. Entre em contato com o suporte.",
         variant: "error",
       });
     } finally {
