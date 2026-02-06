@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Header } from '@/components/layout/Header';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Textarea } from '@/components/ui/textarea';
-import { useUserRole } from '@/hooks/useUserRole';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { 
-  User, 
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Header } from "@/components/layout/Header";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Textarea } from "@/components/ui/textarea";
+import { useUserRole } from "@/hooks/useUserRole";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  User,
   Dumbbell,
   Apple,
   ArrowLeft,
@@ -23,12 +23,12 @@ import {
   Weight,
   Ruler,
   Target,
-  Plus
-} from 'lucide-react';
-import { LoadingState } from '@/components/common/LoadingState';
-import { WorkoutApprovalBadge } from '@/components/workout/WorkoutApprovalBadge';
-import { NutritionApprovalBadge } from '@/components/nutrition/NutritionApprovalBadge';
-import { PersonalCreateWorkout } from '@/components/personal/PersonalCreateWorkout';
+  Plus,
+} from "lucide-react";
+import { LoadingState } from "@/components/common/LoadingState";
+import { WorkoutApprovalBadge } from "@/components/workout/WorkoutApprovalBadge";
+import { NutritionApprovalBadge } from "@/components/nutrition/NutritionApprovalBadge";
+import { PersonalCreateWorkout } from "@/components/personal/PersonalCreateWorkout";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,7 +38,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 
 interface StudentData {
   user_id: string;
@@ -50,6 +50,8 @@ interface StudentData {
   height?: number;
   age?: number;
   gender?: string;
+  dietary_preferences?: string[] | null;
+  dietary_restrictions?: string[] | null;
   created_at: string;
 }
 
@@ -89,15 +91,15 @@ export default function PersonalStudentDetail() {
   const [workouts, setWorkouts] = useState<WorkoutPlan[]>([]);
   const [nutritionPlans, setNutritionPlans] = useState<NutritionPlan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedItem, setSelectedItem] = useState<{id: string, type: 'workout' | 'nutrition'} | null>(null);
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [selectedItem, setSelectedItem] = useState<{ id: string; type: "workout" | "nutrition" } | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [showCreateWorkout, setShowCreateWorkout] = useState(false);
 
   useEffect(() => {
     if (!roleLoading && !isPersonal) {
-      toast.error('Acesso negado');
-      navigate('/dashboard');
+      toast.error("Acesso negado");
+      navigate("/dashboard");
     }
   }, [isPersonal, roleLoading, navigate]);
 
@@ -115,9 +117,9 @@ export default function PersonalStudentDetail() {
 
       // Buscar dados do aluno
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', studentId)
+        .from("profiles")
+        .select("*")
+        .eq("user_id", studentId)
         .single();
 
       if (profileError) throw profileError;
@@ -125,88 +127,92 @@ export default function PersonalStudentDetail() {
 
       // Buscar treinos (incluindo os criados pelo personal)
       const { data: workoutsData, error: workoutsError } = await supabase
-        .from('workout_plans')
-        .select(`
+        .from("workout_plans")
+        .select(
+          `
           *,
           exercises (name, sets, reps)
-        `)
-        .eq('user_id', studentId)
-        .order('created_at', { ascending: false });
+        `,
+        )
+        .eq("user_id", studentId)
+        .order("created_at", { ascending: false });
 
       if (workoutsError) throw workoutsError;
       setWorkouts(workoutsData || []);
 
       // Buscar planos nutricionais
       const { data: nutritionData, error: nutritionError } = await supabase
-        .from('nutrition_plans')
-        .select(`
+        .from("nutrition_plans")
+        .select(
+          `
           *,
           meals (name, meal_type)
-        `)
-        .eq('user_id', studentId)
-        .eq('created_by', 'ai')
-        .order('created_at', { ascending: false });
+        `,
+        )
+        .eq("user_id", studentId)
+        .eq("created_by", "ai")
+        .order("created_at", { ascending: false });
 
       if (nutritionError) throw nutritionError;
       setNutritionPlans(nutritionData || []);
     } catch (error) {
-      console.error('Error fetching student data:', error);
-      toast.error('Erro ao carregar dados do aluno');
+      console.error("Error fetching student data:", error);
+      toast.error("Erro ao carregar dados do aluno");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (id: string, type: 'workout' | 'nutrition') => {
+  const handleApprove = async (id: string, type: "workout" | "nutrition") => {
     try {
-      const table = type === 'workout' ? 'workout_plans' : 'nutrition_plans';
+      const table = type === "workout" ? "workout_plans" : "nutrition_plans";
       const { error } = await supabase
         .from(table)
         .update({
-          approval_status: 'approved',
+          approval_status: "approved",
           approved_by: (await supabase.auth.getUser()).data.user?.id,
-          approved_at: new Date().toISOString()
+          approved_at: new Date().toISOString(),
         })
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) throw error;
 
-      toast.success(`${type === 'workout' ? 'Treino' : 'Plano nutricional'} aprovado!`);
+      toast.success(`${type === "workout" ? "Treino" : "Plano nutricional"} aprovado!`);
       fetchStudentData();
     } catch (error) {
-      console.error('Error approving:', error);
-      toast.error('Erro ao aprovar');
+      console.error("Error approving:", error);
+      toast.error("Erro ao aprovar");
     }
   };
 
   const handleReject = async () => {
     if (!selectedItem || !rejectionReason.trim()) {
-      toast.error('Informe o motivo da rejeição');
+      toast.error("Informe o motivo da rejeição");
       return;
     }
 
     try {
-      const table = selectedItem.type === 'workout' ? 'workout_plans' : 'nutrition_plans';
+      const table = selectedItem.type === "workout" ? "workout_plans" : "nutrition_plans";
       const { error } = await supabase
         .from(table)
         .update({
-          approval_status: 'rejected',
+          approval_status: "rejected",
           approved_by: (await supabase.auth.getUser()).data.user?.id,
           approved_at: new Date().toISOString(),
-          rejection_reason: rejectionReason
+          rejection_reason: rejectionReason,
         })
-        .eq('id', selectedItem.id);
+        .eq("id", selectedItem.id);
 
       if (error) throw error;
 
-      toast.success('Rejeitado com feedback');
+      toast.success("Rejeitado com feedback");
       setShowRejectDialog(false);
-      setRejectionReason('');
+      setRejectionReason("");
       setSelectedItem(null);
       fetchStudentData();
     } catch (error) {
-      console.error('Error rejecting:', error);
-      toast.error('Erro ao rejeitar');
+      console.error("Error rejecting:", error);
+      toast.error("Erro ao rejeitar");
     }
   };
 
@@ -225,20 +231,16 @@ export default function PersonalStudentDetail() {
     return null;
   }
 
-  const pendingWorkouts = workouts.filter(w => w.approval_status === 'pending').length;
-  const pendingNutrition = nutritionPlans.filter(n => n.approval_status === 'pending').length;
+  const pendingWorkouts = workouts.filter((w) => w.approval_status === "pending").length;
+  const pendingNutrition = nutritionPlans.filter((n) => n.approval_status === "pending").length;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Detalhes do Aluno" />
-      
+
       <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl space-y-6">
         {/* Botão voltar */}
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/personal-students')}
-          className="gap-2"
-        >
+        <Button variant="ghost" onClick={() => navigate("/personal-students")} className="gap-2">
           <ArrowLeft className="h-4 w-4" />
           Voltar para lista
         </Button>
@@ -257,9 +259,9 @@ export default function PersonalStudentDetail() {
                 <CardTitle className="text-2xl">{student.name}</CardTitle>
                 <CardDescription className="flex items-center gap-2 mt-2">
                   <Calendar className="h-4 w-4" />
-                  Aluno desde {new Date(student.created_at).toLocaleDateString('pt-BR')}
+                  Aluno desde {new Date(student.created_at).toLocaleDateString("pt-BR")}
                 </CardDescription>
-                
+
                 <div className="flex flex-wrap gap-2 mt-3">
                   {student.goal && (
                     <Badge variant="secondary" className="gap-1">
@@ -267,15 +269,11 @@ export default function PersonalStudentDetail() {
                       {student.goal}
                     </Badge>
                   )}
-                  {student.experience_level && (
-                    <Badge variant="secondary">
-                      {student.experience_level}
-                    </Badge>
-                  )}
-                  {(pendingWorkouts + pendingNutrition) > 0 && (
+                  {student.experience_level && <Badge variant="secondary">{student.experience_level}</Badge>}
+                  {pendingWorkouts + pendingNutrition > 0 && (
                     <Badge variant="outline" className="gap-1 text-orange-600 border-orange-500/50">
                       <Clock className="h-3 w-3" />
-                      {pendingWorkouts + pendingNutrition} pendente{(pendingWorkouts + pendingNutrition) !== 1 ? 's' : ''}
+                      {pendingWorkouts + pendingNutrition} pendente{pendingWorkouts + pendingNutrition !== 1 ? "s" : ""}
                     </Badge>
                   )}
                 </div>
@@ -284,40 +282,68 @@ export default function PersonalStudentDetail() {
           </CardHeader>
 
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {student.weight && (
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                  <Weight className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-semibold">{student.weight}kg</p>
-                    <p className="text-xs text-muted-foreground">Peso</p>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {student.weight && (
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                    <Weight className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-semibold">{student.weight}kg</p>
+                      <p className="text-xs text-muted-foreground">Peso</p>
+                    </div>
+                  </div>
+                )}
+                {student.height && (
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                    <Ruler className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-semibold">{student.height}cm</p>
+                      <p className="text-xs text-muted-foreground">Altura</p>
+                    </div>
+                  </div>
+                )}
+                {student.age && (
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-semibold">{student.age} anos</p>
+                      <p className="text-xs text-muted-foreground">Idade</p>
+                    </div>
+                  </div>
+                )}
+                {student.gender && (
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                    <User className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm font-semibold capitalize">{student.gender}</p>
+                      <p className="text-xs text-muted-foreground">Gênero</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {(student.dietary_preferences?.length || 0) > 0 && (
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">Preferências Alimentares</p>
+                  <div className="flex flex-wrap gap-2">
+                    {student.dietary_preferences?.map((pref) => (
+                      <Badge key={pref} variant="outline" className="text-xs">
+                        {pref}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               )}
-              {student.height && (
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                  <Ruler className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-semibold">{student.height}cm</p>
-                    <p className="text-xs text-muted-foreground">Altura</p>
-                  </div>
-                </div>
-              )}
-              {student.age && (
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-semibold">{student.age} anos</p>
-                    <p className="text-xs text-muted-foreground">Idade</p>
-                  </div>
-                </div>
-              )}
-              {student.gender && (
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                  <User className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-semibold capitalize">{student.gender}</p>
-                    <p className="text-xs text-muted-foreground">Gênero</p>
+
+              {(student.dietary_restrictions?.length || 0) > 0 && (
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">Restrições Alimentares</p>
+                  <div className="flex flex-wrap gap-2">
+                    {student.dietary_restrictions?.map((restriction) => (
+                      <Badge key={restriction} variant="destructive" className="text-xs">
+                        {restriction}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               )}
@@ -327,10 +353,7 @@ export default function PersonalStudentDetail() {
 
         {/* Ação rápida: Criar Treino */}
         <div className="flex gap-2">
-          <Button 
-            onClick={() => setShowCreateWorkout(true)}
-            className="gap-2"
-          >
+          <Button onClick={() => setShowCreateWorkout(true)} className="gap-2">
             <Plus className="h-4 w-4" />
             Criar Treino para {student.name}
           </Button>
@@ -375,23 +398,23 @@ export default function PersonalStudentDetail() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <CardTitle className="text-lg">{workout.name}</CardTitle>
-                          {workout.created_by === 'personal' && (
+                          {workout.created_by === "personal" && (
                             <Badge variant="default" className="text-xs gap-1">
                               <User className="h-3 w-3" />
                               Criado por você
                             </Badge>
                           )}
-                          {workout.created_by === 'ai' && (
+                          {workout.created_by === "ai" && (
                             <Badge variant="outline" className="text-xs">
                               Gerado por IA
                             </Badge>
                           )}
                         </div>
                         <CardDescription className="mt-1">
-                          {new Date(workout.created_at).toLocaleDateString('pt-BR')} • {workout.type}
+                          {new Date(workout.created_at).toLocaleDateString("pt-BR")} • {workout.type}
                         </CardDescription>
                       </div>
-                      <WorkoutApprovalBadge 
+                      <WorkoutApprovalBadge
                         status={workout.approval_status}
                         rejectionReason={workout.rejection_reason}
                       />
@@ -403,7 +426,9 @@ export default function PersonalStudentDetail() {
                       <p className="font-medium mb-2">Exercícios ({workout.exercises?.length || 0}):</p>
                       <ul className="list-disc list-inside space-y-1 ml-2">
                         {workout.exercises?.slice(0, 3).map((ex, idx) => (
-                          <li key={idx}>{ex.name} - {ex.sets}x{ex.reps}</li>
+                          <li key={idx}>
+                            {ex.name} - {ex.sets}x{ex.reps}
+                          </li>
                         ))}
                         {workout.exercises?.length > 3 && (
                           <li className="italic">+ {workout.exercises.length - 3} exercícios...</li>
@@ -418,18 +443,15 @@ export default function PersonalStudentDetail() {
                       </div>
                     )}
 
-                    {workout.approval_status === 'pending' && (
+                    {workout.approval_status === "pending" && (
                       <div className="flex gap-2 pt-2">
-                        <Button 
-                          onClick={() => handleApprove(workout.id, 'workout')}
-                          className="flex-1"
-                        >
+                        <Button onClick={() => handleApprove(workout.id, "workout")} className="flex-1">
                           <CheckCircle className="h-4 w-4 mr-2" />
                           Aprovar
                         </Button>
-                        <Button 
+                        <Button
                           onClick={() => {
-                            setSelectedItem({ id: workout.id, type: 'workout' });
+                            setSelectedItem({ id: workout.id, type: "workout" });
                             setShowRejectDialog(true);
                           }}
                           className="flex-1"
@@ -462,14 +484,11 @@ export default function PersonalStudentDetail() {
                       <div>
                         <CardTitle className="text-lg">{plan.title}</CardTitle>
                         <CardDescription className="mt-1">
-                          {new Date(plan.created_at).toLocaleDateString('pt-BR')}
+                          {new Date(plan.created_at).toLocaleDateString("pt-BR")}
                           {plan.description && ` • ${plan.description}`}
                         </CardDescription>
                       </div>
-                      <NutritionApprovalBadge 
-                        status={plan.approval_status}
-                        rejectionReason={plan.rejection_reason}
-                      />
+                      <NutritionApprovalBadge status={plan.approval_status} rejectionReason={plan.rejection_reason} />
                     </div>
                   </CardHeader>
 
@@ -478,11 +497,11 @@ export default function PersonalStudentDetail() {
                       <p className="font-medium mb-2">Refeições ({plan.meals?.length || 0}):</p>
                       <ul className="list-disc list-inside space-y-1 ml-2">
                         {plan.meals?.slice(0, 3).map((meal, idx) => (
-                          <li key={idx}>{meal.name} ({meal.meal_type})</li>
+                          <li key={idx}>
+                            {meal.name} ({meal.meal_type})
+                          </li>
                         ))}
-                        {plan.meals?.length > 3 && (
-                          <li className="italic">+ {plan.meals.length - 3} refeições...</li>
-                        )}
+                        {plan.meals?.length > 3 && <li className="italic">+ {plan.meals.length - 3} refeições...</li>}
                       </ul>
                     </div>
 
@@ -493,18 +512,15 @@ export default function PersonalStudentDetail() {
                       </div>
                     )}
 
-                    {plan.approval_status === 'pending' && (
+                    {plan.approval_status === "pending" && (
                       <div className="flex gap-2 pt-2">
-                        <Button 
-                          onClick={() => handleApprove(plan.id, 'nutrition')}
-                          className="flex-1"
-                        >
+                        <Button onClick={() => handleApprove(plan.id, "nutrition")} className="flex-1">
                           <CheckCircle className="h-4 w-4 mr-2" />
                           Aprovar
                         </Button>
-                        <Button 
+                        <Button
                           onClick={() => {
-                            setSelectedItem({ id: plan.id, type: 'nutrition' });
+                            setSelectedItem({ id: plan.id, type: "nutrition" });
                             setShowRejectDialog(true);
                           }}
                           className="flex-1"
@@ -535,7 +551,9 @@ export default function PersonalStudentDetail() {
       <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Rejeitar {selectedItem?.type === 'workout' ? 'Treino' : 'Plano Nutricional'}</AlertDialogTitle>
+            <AlertDialogTitle>
+              Rejeitar {selectedItem?.type === "workout" ? "Treino" : "Plano Nutricional"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Informe o motivo da rejeição para que o aluno possa entender.
             </AlertDialogDescription>
@@ -548,10 +566,7 @@ export default function PersonalStudentDetail() {
           />
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleReject}
-              className="bg-destructive hover:bg-destructive/90"
-            >
+            <AlertDialogAction onClick={handleReject} className="bg-destructive hover:bg-destructive/90">
               Confirmar Rejeição
             </AlertDialogAction>
           </AlertDialogFooter>
