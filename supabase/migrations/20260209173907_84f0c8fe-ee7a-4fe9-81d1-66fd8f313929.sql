@@ -1,0 +1,1 @@
+DELETE FROM api_rate_limits WHERE id = '99dc0501-6b71-415a-a764-ec1decfd4039';
