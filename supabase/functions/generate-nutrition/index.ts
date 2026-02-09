@@ -70,7 +70,7 @@ serve(async (req) => {
         gender: z.string().trim().max(20).nullish(),
         goal: z.string().trim().max(200).nullish(),
         activityLevel: z.string().trim().max(50).nullish(),
-        imc: z.string().nullish(),
+        imc: z.union([z.string(), z.number()]).nullish(),
         dietaryPreferences: z.array(z.string()).nullish(),
         dietaryRestrictions: z.array(z.string()).nullish(),
       }).optional(),
