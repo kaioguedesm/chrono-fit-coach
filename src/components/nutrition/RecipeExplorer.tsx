@@ -83,21 +83,88 @@ export function RecipeExplorer() {
   const [loadingDiet, setLoadingDiet] = useState(true);
 
   useEffect(() => {
-    fetchRecipes();
     fetchActiveDiet();
   }, [user]);
 
+  useEffect(() => {
+    if (activeDiet) {
+      fetchRecipes();
+    }
+  }, [activeDiet]);
+
   const fetchRecipes = async () => {
+    if (!activeDiet) {
+      setRecipes([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const { data, error } = await supabase
+
+      // Buscar todas as receitas ativas
+      const { data: allRecipes, error } = await supabase
         .from("recommended_recipes")
         .select("*")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setRecipes(data || []);
+
+      // Filtrar receitas baseadas na dieta ativa
+      // Extrair ingredientes comuns da dieta
+      const dietIngredients = activeDiet.meals.flatMap((meal) =>
+        (meal.ingredients || []).map((ing: string) => ing.toLowerCase()),
+      );
+
+      // Calcular macros médios da dieta
+      const totalCalories = activeDiet.meals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+      const avgCaloriesPerMeal = totalCalories / Math.max(activeDiet.meals.length, 1);
+
+      // Filtrar receitas que sejam compatíveis com a dieta
+      const filteredRecipes = (allRecipes || []).filter((recipe) => {
+        // Verificar se a receita tem ingredientes similares aos da dieta
+        const recipeIngredients = (recipe.ingredients || []).map((ing: string) => ing.toLowerCase());
+        const hasCommonIngredients = recipeIngredients.some((ing) =>
+          dietIngredients.some(
+            (dietIng) =>
+              dietIng.includes(ing) || ing.includes(dietIng) || ing.split(" ").some((word) => dietIng.includes(word)),
+          ),
+        );
+
+        // Verificar se as calorias são compatíveis (dentro de uma faixa razoável)
+        const caloriesDiff = Math.abs(recipe.calories - avgCaloriesPerMeal);
+        const isCalorieCompatible = caloriesDiff <= avgCaloriesPerMeal * 0.5; // Até 50% de diferença
+
+        // Priorizar receitas com ingredientes comuns ou calorias compatíveis
+        return hasCommonIngredients || isCalorieCompatible;
+      });
+
+      // Se não encontrou receitas compatíveis, mostrar todas (mas limitadas)
+      if (filteredRecipes.length === 0 && allRecipes) {
+        setRecipes(allRecipes.slice(0, 12)); // Limitar a 12 receitas gerais
+      } else {
+        // Ordenar por compatibilidade (mais ingredientes em comum primeiro)
+        const scoredRecipes = filteredRecipes.map((recipe) => {
+          const recipeIngredients = (recipe.ingredients || []).map((ing: string) => ing.toLowerCase());
+          const commonCount = recipeIngredients.filter((ing) =>
+            dietIngredients.some(
+              (dietIng) =>
+                dietIng.includes(ing) || ing.includes(dietIng) || ing.split(" ").some((word) => dietIng.includes(word)),
+            ),
+          ).length;
+
+          const caloriesScore = 1 - Math.abs(recipe.calories - avgCaloriesPerMeal) / avgCaloriesPerMeal;
+
+          return {
+            ...recipe,
+            compatibilityScore: commonCount + caloriesScore,
+          };
+        });
+
+        scoredRecipes.sort((a, b) => (b as any).compatibilityScore - (a as any).compatibilityScore);
+        setRecipes(scoredRecipes.slice(0, 12)); // Limitar a 12 receitas mais compatíveis
+      }
     } catch (error) {
       console.error("Error fetching recipes:", error);
       toast.error("Erro ao carregar receitas", {
@@ -514,9 +581,17 @@ export function RecipeExplorer() {
       </Card>
 
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Receitas Fitness</h2>
+        <div>
+          <h2 className="text-2xl font-bold">Receitas Fitness</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Receitas selecionadas baseadas na sua dieta: <span className="font-medium">{activeDiet.title}</span>
+          </p>
+        </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline">{filteredRecipes.length} receitas</Badge>
+          <Badge variant="outline" className="gap-1">
+            <Sparkles className="w-3 h-3" />
+            {filteredRecipes.length} receitas compatíveis
+          </Badge>
           <Button onClick={fetchRecipes} size="sm" variant="ghost">
             <RefreshCw className="w-4 h-4" />
           </Button>
