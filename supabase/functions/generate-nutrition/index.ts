@@ -37,26 +37,6 @@ serve(async (req) => {
       );
     }
 
-    // Check rate limit (5 requests per day)
-    const { data: rateLimitResult, error: rateLimitError } = await supabase
-      .rpc('increment_rate_limit', {
-        p_user_id: user.id,
-        p_function_name: 'generate-nutrition',
-        p_limit: 5
-      });
-
-    if (rateLimitError) {
-      console.error('Rate limit check error:', rateLimitError);
-    } else if (rateLimitResult && !rateLimitResult.allowed) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Limite diário de gerações de dieta atingido (5/dia). Tente novamente amanhã.',
-          resetAt: rateLimitResult.reset_at
-        }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     // Input validation schema
     const nutritionSchema = z.object({
       dietType: z.string().trim().min(1).max(100),
