@@ -30,6 +30,7 @@ import { LoadingState } from "@/components/common/LoadingState";
 import { WorkoutApprovalBadge } from "@/components/workout/WorkoutApprovalBadge";
 import { NutritionApprovalBadge } from "@/components/nutrition/NutritionApprovalBadge";
 import { PersonalCreateWorkout } from "@/components/personal/PersonalCreateWorkout";
+import { PersonalCreateNutrition } from "@/components/personal/PersonalCreateNutrition";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -96,6 +97,7 @@ export default function PersonalStudentDetail() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [showCreateWorkout, setShowCreateWorkout] = useState(false);
+  const [showCreateNutrition, setShowCreateNutrition] = useState(false);
   const [evaluationNotes, setEvaluationNotes] = useState("");
   const [evaluationId, setEvaluationId] = useState<string | null>(null);
   const [savingEvaluation, setSavingEvaluation] = useState(false);
@@ -426,11 +428,15 @@ export default function PersonalStudentDetail() {
           </CardContent>
         </Card>
 
-        {/* Ação rápida: Criar Treino */}
-        <div className="flex gap-2">
+        {/* Ações rápidas: Criar Treino e Dieta */}
+        <div className="flex gap-2 flex-wrap">
           <Button onClick={() => setShowCreateWorkout(true)} className="gap-2">
             <Plus className="h-4 w-4" />
             Criar Treino para {student.name}
+          </Button>
+          <Button onClick={() => setShowCreateNutrition(true)} className="gap-2" variant="outline">
+            <Apple className="h-4 w-4" />
+            Criar Dieta com IA para {student.name}
           </Button>
         </div>
 
@@ -646,6 +652,14 @@ export default function PersonalStudentDetail() {
       <PersonalCreateWorkout
         open={showCreateWorkout}
         onOpenChange={setShowCreateWorkout}
+        preSelectedStudentId={studentId}
+        onSuccess={fetchStudentData}
+      />
+
+      {/* Modal de Criação de Dieta com IA */}
+      <PersonalCreateNutrition
+        open={showCreateNutrition}
+        onOpenChange={setShowCreateNutrition}
         preSelectedStudentId={studentId}
         onSuccess={fetchStudentData}
       />
