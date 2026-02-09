@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, Loader2, Dumbbell, Target, Zap, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { toast } = useToast();
+  const { isPersonal, loading: roleLoading } = useUserRole();
   const [generating, setGenerating] = useState(false);
   const [muscleGroup, setMuscleGroup] = useState("peito");
   const [duration, setDuration] = useState("60");
@@ -43,6 +45,15 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
 
   const generateWorkout = async () => {
     if (!user) return;
+
+    if (!isPersonal) {
+      toast({
+        title: "Acesso restrito",
+        description: "Somente o personal pode gerar treinos com a IA.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setGenerating(true);
     try {
@@ -68,21 +79,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
         throw new Error("Resposta inválida da IA");
       }
 
-      // Verificar se o usuário tem termo assinado
-      const { data: termsData } = await supabase
-        .from("user_terms_acceptance")
-        .select("signed_pdf_url, signed_pdf_base64")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      // Usar type assertion para evitar erros de TypeScript quando as colunas não existem
-      const signatureData = termsData as any;
-      const hasSignedTerms = !!(signatureData?.signed_pdf_url || signatureData?.signed_pdf_base64);
-
-      // Se tiver termo assinado, aprovar automaticamente; caso contrário, aguardar aprovação do personal
-      const approvalStatus = hasSignedTerms ? "approved" : "pending";
-
-      // Create workout plan
+      // Create workout plan with pending approval status
       const { data: plan, error: planError } = await supabase
         .from("workout_plans")
         .insert({
@@ -90,11 +87,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
           name: functionData.workoutName,
           type: muscleGroup,
           created_by: "ai",
-          approval_status: approvalStatus,
-          ...(hasSignedTerms && {
-            approved_by: user.id,
-            approved_at: new Date().toISOString(),
-          }),
+          approval_status: "pending",
         })
         .select()
         .single();
@@ -119,9 +112,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
 
       toast({
         title: "Treino criado pela IA! 🤖✨",
-        description: hasSignedTerms
-          ? "Treino aprovado automaticamente! Você já pode utilizá-lo."
-          : "Aguardando aprovação do personal trainer para liberar o treino.",
+        description: "Aguardando aprovação do personal trainer para liberar o treino.",
       });
 
       onSuccess();
