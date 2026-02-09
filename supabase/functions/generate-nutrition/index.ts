@@ -65,6 +65,48 @@ serve(async (req) => {
     });
 
     const requestBody = await req.json();
+
+    // Handle "tips" mode separately - it doesn't need dietType/mealsPerDay
+    if (requestBody.mode === 'tips') {
+      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      if (!LOVABLE_API_KEY) {
+        throw new Error('LOVABLE_API_KEY not configured');
+      }
+
+      const tipsPrompt = `Você é um nutricionista experiente. Com base na dieta ativa e perfil do usuário abaixo, gere 3-5 dicas rápidas e práticas de nutrição personalizadas.
+
+Dieta ativa: ${JSON.stringify(requestBody.activeDiet || {})}
+Perfil: ${JSON.stringify(requestBody.userProfile || {})}
+
+Retorne APENAS um JSON válido: {"tips": ["dica 1", "dica 2", "dica 3"]}`;
+
+      const tipsResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [{ role: 'user', content: tipsPrompt }],
+        }),
+      });
+
+      if (!tipsResponse.ok) {
+        throw new Error(`AI Gateway error: ${tipsResponse.status}`);
+      }
+
+      const tipsData = await tipsResponse.json();
+      const tipsContent = tipsData.choices?.[0]?.message?.content || '';
+      const cleanTips = tipsContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const parsedTips = JSON.parse(cleanTips);
+
+      return new Response(
+        JSON.stringify(parsedTips),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const validated = nutritionSchema.parse(requestBody);
 
     const {
