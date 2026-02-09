@@ -330,7 +330,7 @@ export function RecipeExplorer() {
 
   const filteredRecipes = activeCategory === "todas" ? recipes : recipes.filter((r) => r.category === activeCategory);
 
-  if (loading) {
+  if (loading || loadingDiet) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -338,16 +338,109 @@ export function RecipeExplorer() {
     );
   }
 
+  // Se não houver dieta ativa, mostrar apenas mensagem
+  if (!activeDiet) {
+    return (
+      <div className="space-y-4">
+        {/* Card de Dicas Personalizadas com IA */}
+        <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  Dicas Personalizadas com IA
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Você precisa ter uma dieta aprovada pelo personal para receber dicas personalizadas e receitas.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <AlertCircle className="w-4 h-4" />
+                <span>Sem dieta ativa</span>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+
+        <div className="text-center py-12">
+          <ChefHat className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Nenhuma receita disponível</h3>
+          <p className="text-muted-foreground">
+            Você precisa ter uma dieta aprovada pelo personal trainer para visualizar receitas personalizadas.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (recipes.length === 0) {
     return (
-      <div className="text-center py-12">
-        <ChefHat className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Nenhuma receita disponível</h3>
-        <p className="text-muted-foreground mb-4">As receitas serão atualizadas automaticamente todos os dias</p>
-        <Button onClick={fetchRecipes} variant="outline">
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Recarregar
-        </Button>
+      <div className="space-y-4">
+        {/* Card de Dicas Personalizadas com IA */}
+        <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  Dicas Personalizadas com IA
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Receba sugestões baseadas na sua dieta ativa: "{activeDiet.title}"
+                </p>
+              </div>
+              <Button onClick={generateAITips} disabled={generatingTips || !profile} className="gap-2">
+                {generatingTips ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Gerando...
+                  </>
+                ) : (
+                  <>
+                    <Lightbulb className="w-4 h-4" />
+                    Gerar Dicas
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardHeader>
+          {aiTips.length > 0 && (
+            <CardContent className="space-y-4">
+              {aiTips.map((tip) => (
+                <div key={tip.id} className="p-4 bg-background rounded-lg border border-primary/20">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <ChefHat className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-base mb-1">{tip.title}</h3>
+                      <p className="text-sm text-muted-foreground">{tip.description}</p>
+                    </div>
+                  </div>
+                  <ul className="space-y-2 ml-2">
+                    {tip.tips.map((tipText, index) => (
+                      <li key={index} className="flex items-start gap-2 text-sm">
+                        <span className="text-primary mt-1">•</span>
+                        <span className="text-muted-foreground">{tipText}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </CardContent>
+          )}
+        </Card>
+
+        <div className="text-center py-12">
+          <ChefHat className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Nenhuma receita disponível</h3>
+          <p className="text-muted-foreground mb-4">As receitas serão atualizadas automaticamente todos os dias</p>
+          <Button onClick={fetchRecipes} variant="outline">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Recarregar
+          </Button>
+        </div>
       </div>
     );
   }
