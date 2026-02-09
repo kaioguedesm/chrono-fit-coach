@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
-import { Camera, Upload, Building2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Camera, Upload, ClipboardCheck } from "lucide-react";
 import { profileSchema } from "@/lib/validations";
 import { AvatarUpload } from "@/components/profile/AvatarUpload";
 import { PhotoUploadModal } from "@/components/dashboard/PhotoUploadModal";
@@ -15,8 +17,12 @@ import { PhotoUploadModal } from "@/components/dashboard/PhotoUploadModal";
 export default function Profile() {
   const { toast } = useToast();
   const { profile, loading, updateProfile, calculateIMC } = useProfile();
+  const { user } = useAuth();
   const [saving, setSaving] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [personalEvaluation, setPersonalEvaluation] = useState<string | null>(null);
+  const [personalName, setPersonalName] = useState<string | null>(null);
+  const [evaluationLoading, setEvaluationLoading] = useState(false);
   const [localProfile, setLocalProfile] = useState({
     name: "",
     age: null as number | null,
@@ -41,6 +47,50 @@ export default function Profile() {
       });
     }
   }, [profile]);
+
+  // Buscar avaliação do personal (se existir)
+  useEffect(() => {
+    const fetchEvaluation = async () => {
+      if (!user?.id) return;
+
+      try {
+        setEvaluationLoading(true);
+        const { data: evalRow, error } = await supabase
+          .from("personal_students")
+          .select("notes, personal_id")
+          .eq("student_id", user.id)
+          .eq("is_active", true)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        const notes = (evalRow?.notes || "").trim();
+        setPersonalEvaluation(notes.length ? notes : null);
+
+        if (evalRow?.personal_id) {
+          const { data: pProfile } = await supabase
+            .from("profiles")
+            .select("name")
+            .eq("user_id", evalRow.personal_id)
+            .maybeSingle();
+
+          setPersonalName(pProfile?.name ?? null);
+        } else {
+          setPersonalName(null);
+        }
+      } catch (err) {
+        console.warn("Erro ao buscar avaliação do personal:", err);
+        setPersonalEvaluation(null);
+        setPersonalName(null);
+      } finally {
+        setEvaluationLoading(false);
+      }
+    };
+
+    fetchEvaluation();
+  }, [user?.id]);
 
   const handleSave = async () => {
     // Validate profile data
@@ -97,15 +147,31 @@ export default function Profile() {
                   // Profile will be refreshed automatically
                 }}
               />
-              {/* Academia */}
-              {profile?.gym_name && (
-                <div className="mt-4 flex items-center gap-2 p-3 bg-muted rounded-lg">
-                  <Building2 className="w-5 h-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium">Academia</p>
-                    <p className="text-sm text-muted-foreground">{profile.gym_name}</p>
-                  </div>
+            </CardContent>
+          </Card>
+
+          {/* Personal Evaluation */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardCheck className="h-5 w-5 text-primary" />
+                Avaliação do Personal
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {evaluationLoading ? (
+                <p className="text-sm text-muted-foreground">Carregando avaliação...</p>
+              ) : personalEvaluation ? (
+                <div className="space-y-2">
+                  {personalName && (
+                    <p className="text-xs text-muted-foreground">
+                      De: <span className="font-medium">{personalName}</span>
+                    </p>
+                  )}
+                  <div className="p-3 bg-muted/50 rounded-lg whitespace-pre-wrap text-sm">{personalEvaluation}</div>
                 </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Seu personal ainda não deixou uma avaliação disponível.</p>
               )}
             </CardContent>
           </Card>
