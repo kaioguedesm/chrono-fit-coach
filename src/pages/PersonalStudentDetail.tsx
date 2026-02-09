@@ -24,6 +24,7 @@ import {
   Ruler,
   Target,
   Plus,
+  ClipboardCheck,
 } from "lucide-react";
 import { LoadingState } from "@/components/common/LoadingState";
 import { WorkoutApprovalBadge } from "@/components/workout/WorkoutApprovalBadge";
@@ -95,6 +96,9 @@ export default function PersonalStudentDetail() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [showCreateWorkout, setShowCreateWorkout] = useState(false);
+  const [evaluationNotes, setEvaluationNotes] = useState("");
+  const [evaluationId, setEvaluationId] = useState<string | null>(null);
+  const [savingEvaluation, setSavingEvaluation] = useState(false);
 
   useEffect(() => {
     if (!roleLoading && !isPersonal) {
@@ -114,6 +118,14 @@ export default function PersonalStudentDetail() {
 
     try {
       setLoading(true);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user?.id) {
+        toast.error("Sessão expirada. Faça login novamente.");
+        navigate("/auth");
+        return;
+      }
 
       // Buscar dados do aluno
       const { data: profile, error: profileError } = await supabase
@@ -124,6 +136,24 @@ export default function PersonalStudentDetail() {
 
       if (profileError) throw profileError;
       setStudent(profile);
+
+      // Buscar avaliação/observações do personal para esse aluno
+      const { data: evaluationRow, error: evaluationError } = await supabase
+        .from("personal_students")
+        .select("id, notes")
+        .eq("personal_id", user.id)
+        .eq("student_id", studentId)
+        .maybeSingle();
+
+      // Se a tabela estiver com RLS mais restritiva, não derruba a página
+      if (evaluationError) {
+        console.warn("Error fetching evaluation notes:", evaluationError);
+        setEvaluationId(null);
+        setEvaluationNotes("");
+      } else {
+        setEvaluationId(evaluationRow?.id ?? null);
+        setEvaluationNotes(evaluationRow?.notes ?? "");
+      }
 
       // Buscar treinos (incluindo os criados pelo personal)
       const { data: workoutsData, error: workoutsError } = await supabase
@@ -160,6 +190,51 @@ export default function PersonalStudentDetail() {
       toast.error("Erro ao carregar dados do aluno");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveEvaluation = async () => {
+    if (!studentId) return;
+
+    try {
+      setSavingEvaluation(true);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user?.id) throw new Error("Sessão expirada");
+
+      if (evaluationId) {
+        const { error } = await supabase
+          .from("personal_students")
+          .update({
+            notes: evaluationNotes,
+            is_active: true,
+          })
+          .eq("id", evaluationId);
+
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from("personal_students")
+          .insert({
+            personal_id: user.id,
+            student_id: studentId,
+            notes: evaluationNotes,
+            is_active: true,
+          })
+          .select("id")
+          .single();
+
+        if (error) throw error;
+        setEvaluationId(data?.id ?? null);
+      }
+
+      toast.success("Avaliação salva e disponível para o aluno.");
+    } catch (error) {
+      console.error("Error saving evaluation:", error);
+      toast.error("Erro ao salvar avaliação");
+    } finally {
+      setSavingEvaluation(false);
     }
   };
 
@@ -361,7 +436,7 @@ export default function PersonalStudentDetail() {
 
         {/* Tabs de treinos e nutrição */}
         <Tabs defaultValue="workouts" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="workouts" className="gap-2">
               <Dumbbell className="h-4 w-4" />
               Treinos ({workouts.length})
@@ -379,6 +454,10 @@ export default function PersonalStudentDetail() {
                   {pendingNutrition}
                 </Badge>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="evaluation" className="gap-2">
+              <ClipboardCheck className="h-4 w-4" />
+              Avaliação
             </TabsTrigger>
           </TabsList>
 
@@ -535,6 +614,30 @@ export default function PersonalStudentDetail() {
                 </Card>
               ))
             )}
+          </TabsContent>
+
+          <TabsContent value="evaluation" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Avaliação do Aluno</CardTitle>
+                <CardDescription>
+                  Escreva sua avaliação/observações. O aluno verá esse conteúdo no perfil dele.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Textarea
+                  placeholder="Ex: Pontos fortes, pontos de atenção, orientações, próximos passos..."
+                  value={evaluationNotes}
+                  onChange={(e) => setEvaluationNotes(e.target.value)}
+                  className="min-h-[160px]"
+                />
+                <div className="flex justify-end">
+                  <Button onClick={handleSaveEvaluation} disabled={savingEvaluation}>
+                    {savingEvaluation ? "Salvando..." : "Salvar Avaliação"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
