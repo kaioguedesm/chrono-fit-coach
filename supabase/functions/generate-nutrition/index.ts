@@ -64,18 +64,23 @@ serve(async (req) => {
       mealsPerDay: z.number().int().min(1).max(10),
       restrictions: z.array(z.string().trim().max(100)).max(20).optional(),
       userProfile: z.object({
-        weight: z.number().min(20).max(500).optional(),
-        height: z.number().min(50).max(300).optional(),
-        age: z.number().int().min(13).max(120).optional(),
-        gender: z.string().trim().max(20).optional(),
-        goal: z.string().trim().max(200).optional(),
-        activityLevel: z.string().trim().max(50).optional()
+        weight: z.number().min(20).max(500).nullish(),
+        height: z.number().min(50).max(300).nullish(),
+        age: z.number().int().min(13).max(120).nullish(),
+        gender: z.string().trim().max(20).nullish(),
+        goal: z.string().trim().max(200).nullish(),
+        activityLevel: z.string().trim().max(50).nullish(),
+        imc: z.string().nullish(),
+        dietaryPreferences: z.array(z.string()).nullish(),
+        dietaryRestrictions: z.array(z.string()).nullish(),
       }).optional(),
       userPreferences: z.object({
-        foodPreferences: z.string().trim().max(1000).optional(),
-        mealTiming: z.string().trim().max(500).optional(),
-        preparationTime: z.string().trim().max(100).optional(),
-        specialNotes: z.string().trim().max(1000).optional()
+        foodPreferences: z.string().trim().max(1000).nullish(),
+        favoritesFoods: z.string().trim().max(1000).nullish(),
+        dislikedFoods: z.string().trim().max(1000).nullish(),
+        mealTiming: z.string().trim().max(500).nullish(),
+        preparationTime: z.string().trim().max(100).nullish(),
+        specialNotes: z.string().trim().max(1000).nullish()
       }).optional()
     });
 
