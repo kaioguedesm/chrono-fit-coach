@@ -272,9 +272,16 @@ export function RecipeExplorer() {
 
       if (functionError) throw functionError;
 
-      // Se a função retornar dicas diretamente
-      if (functionData?.tips) {
-        setAiTips(functionData.tips);
+      // Se a função retornar dicas diretamente (array de strings da IA)
+      if (functionData?.tips && Array.isArray(functionData.tips)) {
+        const formattedTips: AITip[] = [{
+          id: "ai-tips",
+          title: `Dicas para sua dieta: ${activeDiet.title}`,
+          description: "Sugestões personalizadas geradas por IA",
+          category: "ia",
+          tips: functionData.tips,
+        }];
+        setAiTips(formattedTips);
         toast.success("Dicas geradas!", {
           description: "Sugestões personalizadas baseadas na sua dieta ativa.",
         });
