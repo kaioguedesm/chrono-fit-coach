@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, Flame, ChefHat, Beef, Loader2, RefreshCw, Sparkles, Lightbulb } from "lucide-react";
+import { Clock, Flame, ChefHat, Beef, Loader2, RefreshCw, Sparkles, Lightbulb, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Recipe {
   id: string;
@@ -33,6 +34,21 @@ interface AITip {
   tips: string[];
 }
 
+interface ActiveDiet {
+  id: string;
+  title: string;
+  description: string | null;
+  meals: Array<{
+    name: string;
+    meal_type: string;
+    ingredients: string[];
+    calories: number | null;
+    protein: number | null;
+    carbs: number | null;
+    fat: number | null;
+  }>;
+}
+
 const categories = [
   { key: "todas", label: "Todas" },
   { key: "cafe_da_manha", label: "Café da Manhã" },
@@ -56,16 +72,20 @@ const emojiMap: Record<string, string> = {
 
 export function RecipeExplorer() {
   const { profile, calculateIMC } = useProfile();
+  const { user } = useAuth();
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [activeCategory, setActiveCategory] = useState("todas");
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [aiTips, setAiTips] = useState<AITip[]>([]);
   const [generatingTips, setGeneratingTips] = useState(false);
+  const [activeDiet, setActiveDiet] = useState<ActiveDiet | null>(null);
+  const [loadingDiet, setLoadingDiet] = useState(true);
 
   useEffect(() => {
     fetchRecipes();
-  }, []);
+    fetchActiveDiet();
+  }, [user]);
 
   const fetchRecipes = async () => {
     try {
@@ -88,7 +108,67 @@ export function RecipeExplorer() {
     }
   };
 
+  const fetchActiveDiet = async () => {
+    if (!user?.id) {
+      setLoadingDiet(false);
+      return;
+    }
+
+    try {
+      setLoadingDiet(true);
+      const { data, error } = await supabase
+        .from("nutrition_plans")
+        .select(
+          `
+          id,
+          title,
+          description,
+          meals (
+            name,
+            meal_type,
+            ingredients,
+            calories,
+            protein,
+            carbs,
+            fat
+          )
+        `,
+        )
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .eq("approval_status", "approved")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setActiveDiet({
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          meals: data.meals || [],
+        });
+      } else {
+        setActiveDiet(null);
+      }
+    } catch (error) {
+      console.error("Error fetching active diet:", error);
+      setActiveDiet(null);
+    } finally {
+      setLoadingDiet(false);
+    }
+  };
+
   const generateAITips = async () => {
+    if (!activeDiet) {
+      toast.error("Nenhuma dieta ativa", {
+        description: "Você precisa ter uma dieta aprovada pelo personal para receber dicas personalizadas.",
+      });
+      return;
+    }
+
     if (!profile) {
       toast.error("Complete seu perfil primeiro", {
         description: "Precisamos das suas informações para gerar dicas personalizadas.",
@@ -100,10 +180,15 @@ export function RecipeExplorer() {
       setGeneratingTips(true);
       const imc = calculateIMC();
 
-      // Chamar função do Supabase para gerar dicas baseadas no perfil
+      // Chamar função do Supabase para gerar dicas baseadas na dieta ativa
       const { data: functionData, error: functionError } = await supabase.functions.invoke("generate-nutrition", {
         body: {
           mode: "tips", // Modo especial para gerar apenas dicas rápidas
+          activeDiet: {
+            title: activeDiet.title,
+            description: activeDiet.description,
+            meals: activeDiet.meals,
+          },
           userProfile: {
             goal: profile.goal || "manutencao",
             dietary_preferences: profile.dietary_preferences || [],
@@ -124,65 +209,83 @@ export function RecipeExplorer() {
       if (functionData?.tips) {
         setAiTips(functionData.tips);
         toast.success("Dicas geradas!", {
-          description: "Sugestões personalizadas baseadas no seu perfil.",
+          description: "Sugestões personalizadas baseadas na sua dieta ativa.",
         });
       } else {
-        // Se não retornar dicas, criar dicas baseadas no perfil manualmente
-        const tips = createTipsFromProfile(profile, imc);
+        // Se não retornar dicas, criar dicas baseadas na dieta manualmente
+        const tips = createTipsFromDiet(activeDiet, profile, imc);
         setAiTips(tips);
         toast.success("Dicas geradas!", {
-          description: "Sugestões personalizadas baseadas no seu perfil.",
+          description: "Sugestões personalizadas baseadas na sua dieta ativa.",
         });
       }
     } catch (error: any) {
       console.error("Error generating tips:", error);
-      // Fallback: criar dicas baseadas no perfil mesmo se a IA falhar
+      // Fallback: criar dicas baseadas na dieta mesmo se a IA falhar
       const imc = calculateIMC();
-      const tips = createTipsFromProfile(profile!, imc);
+      const tips = createTipsFromDiet(activeDiet, profile!, imc);
       setAiTips(tips);
       toast.success("Dicas geradas!", {
-        description: "Sugestões baseadas no seu perfil.",
+        description: "Sugestões baseadas na sua dieta ativa.",
       });
     } finally {
       setGeneratingTips(false);
     }
   };
 
-  const createTipsFromProfile = (profile: any, imc: string | null): AITip[] => {
+  const createTipsFromDiet = (diet: ActiveDiet, profile: any, imc: string | null): AITip[] => {
     const tips: AITip[] = [];
-    const goal = profile.goal || "manutencao";
     const restrictions = profile.dietary_restrictions || [];
-    const preferences = profile.dietary_preferences || [];
 
-    // Dicas baseadas no objetivo
-    if (goal === "emagrecimento") {
-      tips.push({
-        id: "tip-1",
-        title: "Dicas para Emagrecimento",
-        description: "Alimentos e estratégias para acelerar a perda de peso",
-        category: "emagrecimento",
-        tips: [
-          "Priorize proteínas magras: frango, peixe, ovos e leguminosas",
-          "Aumente o consumo de vegetais folhosos e fibras",
-          "Beba água antes das refeições para aumentar a saciedade",
-          "Evite alimentos ultraprocessados e açúcares refinados",
-          "Faça refeições menores e mais frequentes ao longo do dia",
-        ],
-      });
-    } else if (goal === "hipertrofia") {
-      tips.push({
-        id: "tip-2",
-        title: "Dicas para Ganho de Massa",
-        description: "Estratégias nutricionais para hipertrofia",
-        category: "hipertrofia",
-        tips: [
-          "Consuma proteína em todas as refeições (1.6-2.2g por kg de peso)",
-          "Inclua carboidratos complexos: batata doce, arroz integral, aveia",
-          "Gorduras saudáveis: abacate, azeite, castanhas",
-          "Refeição pós-treino rica em proteína e carboidratos",
-          "Mantenha superávit calórico moderado (300-500 kcal)",
-        ],
-      });
+    // Analisar ingredientes da dieta para sugerir variações e complementos
+    const allIngredients = diet.meals.flatMap((meal) => meal.ingredients || []);
+    const commonIngredients = allIngredients.filter((ing, idx, arr) => arr.indexOf(ing) !== idx);
+
+    // Calcular macros médios da dieta
+    const totalCalories = diet.meals.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+    const totalProtein = diet.meals.reduce((sum, meal) => sum + (meal.protein || 0), 0);
+    const totalCarbs = diet.meals.reduce((sum, meal) => sum + (meal.carbs || 0), 0);
+    const totalFat = diet.meals.reduce((sum, meal) => sum + (meal.fat || 0), 0);
+    const avgCaloriesPerMeal = totalCalories / Math.max(diet.meals.length, 1);
+
+    // Dicas baseadas na dieta ativa
+    tips.push({
+      id: "tip-diet",
+      title: `Dicas para sua dieta: ${diet.title}`,
+      description: "Sugestões baseadas nas refeições do seu plano nutricional",
+      category: "dieta",
+      tips: [
+        `Sua dieta atual tem aproximadamente ${Math.round(totalCalories)} kcal/dia`,
+        `Mantenha o consumo de proteína em ${Math.round(totalProtein)}g por dia`,
+        `Varie os ingredientes: ${commonIngredients.slice(0, 3).join(", ")}`,
+        "Siga os horários das refeições para melhor absorção dos nutrientes",
+        "Combine os alimentos da dieta com exercícios para melhores resultados",
+      ],
+    });
+
+    // Dicas de substituições baseadas nos ingredientes da dieta
+    if (allIngredients.length > 0) {
+      const substitutionTips: string[] = [];
+
+      if (allIngredients.some((ing) => ing.toLowerCase().includes("frango"))) {
+        substitutionTips.push("Varie o frango com peixe grelhado ou ovos para manter a proteína");
+      }
+      if (allIngredients.some((ing) => ing.toLowerCase().includes("arroz"))) {
+        substitutionTips.push("Substitua o arroz ocasionalmente por quinoa ou batata doce");
+      }
+      if (allIngredients.some((ing) => ing.toLowerCase().includes("ovo"))) {
+        substitutionTips.push("Os ovos podem ser preparados de várias formas: mexidos, pochê, cozidos");
+      }
+
+      if (substitutionTips.length > 0) {
+        tips.push({
+          id: "tip-substitutions",
+          title: "Variações e Substituições",
+          description: "Ideias para variar sua dieta sem sair do plano",
+          category: "variacoes",
+          tips: substitutionTips,
+        });
+      }
     }
 
     // Dicas baseadas em restrições
@@ -205,20 +308,22 @@ export function RecipeExplorer() {
       }
     }
 
-    // Dicas gerais de nutrição
-    tips.push({
-      id: "tip-general",
-      title: "Dicas Gerais de Nutrição",
-      description: "Hábitos alimentares saudáveis para todos",
-      category: "geral",
-      tips: [
-        "Planeje suas refeições com antecedência",
-        "Mastigue devagar e saboreie cada refeição",
-        "Mantenha-se hidratado ao longo do dia",
-        "Varie os alimentos para garantir todos os nutrientes",
-        "Evite comer distraído (TV, celular)",
-      ],
-    });
+    // Dicas de preparo baseadas nas refeições
+    const mealTypes = diet.meals.map((m) => m.meal_type);
+    if (mealTypes.includes("cafe_da_manha")) {
+      tips.push({
+        id: "tip-breakfast",
+        title: "Dicas para o Café da Manhã",
+        description: "Como otimizar sua primeira refeição do dia",
+        category: "cafe",
+        tips: [
+          "Consuma proteína no café da manhã para manter a saciedade",
+          "Combine carboidratos complexos com proteínas",
+          "Beba água ao acordar antes da primeira refeição",
+          "Evite açúcares refinados pela manhã",
+        ],
+      });
+    }
 
     return tips;
   };
@@ -259,23 +364,33 @@ export function RecipeExplorer() {
                 Dicas Personalizadas com IA
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Receba sugestões de alimentos e dicas nutricionais baseadas no seu perfil, objetivo e restrições
-                alimentares.
+                {activeDiet
+                  ? `Receba sugestões baseadas na sua dieta ativa: "${activeDiet.title}"`
+                  : "Você precisa ter uma dieta aprovada pelo personal para receber dicas personalizadas."}
               </p>
             </div>
-            <Button onClick={generateAITips} disabled={generatingTips || !profile} className="gap-2">
-              {generatingTips ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Gerando...
-                </>
-              ) : (
-                <>
-                  <Lightbulb className="w-4 h-4" />
-                  Gerar Dicas
-                </>
-              )}
-            </Button>
+            {loadingDiet ? (
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            ) : activeDiet ? (
+              <Button onClick={generateAITips} disabled={generatingTips || !profile} className="gap-2">
+                {generatingTips ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Gerando...
+                  </>
+                ) : (
+                  <>
+                    <Lightbulb className="w-4 h-4" />
+                    Gerar Dicas
+                  </>
+                )}
+              </Button>
+            ) : (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <AlertCircle className="w-4 h-4" />
+                <span>Sem dieta ativa</span>
+              </div>
+            )}
           </div>
         </CardHeader>
         {aiTips.length > 0 && (
