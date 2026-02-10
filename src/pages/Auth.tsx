@@ -276,7 +276,7 @@ export default function Auth() {
             </Button>
 
             <div className="text-center space-y-2">
-              <Button
+              {/* <Button
                 type="button"
                 variant="link"
                 size="sm"
@@ -287,7 +287,7 @@ export default function Auth() {
                   ✨ Conheça mais sobre o Nex Fit
                   <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </span>
-              </Button>
+              </Button> */}
 
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
