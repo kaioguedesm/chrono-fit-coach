@@ -32,6 +32,8 @@ import { NutritionApprovalBadge } from "@/components/nutrition/NutritionApproval
 import { PersonalCreateWorkout } from "@/components/personal/PersonalCreateWorkout";
 import { PersonalCreateNutrition } from "@/components/personal/PersonalCreateNutrition";
 import { PersonalCreateWorkoutAI } from "@/components/personal/PersonalCreateWorkoutAI";
+import { EditWorkoutModal } from "@/components/workout/EditWorkoutModal";
+import { EditNutritionPlanModal } from "@/components/nutrition/EditNutritionPlanModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -104,6 +106,10 @@ export default function PersonalStudentDetail() {
   const [evaluationNotes, setEvaluationNotes] = useState("");
   const [evaluationId, setEvaluationId] = useState<string | null>(null);
   const [savingEvaluation, setSavingEvaluation] = useState(false);
+  const [editWorkoutModalOpen, setEditWorkoutModalOpen] = useState(false);
+  const [workoutToEditId, setWorkoutToEditId] = useState<string | null>(null);
+  const [editNutritionModalOpen, setEditNutritionModalOpen] = useState(false);
+  const [nutritionPlanToEditId, setNutritionPlanToEditId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!roleLoading && !isPersonal) {
@@ -566,6 +572,19 @@ export default function PersonalStudentDetail() {
                       </div>
                     )}
 
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => {
+                          setWorkoutToEditId(workout.id);
+                          setEditWorkoutModalOpen(true);
+                        }}
+                      >
+                        Visualizar / Editar Treino
+                      </Button>
+                    </div>
+
                     {workout.approval_status === "pending" && (
                       <div className="flex gap-2 pt-2">
                         <Button onClick={() => handleApprove(workout.id, "workout")} className="flex-1">
@@ -634,6 +653,19 @@ export default function PersonalStudentDetail() {
                         <p className="text-sm text-muted-foreground">{plan.rejection_reason}</p>
                       </div>
                     )}
+
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => {
+                          setNutritionPlanToEditId(plan.id);
+                          setEditNutritionModalOpen(true);
+                        }}
+                      >
+                        Visualizar / Editar Plano
+                      </Button>
+                    </div>
 
                     {plan.approval_status === "pending" && (
                       <div className="flex gap-2 pt-2">
@@ -709,6 +741,34 @@ export default function PersonalStudentDetail() {
         preSelectedStudentId={studentId}
         onSuccess={fetchStudentData}
       />
+
+      {workoutToEditId && (
+        <EditWorkoutModal
+          open={editWorkoutModalOpen}
+          onOpenChange={(open) => {
+            setEditWorkoutModalOpen(open);
+            if (!open) {
+              setWorkoutToEditId(null);
+            }
+          }}
+          workoutPlanId={workoutToEditId}
+          onSuccess={fetchStudentData}
+        />
+      )}
+
+      {nutritionPlanToEditId && (
+        <EditNutritionPlanModal
+          open={editNutritionModalOpen}
+          onOpenChange={(open) => {
+            setEditNutritionModalOpen(open);
+            if (!open) {
+              setNutritionPlanToEditId(null);
+            }
+          }}
+          nutritionPlanId={nutritionPlanToEditId}
+          onSuccess={fetchStudentData}
+        />
+      )}
 
       {/* Dialog de rejeição */}
       <AlertDialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
