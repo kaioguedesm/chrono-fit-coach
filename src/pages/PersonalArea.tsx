@@ -492,30 +492,46 @@ export default function PersonalArea() {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
             {contentType === "workout" ? (
               <>
-                <Button variant="outline" onClick={() => setShowCreateWorkout(true)} className="gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCreateWorkout(true)}
+                  className="gap-2 w-full sm:w-auto justify-center"
+                >
                   <Plus className="h-4 w-4" />
                   Criar Treino Manual
                 </Button>
-                <Button variant="default" onClick={() => setShowCreateWorkoutAI(true)} className="gap-2">
+                <Button
+                  variant="default"
+                  onClick={() => setShowCreateWorkoutAI(true)}
+                  className="gap-2 w-full sm:w-auto justify-center"
+                >
                   <Dumbbell className="h-4 w-4" />
                   Criar Treino com IA
                 </Button>
               </>
             ) : (
-              <Button variant="default" onClick={() => setShowCreateNutrition(true)} className="gap-2">
+              <Button
+                variant="default"
+                onClick={() => setShowCreateNutrition(true)}
+                className="gap-2 w-full sm:w-auto justify-center"
+              >
                 <Plus className="h-4 w-4" />
                 Criar Dieta com IA
               </Button>
             )}
-            <Button variant="outline" onClick={() => navigate("/personal-students")} className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/personal-students")}
+              className="gap-2 w-full sm:w-auto justify-center"
+            >
               <User className="h-4 w-4" />
               Meus Alunos
             </Button>
             <Select value={contentType} onValueChange={(value) => setContentType(value as "workout" | "nutrition")}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-full sm:w-[200px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
