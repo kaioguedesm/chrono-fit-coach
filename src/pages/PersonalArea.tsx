@@ -48,6 +48,7 @@ interface WorkoutPlan {
   created_at: string;
   approval_status: string;
   rejection_reason?: string;
+  approved_by?: string | null;
   user_id: string;
   profiles: {
     name: string;
@@ -67,6 +68,7 @@ interface NutritionPlan {
   created_at: string;
   approval_status: string;
   rejection_reason?: string;
+  approved_by?: string | null;
   user_id: string;
   profiles: {
     name: string;
@@ -109,6 +111,7 @@ export default function PersonalArea() {
     activeStudents: number;
     avgPerActiveStudent: number;
   } | null>(null);
+  const [personalId, setPersonalId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!roleLoading && !isPersonal) {
@@ -118,6 +121,25 @@ export default function PersonalArea() {
       navigate("/dashboard");
     }
   }, [isPersonal, roleLoading, navigate]);
+
+  // Buscar e guardar o ID do personal autenticado
+  useEffect(() => {
+    const loadPersonalId = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setPersonalId(user?.id ?? null);
+      } catch (error) {
+        console.error("Erro ao buscar usuário autenticado:", error);
+        setPersonalId(null);
+      }
+    };
+
+    if (isPersonal && !personalId) {
+      loadPersonalId();
+    }
+  }, [isPersonal, personalId]);
 
   useEffect(() => {
     if (isPersonal) {
@@ -444,9 +466,15 @@ export default function PersonalArea() {
   const currentData = contentType === "workout" ? workouts : nutritionPlans;
 
   const stats = {
+    // Pendentes: todos aguardando aprovação (visão geral da fila)
     pending: currentData.filter((w) => w.approval_status === "pending").length,
-    approved: currentData.filter((w) => w.approval_status === "approved").length,
-    rejected: currentData.filter((w) => w.approval_status === "rejected").length,
+    // Aprovados/Rejeitados: apenas o que este personal aprovou/rejeitou
+    approved: currentData.filter(
+      (w) => w.approval_status === "approved" && (!personalId || (w as any).approved_by === personalId),
+    ).length,
+    rejected: currentData.filter(
+      (w) => w.approval_status === "rejected" && (!personalId || (w as any).approved_by === personalId),
+    ).length,
   };
 
   return (
@@ -675,104 +703,117 @@ export default function PersonalArea() {
             {loading ? (
               <LoadingState />
             ) : (
-                contentType === "workout"
-                  ? workouts.filter((w) => w.approval_status === activeTab).length === 0
-                  : nutritionPlans.filter((p) => p.approval_status === activeTab).length === 0
-              ) ? (
-              <Card>
-                <CardContent className="pt-6 text-center text-muted-foreground">
-                  <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>
-                    Nenhum {contentType === "workout" ? "treino" : "plano nutricional"}{" "}
-                    {activeTab === "pending" ? "pendente" : activeTab === "approved" ? "aprovado" : "rejeitado"}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : contentType === "workout" ? (
-              workouts
-                .filter((workout) => workout.approval_status === activeTab)
-                .map((workout) => (
-                  <Card key={workout.id}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-3">
-                            <Avatar>
-                              <AvatarImage src={workout.profiles?.avatar_url} />
-                              <AvatarFallback>
-                                <User className="h-4 w-4" />
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <CardTitle className="text-xl">{workout.name}</CardTitle>
-                              <CardDescription className="flex items-center gap-2 mt-1">
-                                <span>Aluno: {workout.profiles?.name || "Usuário"}</span>
-                                <span>•</span>
-                                <span>{new Date(workout.created_at).toLocaleDateString("pt-BR")}</span>
-                              </CardDescription>
+              (() => {
+                const filteredWorkouts = workouts.filter((w) => {
+                  if (activeTab === "pending") return w.approval_status === "pending";
+                  if (!personalId) return w.approval_status === activeTab;
+                  return w.approval_status === activeTab && w.approved_by === personalId;
+                });
+
+                const filteredNutrition = nutritionPlans.filter((p) => {
+                  if (activeTab === "pending") return p.approval_status === "pending";
+                  if (!personalId) return p.approval_status === activeTab;
+                  return p.approval_status === activeTab && p.approved_by === personalId;
+                });
+
+                const hasData = contentType === "workout" ? filteredWorkouts.length > 0 : filteredNutrition.length > 0;
+
+                if (!hasData) {
+                  return (
+                    <Card>
+                      <CardContent className="pt-6 text-center text-muted-foreground">
+                        <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>
+                          Nenhum {contentType === "workout" ? "treino" : "plano nutricional"}{" "}
+                          {activeTab === "pending" ? "pendente" : activeTab === "approved" ? "aprovado" : "rejeitado"}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  );
+                }
+
+                if (contentType === "workout") {
+                  return filteredWorkouts.map((workout) => (
+                    <Card key={workout.id}>
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                              <Avatar>
+                                <AvatarImage src={workout.profiles?.avatar_url} />
+                                <AvatarFallback>
+                                  <User className="h-4 w-4" />
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <CardTitle className="text-xl">{workout.name}</CardTitle>
+                                <CardDescription className="flex items-center gap-2 mt-1">
+                                  <span>Aluno: {workout.profiles?.name || "Usuário"}</span>
+                                  <span>•</span>
+                                  <span>{new Date(workout.created_at).toLocaleDateString("pt-BR")}</span>
+                                </CardDescription>
+                              </div>
                             </div>
                           </div>
+                          {getStatusBadge(workout.approval_status)}
                         </div>
-                        {getStatusBadge(workout.approval_status)}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                          <Dumbbell className="h-4 w-4" />
-                          Tipo: {workout.type}
-                        </p>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <p className="font-medium">Exercícios ({workout.exercises?.length || 0}):</p>
-                          <ul className="list-disc list-inside space-y-1 ml-2">
-                            {workout.exercises?.slice(0, 5).map((ex, idx) => (
-                              <li key={idx}>
-                                {ex.name} - {ex.sets}x{ex.reps}
-                              </li>
-                            ))}
-                            {workout.exercises?.length > 5 && (
-                              <li className="text-muted-foreground italic">
-                                + {workout.exercises.length - 5} exercícios...
-                              </li>
-                            )}
-                          </ul>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                            <Dumbbell className="h-4 w-4" />
+                            Tipo: {workout.type}
+                          </p>
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            <p className="font-medium">Exercícios ({workout.exercises?.length || 0}):</p>
+                            <ul className="list-disc list-inside space-y-1 ml-2">
+                              {workout.exercises?.slice(0, 5).map((ex, idx) => (
+                                <li key={idx}>
+                                  {ex.name} - {ex.sets}x{ex.reps}
+                                </li>
+                              ))}
+                              {workout.exercises?.length > 5 && (
+                                <li className="text-muted-foreground italic">
+                                  + {workout.exercises.length - 5} exercícios...
+                                </li>
+                              )}
+                            </ul>
+                          </div>
                         </div>
-                      </div>
 
-                      {workout.rejection_reason && (
-                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-                          <p className="text-sm font-medium text-destructive mb-1">Motivo da Rejeição:</p>
-                          <p className="text-sm text-muted-foreground">{workout.rejection_reason}</p>
-                        </div>
-                      )}
+                        {workout.rejection_reason && (
+                          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                            <p className="text-sm font-medium text-destructive mb-1">Motivo da Rejeição:</p>
+                            <p className="text-sm text-muted-foreground">{workout.rejection_reason}</p>
+                          </div>
+                        )}
 
-                      {workout.approval_status === "pending" && (
-                        <div className="flex gap-2 pt-2">
-                          <Button
-                            onClick={() => handleApprove(workout.id, "workout")}
-                            className="flex-1"
-                            variant="default"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Aprovar Treino
-                          </Button>
-                          <Button
-                            onClick={() => openRejectDialog(workout, "workout")}
-                            className="flex-1"
-                            variant="destructive"
-                          >
-                            <XCircle className="h-4 w-4 mr-2" />
-                            Rejeitar
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))
-            ) : (
-              nutritionPlans
-                .filter((plan) => plan.approval_status === activeTab)
-                .map((plan) => (
+                        {workout.approval_status === "pending" && (
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              onClick={() => handleApprove(workout.id, "workout")}
+                              className="flex-1"
+                              variant="default"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Aprovar Treino
+                            </Button>
+                            <Button
+                              onClick={() => openRejectDialog(workout, "workout")}
+                              className="flex-1"
+                              variant="destructive"
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              Rejeitar
+                            </Button>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ));
+                }
+
+                return filteredNutrition.map((plan) => (
                   <Card key={plan.id}>
                     <CardHeader>
                       <div className="flex items-start justify-between">
@@ -847,7 +888,8 @@ export default function PersonalArea() {
                       )}
                     </CardContent>
                   </Card>
-                ))
+                ));
+              })()
             )}
           </TabsContent>
         </Tabs>
