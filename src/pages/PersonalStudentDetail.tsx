@@ -94,6 +94,7 @@ export default function PersonalStudentDetail() {
   const [workouts, setWorkouts] = useState<WorkoutPlan[]>([]);
   const [nutritionPlans, setNutritionPlans] = useState<NutritionPlan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastWorkoutStartedAt, setLastWorkoutStartedAt] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<{ id: string; type: "workout" | "nutrition" } | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectDialog, setShowRejectDialog] = useState(false);
@@ -140,6 +141,27 @@ export default function PersonalStudentDetail() {
 
       if (profileError) throw profileError;
       setStudent(profile);
+
+      // Buscar última vez que o aluno iniciou um treino (workout_sessions.started_at)
+      try {
+        const { data: lastWorkoutSession, error: lastWorkoutError } = await supabase
+          .from("workout_sessions")
+          .select("started_at")
+          .eq("user_id", studentId)
+          .order("started_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (lastWorkoutError) {
+          console.warn("Error fetching last workout session:", lastWorkoutError);
+          setLastWorkoutStartedAt(null);
+        } else {
+          setLastWorkoutStartedAt(lastWorkoutSession?.started_at ?? null);
+        }
+      } catch (lastWorkoutException) {
+        console.warn("Exception fetching last workout session:", lastWorkoutException);
+        setLastWorkoutStartedAt(null);
+      }
 
       // Buscar avaliação/observações do personal para esse aluno
       const { data: evaluationRow, error: evaluationError } = await supabase
@@ -336,9 +358,19 @@ export default function PersonalStudentDetail() {
               </Avatar>
               <div className="flex-1">
                 <CardTitle className="text-2xl">{student.name}</CardTitle>
-                <CardDescription className="flex items-center gap-2 mt-2">
-                  <Calendar className="h-4 w-4" />
-                  Aluno desde {new Date(student.created_at).toLocaleDateString("pt-BR")}
+                <CardDescription className="mt-2 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>Aluno desde {new Date(student.created_at).toLocaleDateString("pt-BR")}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span>
+                      {lastWorkoutStartedAt
+                        ? `Último treino iniciado em ${new Date(lastWorkoutStartedAt).toLocaleString("pt-BR")}`
+                        : "Ainda não iniciou nenhum treino"}
+                    </span>
+                  </div>
                 </CardDescription>
 
                 <div className="flex flex-wrap gap-2 mt-3">
