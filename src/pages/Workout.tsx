@@ -103,7 +103,16 @@ export default function Workout() {
 
   useEffect(() => {
     if (user) {
-      fetchWorkoutPlans();
+      const initializeWorkoutPage = async () => {
+        setLoading(true);
+        try {
+          await Promise.all([fetchWorkoutPlans(), restoreActiveSession()]);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      initializeWorkoutPage();
     } else {
       // Se não houver usuário (modo demo), apenas seta loading como false
       setLoading(false);
@@ -135,8 +144,62 @@ export default function Workout() {
         description: "Não foi possível carregar os treinos.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  const restoreActiveSession = async () => {
+    if (!user) return;
+
+    try {
+      // Buscar a sessão de treino em andamento (sem completed_at)
+      const { data: activeSession, error: activeSessionError } = await supabase
+        .from("workout_sessions")
+        .select("id, workout_plan_id, started_at, completed_at")
+        .eq("user_id", user.id)
+        .is("completed_at", null)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (activeSessionError) {
+        throw activeSessionError;
+      }
+
+      if (!activeSession) {
+        return;
+      }
+
+      // Carregar o plano de treino associado com seus exercícios
+      const { data: plan, error: planError } = await supabase
+        .from("workout_plans")
+        .select(
+          `
+          id,
+          name,
+          exercises (*)
+        `,
+        )
+        .eq("id", activeSession.workout_plan_id)
+        .maybeSingle();
+
+      if (planError || !plan) {
+        if (planError) {
+          throw planError;
+        }
+        return;
+      }
+
+      setActiveSession({
+        sessionId: activeSession.id,
+        planName: plan.name,
+        exercises: plan.exercises.sort((a: Exercise, b: Exercise) => a.order_in_workout - b.order_in_workout),
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível restaurar o treino em andamento.",
+        variant: "destructive",
+      });
     }
   };
 
