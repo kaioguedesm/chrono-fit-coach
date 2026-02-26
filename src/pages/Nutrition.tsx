@@ -18,6 +18,7 @@ import { LoadingState } from "@/components/common/LoadingState";
 import { EmptyState } from "@/components/common/EmptyState";
 import { NutritionApprovalBadge } from "@/components/nutrition/NutritionApprovalBadge";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
 
 interface NutritionPlan {
   id: string;
@@ -56,6 +57,7 @@ export default function Nutrition() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { isPersonal, loading: roleLoading } = useUserRole();
+  const { canCreateWithoutPersonal } = useCanCreateWithoutPersonal();
   const [nutritionPlans, setNutritionPlans] = useState<NutritionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("plans");
@@ -351,7 +353,7 @@ export default function Nutrition() {
           </TabsContent>
 
           <TabsContent value="create" className="space-y-4">
-            {isPersonal ? (
+            {canCreateWithoutPersonal ? (
               <>
                 <AINutritionGenerator onSuccess={fetchNutritionPlans} />
                 <DietUploader />
