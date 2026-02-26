@@ -238,7 +238,7 @@ export default function Auth() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="gym">Academia</Label>
+              <Label htmlFor="gym">Portal</Label>
               {loadingGyms ? (
                 <div className="flex items-center justify-center py-2">
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
