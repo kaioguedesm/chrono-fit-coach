@@ -199,7 +199,7 @@ export function WorkoutStartModal({
                       <WorkoutRefreshAlert
                         workoutName={workout.name}
                         completedWorkouts={workout.workouts_completed_count}
-                        maxWorkouts={workout.max_workouts_before_refresh ?? 12}
+                        maxWorkouts={12}
                         needsRefresh={workout.needs_refresh}
                       />
                     )}
