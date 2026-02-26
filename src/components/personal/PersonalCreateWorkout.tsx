@@ -62,38 +62,31 @@ export function PersonalCreateWorkout({
   const fetchStudents = async () => {
     try {
       setLoadingStudents(true);
-
-      // Buscar o ID do personal trainer logado
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
-
-      // Buscar apenas alunos vinculados na tabela personal_students
-      const { data: linkedStudents, error: linkedError } = await supabase
-        .from("personal_students")
-        .select("student_id")
-        .eq("personal_id", user.id)
-        .eq("is_active", true);
-
-      if (linkedError) throw linkedError;
-
-      if (!linkedStudents || linkedStudents.length === 0) {
-        setStudents([]);
-        return;
-      }
-
-      // Buscar perfis dos alunos vinculados
-      const studentIds = linkedStudents.map((ls) => ls.student_id);
       const { data: profiles, error } = await supabase
         .from("profiles")
         .select("user_id, name, avatar_url")
-        .in("user_id", studentIds)
         .order("name", { ascending: true });
 
       if (error) throw error;
 
-      setStudents((profiles || []) as Student[]);
+      // Filtrar apenas alunos (não personal trainers)
+      const studentsData = await Promise.all(
+        (profiles || []).map(async (profile) => {
+          const { data: roleData } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", profile.user_id)
+            .single();
+
+          if (roleData?.role === "personal") {
+            return null;
+          }
+
+          return profile as Student;
+        }),
+      );
+
+      setStudents(studentsData.filter((s): s is Student => s !== null));
     } catch (error) {
       console.error("Error fetching students:", error);
       toast.error("Erro ao carregar alunos");
@@ -230,7 +223,7 @@ export function PersonalCreateWorkout({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto pb-24">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Dumbbell className="h-5 w-5 text-primary" />
