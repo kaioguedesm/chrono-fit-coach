@@ -58,7 +58,6 @@ export function ActiveWorkoutSession({
   const [skippedByGroup, setSkippedByGroup] = useState<Record<string, SkippedExercise[]>>({});
   const [isResting, setIsResting] = useState(false);
   const [restTimeLeft, setRestTimeLeft] = useState(0);
-  const [startTime] = useState(new Date());
   const [processedGroups, setProcessedGroups] = useState<Set<string>>(new Set());
 
   const storageKey = `active_workout_session_${sessionId}`;
@@ -261,14 +260,20 @@ export function ActiveWorkoutSession({
   const finishWorkout = async () => {
     try {
       const endTime = new Date();
-      const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / 60000);
 
-      // Buscar informações da sessão
-      const { data: sessionData } = await supabase
+      // Buscar informações da sessão (incluindo started_at para duração correta mesmo se saiu e voltou)
+      const { data: sessionData, error: sessionError } = await supabase
         .from("workout_sessions")
-        .select("mood, mood_intensity, workout_plan_id")
+        .select("started_at, mood, mood_intensity, workout_plan_id")
         .eq("id", sessionId)
         .maybeSingle();
+
+      if (sessionError || !sessionData) {
+        throw new Error(sessionError?.message || "Sessão não encontrada");
+      }
+
+      const startTimeFromDb = sessionData.started_at ? new Date(sessionData.started_at) : new Date();
+      const durationMinutes = Math.max(1, Math.round((endTime.getTime() - startTimeFromDb.getTime()) / 60000));
 
       // Buscar nome do treino
       const { data: workoutPlan } = await supabase
