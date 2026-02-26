@@ -197,15 +197,37 @@ export default function PersonalStudents() {
     try {
       setLoadingAvailableStudents(true);
 
-      // Buscar o ID do personal trainer logado
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      console.log("🔍 [fetchAvailableStudents] Personal trainer ID:", user.id);
+      // Buscar gym_id do personal (user_roles guarda gym_id para personal; fallback em profiles)
+      const { data: roleRow, error: roleError } = await supabase
+        .from("user_roles")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("role", "personal")
+        .maybeSingle();
 
-      // Buscar alunos já vinculados
+      const row = roleRow as { gym_id?: string } | null;
+      let personalGymId: string | null = row?.gym_id ?? null;
+
+      if (!personalGymId) {
+        const { data: profilePersonal } = await supabase
+          .from("profiles")
+          .select("gym_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        personalGymId = profilePersonal?.gym_id ?? null;
+      }
+
+      if (roleError || !personalGymId) {
+        toast.error("Sua academia não está definida. Faça login novamente na área do personal.");
+        setAvailableStudents([]);
+        return;
+      }
+
       const { data: linkedStudents, error: linkedError } = await supabase
         .from("personal_students")
         .select("student_id")
@@ -217,12 +239,12 @@ export default function PersonalStudents() {
       }
 
       const linkedStudentIds = linkedStudents?.map((ls) => ls.student_id) || [];
-      console.log("📋 Alunos já vinculados:", linkedStudentIds);
 
-      // Buscar todos os perfis de usuários (exceto personal trainers)
+      // Apenas perfis da MESMA academia que o personal (profiles.gym_id = personal gym_id)
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("user_id, name, avatar_url, goal, experience_level")
+        .eq("gym_id", personalGymId)
         .order("name", { ascending: true });
 
       if (profilesError) {
@@ -230,49 +252,23 @@ export default function PersonalStudents() {
         throw profilesError;
       }
 
-      console.log("👥 Total de perfis encontrados:", profiles?.length || 0);
-
-      // Filtrar apenas alunos não vinculados e que não sejam personal trainers
+      // Excluir quem é personal e quem já está vinculado
       const available = await Promise.all(
         (profiles || []).map(async (profile) => {
-          // Verificar se não é personal trainer (usar maybeSingle porque usuários comuns não têm registro)
-          const { data: roleData, error: roleError } = await supabase
+          const { data: roleDataUser } = await supabase
             .from("user_roles")
             .select("role")
             .eq("user_id", profile.user_id)
             .maybeSingle();
 
-          if (roleError) {
-            console.warn("⚠️ Erro ao buscar role para", profile.user_id, ":", roleError);
-          }
+          if (roleDataUser?.role === "personal") return null;
+          if (linkedStudentIds.includes(profile.user_id)) return null;
 
-          console.log(`👤 Perfil: ${profile.name} (${profile.user_id}) - Role:`, roleData?.role || "sem role");
-
-          // Se tiver role 'personal', não é aluno
-          if (roleData?.role === "personal") {
-            console.log(`  ❌ É personal trainer, ignorando`);
-            return null;
-          }
-
-          // Verificar se já está vinculado
-          if (linkedStudentIds.includes(profile.user_id)) {
-            console.log(`  ❌ Já está vinculado, ignorando`);
-            return null;
-          }
-
-          // Usuário comum sem role ou com role 'user' = pode ser aluno
-          console.log(`  ✅ Disponível para vincular`);
           return profile as StudentProfile;
         }),
       );
 
       const filtered = available.filter((s): s is NonNullable<typeof s> => s !== null);
-      console.log("✅ Alunos disponíveis para vincular:", filtered.length);
-      console.log(
-        "📝 Lista:",
-        filtered.map((s) => ({ name: s.name, user_id: s.user_id })),
-      );
-
       setAvailableStudents(filtered);
     } catch (error) {
       console.error("❌ Error fetching available students:", error);
