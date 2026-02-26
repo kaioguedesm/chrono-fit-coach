@@ -255,7 +255,7 @@ export default function Auth() {
                   required
                 >
                   <SelectTrigger id="gym" className="w-full">
-                    <SelectValue placeholder="Selecione a academia" />
+                    <SelectValue placeholder="Selecione o portal" />
                   </SelectTrigger>
                   <SelectContent>
                     {gyms.map((gym) => (
