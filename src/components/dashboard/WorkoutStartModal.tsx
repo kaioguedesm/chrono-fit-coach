@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { Play, Dumbbell, Calendar, AlertCircle } from 'lucide-react';
-import { WorkoutRefreshAlert } from '@/components/workout/WorkoutRefreshAlert';
-import { WorkoutRefreshDialog } from '@/components/workout/WorkoutRefreshDialog';
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Play, Dumbbell, Calendar, AlertCircle } from "lucide-react";
+import { WorkoutRefreshAlert } from "@/components/workout/WorkoutRefreshAlert";
+import { WorkoutRefreshDialog } from "@/components/workout/WorkoutRefreshDialog";
 
 interface WorkoutPlan {
   id: string;
@@ -27,7 +27,13 @@ interface WorkoutStartModalProps {
   onNavigateToWorkout?: () => void;
 }
 
-export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavigateToSchedule, onNavigateToWorkout }: WorkoutStartModalProps) {
+export function WorkoutStartModal({
+  open,
+  onOpenChange,
+  onWorkoutStarted,
+  onNavigateToSchedule,
+  onNavigateToWorkout,
+}: WorkoutStartModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [workouts, setWorkouts] = useState<WorkoutPlan[]>([]);
@@ -47,11 +53,11 @@ export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavi
 
     try {
       const { data, error } = await supabase
-        .from('workout_plans')
-        .select('id, name, type, is_active, workouts_completed_count, max_workouts_before_refresh, needs_refresh')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .from("workout_plans")
+        .select("id, name, type, is_active, workouts_completed_count, max_workouts_before_refresh, needs_refresh")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
@@ -60,7 +66,7 @@ export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavi
       toast({
         title: "Erro",
         description: "Não foi possível carregar seus treinos.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -82,11 +88,11 @@ export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavi
     try {
       // Criar sessão de treino
       const { data: sessionData, error: sessionError } = await supabase
-        .from('workout_sessions')
+        .from("workout_sessions")
         .insert({
           user_id: user.id,
           workout_plan_id: workout.id,
-          started_at: new Date().toISOString()
+          started_at: new Date().toISOString(),
         })
         .select()
         .single();
@@ -95,10 +101,10 @@ export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavi
 
       // Buscar exercícios do treino
       const { data: exercisesData, error: exercisesError } = await supabase
-        .from('exercises')
-        .select('*')
-        .eq('workout_plan_id', workout.id)
-        .order('order_in_workout', { ascending: true });
+        .from("exercises")
+        .select("*")
+        .eq("workout_plan_id", workout.id)
+        .order("order_in_workout", { ascending: true });
 
       if (exercisesError) throw exercisesError;
 
@@ -108,20 +114,20 @@ export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavi
       });
 
       onOpenChange(false);
-      
+
       // Passar dados da sessão para o Dashboard
       if (onWorkoutStarted) {
         onWorkoutStarted({
           sessionId: sessionData.id,
           planName: workout.name,
-          exercises: exercisesData || []
+          exercises: exercisesData || [],
         });
       }
     } catch (error: any) {
       toast({
         title: "Erro",
         description: "Não foi possível iniciar o treino.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setStartingWorkout(false);
@@ -136,96 +142,88 @@ export function WorkoutStartModal({ open, onOpenChange, onWorkoutStarted, onNavi
             <Play className="w-5 h-5 text-primary" />
             Iniciar Treino
           </DialogTitle>
-          <DialogDescription>
-            Selecione um treino para começar sua sessão
-          </DialogDescription>
+          <DialogDescription>Selecione um treino para começar sua sessão</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-              {loading ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  Carregando treinos...
-                </div>
-              ) : workouts.length === 0 ? (
-                <div className="text-center py-8 space-y-4">
-                  <Dumbbell className="w-12 h-12 mx-auto text-muted-foreground" />
-                  <div>
-                    <p className="text-muted-foreground mb-4">
-                      Você ainda não tem treinos cadastrados.
-                    </p>
-                    <Button onClick={() => {
-                      onOpenChange(false);
-                      if (onNavigateToWorkout) {
-                        onNavigateToWorkout();
-                      }
-                    }}>
-                      Criar Meu Primeiro Treino
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid gap-3">
-                  {workouts.map((workout) => (
-                    <Card key={workout.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                              <Dumbbell className="w-6 h-6 text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold flex items-center gap-2">
-                                {workout.name}
-                                {workout.needs_refresh && (
-                                  <AlertCircle className="w-4 h-4 text-destructive" />
-                                )}
-                              </h3>
-                              <p className="text-sm text-muted-foreground capitalize">
-                                {workout.type}
-                              </p>
-                            </div>
-                          </div>
-                          <Button
-                            onClick={() => handleWorkoutSelect(workout)}
-                            size="sm"
-                            disabled={startingWorkout}
-                            variant={workout.needs_refresh ? "outline" : "default"}
-                          >
-                            <Play className="w-4 h-4 mr-2" />
-                            {startingWorkout ? 'Iniciando...' : 'Iniciar'}
-                          </Button>
-                        </div>
-                        
-                        {/* Progress indicator */}
-                        {workout.workouts_completed_count > 0 && (
-                          <WorkoutRefreshAlert
-                            workoutName={workout.name}
-                            completedWorkouts={workout.workouts_completed_count}
-                            maxWorkouts={workout.max_workouts_before_refresh}
-                            needsRefresh={workout.needs_refresh}
-                          />
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-
-              <div className="pt-4 border-t">
+          {loading ? (
+            <div className="text-center py-8 text-muted-foreground">Carregando treinos...</div>
+          ) : workouts.length === 0 ? (
+            <div className="text-center py-8 space-y-4">
+              <Dumbbell className="w-12 h-12 mx-auto text-muted-foreground" />
+              <div>
+                <p className="text-muted-foreground mb-4">Você ainda não tem treinos cadastrados.</p>
                 <Button
-                  variant="outline"
-                  className="w-full"
                   onClick={() => {
                     onOpenChange(false);
-                    if (onNavigateToSchedule) {
-                      onNavigateToSchedule();
+                    if (onNavigateToWorkout) {
+                      onNavigateToWorkout();
                     }
                   }}
                 >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Ver Agenda Completa
+                  Criar Meu Primeiro Treino
                 </Button>
               </div>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {workouts.map((workout) => (
+                <Card key={workout.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Dumbbell className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold flex items-center gap-2">
+                            {workout.name}
+                            {workout.needs_refresh && <AlertCircle className="w-4 h-4 text-destructive" />}
+                          </h3>
+                          <p className="text-sm text-muted-foreground capitalize">{workout.type}</p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => handleWorkoutSelect(workout)}
+                        size="sm"
+                        disabled={startingWorkout}
+                        variant={workout.needs_refresh ? "outline" : "default"}
+                      >
+                        <Play className="w-4 h-4 mr-2" />
+                        {startingWorkout ? "Iniciando..." : "Iniciar"}
+                      </Button>
+                    </div>
+
+                    {/* Progress indicator */}
+                    {workout.workouts_completed_count > 0 && (
+                      <WorkoutRefreshAlert
+                        workoutName={workout.name}
+                        completedWorkouts={workout.workouts_completed_count}
+                        maxWorkouts={workout.max_workouts_before_refresh ?? 12}
+                        needsRefresh={workout.needs_refresh}
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          <div className="pt-4 border-t">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                onOpenChange(false);
+                if (onNavigateToSchedule) {
+                  onNavigateToSchedule();
+                }
+              }}
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Ver Agenda Completa
+            </Button>
+          </div>
         </div>
       </DialogContent>
 
