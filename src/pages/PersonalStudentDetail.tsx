@@ -235,31 +235,26 @@ export default function PersonalStudentDetail() {
       } = await supabase.auth.getUser();
       if (!user?.id) throw new Error("Sessão expirada");
 
-      if (evaluationId) {
-        const { error } = await supabase
-          .from("personal_students")
-          .update({
-            notes: evaluationNotes,
-            is_active: true,
-          })
-          .eq("id", evaluationId);
-
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from("personal_students")
-          .insert({
+      // Upsert: cria novo vínculo ou reativa um existente (ex.: após desvincular)
+      const { data, error } = await supabase
+        .from("personal_students")
+        .upsert(
+          {
             personal_id: user.id,
             student_id: studentId,
             notes: evaluationNotes,
             is_active: true,
-          })
-          .select("id")
-          .single();
+          },
+          {
+            onConflict: "personal_id,student_id",
+            ignoreDuplicates: false,
+          },
+        )
+        .select("id")
+        .single();
 
-        if (error) throw error;
-        setEvaluationId(data?.id ?? null);
-      }
+      if (error) throw error;
+      if (data?.id) setEvaluationId(data.id);
 
       toast.success("Avaliação salva e disponível para o aluno.");
     } catch (error) {
