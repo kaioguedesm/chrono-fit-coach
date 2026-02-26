@@ -25,6 +25,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [loadingGyms, setLoadingGyms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [step, setStep] = useState<"login" | "gym_selection">("login");
+  const [checkingProfile, setCheckingProfile] = useState(false);
 
   const { signIn, user } = useAuth();
   const { toast } = useToast();
@@ -87,12 +89,37 @@ export default function Auth() {
     fetchGyms();
   }, [toast]);
 
-  // Redireciona usuários autenticados para o app
+  // Quando já está logado: verificar se tem academia. Se tiver, vai para o app; senão mostra seleção (só 1ª vez).
   useEffect(() => {
-    if (user) {
-      navigate("/app");
-    }
-  }, [user, navigate]);
+    if (!user?.id) return;
+
+    const checkProfileAndRedirect = async () => {
+      setCheckingProfile(true);
+      try {
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("gym_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (profile?.gym_id) {
+          navigate("/app");
+          return;
+        }
+
+        setStep("gym_selection");
+      } catch (e) {
+        console.error("Erro ao verificar perfil:", e);
+        toast({ title: "Erro", description: "Não foi possível carregar seu perfil.", variant: "destructive" });
+      } finally {
+        setCheckingProfile(false);
+      }
+    };
+
+    checkProfileAndRedirect();
+  }, [user?.id, navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,15 +137,8 @@ export default function Auth() {
       return;
     }
 
-    // Validar gym_id no login (igual ao PersonalAuth.tsx)
-    if (!gymId.trim()) {
-      toast({
-        title: "Academia obrigatória",
-        description: "Por favor, selecione a academia.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Validar gym_id no login só se ainda estiver no passo de login com academia (não usado mais no primeiro passo)
+    // Primeira vez: após login mostramos seleção de academia. Segunda vez: já redirecionamos se tiver gym_id.
 
     setLoading(true);
 
@@ -132,42 +152,30 @@ export default function Auth() {
           variant: "destructive",
         });
       } else {
-        // Aguardar um momento para garantir que a sessão esteja estabelecida
         await new Promise((resolve) => setTimeout(resolve, 500));
 
-        // Atualizar perfil com a academia selecionada (igual ao PersonalAuth.tsx, mas em profiles)
-        if (gymId.trim()) {
-          const {
-            data: { user: currentUser },
-          } = await supabase.auth.getUser();
-
-          if (currentUser) {
-            const { error: profileError } = await supabase
-              .from("profiles")
-              .update({ gym_id: gymId.trim() } as any)
-              .eq("user_id", currentUser.id);
-
-            if (profileError) {
-              console.error("Erro ao atualizar gym_id:", profileError);
-              // Tentar upsert caso o registro não exista (igual ao PersonalAuth.tsx)
-              await supabase.from("profiles").upsert(
-                {
-                  user_id: currentUser.id,
-                  gym_id: gymId.trim(),
-                } as any,
-                {
-                  onConflict: "user_id",
-                },
-              );
-            }
-          }
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+        if (!currentUser) {
+          setLoading(false);
+          return;
         }
 
-        toast({
-          title: "Login realizado!",
-          description: "Bem-vindo de volta! 🎉",
-        });
-        navigate("/app");
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("gym_id")
+          .eq("user_id", currentUser.id)
+          .maybeSingle();
+
+        if (profileError) throw profileError;
+
+        if (profile?.gym_id) {
+          toast({ title: "Login realizado!", description: "Bem-vindo de volta! 🎉" });
+          navigate("/app");
+        } else {
+          setStep("gym_selection");
+        }
       }
     } catch (error: any) {
       toast({
@@ -175,6 +183,29 @@ export default function Auth() {
         description: error.message || "Ocorreu um erro inesperado.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGymSelectAndContinue = async () => {
+    if (!gymId.trim() || !user?.id) {
+      toast({ title: "Selecione uma academia", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ gym_id: gymId.trim() } as any)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast({ title: "Academia vinculada!", description: "Bem-vindo! 🎉" });
+      navigate("/app");
+    } catch (error: any) {
+      toast({ title: "Erro ao salvar academia", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -199,96 +230,96 @@ export default function Auth() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-                required
-              />
+          {checkingProfile ? (
+            <div className="flex flex-col items-center justify-center py-8 gap-3">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Carregando...</p>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <div className="relative">
+          ) : step === "gym_selection" ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Selecione a academia em que você treina. Esta escolha não poderá ser alterada depois.
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="gym">Academia</Label>
+                {loadingGyms ? (
+                  <div className="flex items-center justify-center py-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <span className="ml-2 text-sm text-muted-foreground">Carregando academias...</span>
+                  </div>
+                ) : gyms.length > 0 ? (
+                  <Select value={gymId} onValueChange={setGymId} disabled={loading}>
+                    <SelectTrigger id="gym" className="w-full">
+                      <SelectValue placeholder="Selecione a academia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {gyms.map((gym) => (
+                        <SelectItem key={gym.id} value={gym.id}>
+                          {gym.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Nenhuma academia cadastrada.</p>
+                )}
+              </div>
+              <Button
+                type="button"
+                className="w-full"
+                disabled={loading || loadingGyms || !gymId.trim()}
+                onClick={handleGymSelectAndContinue}
+              >
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Continuar
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Sua senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
                   required
-                  className="pr-10"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
-                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="gym">Portal</Label>
-              {loadingGyms ? (
-                <div className="flex items-center justify-center py-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  <span className="ml-2 text-sm text-muted-foreground">Carregando academias...</span>
-                </div>
-              ) : gyms.length > 0 ? (
-                <Select
-                  value={gymId}
-                  onValueChange={(value) => {
-                    console.log("📝 [Auth] Academia selecionada:", value);
-                    setGymId(value);
-                  }}
-                  disabled={loading || loadingGyms}
-                  required
-                >
-                  <SelectTrigger id="gym" className="w-full">
-                    <SelectValue placeholder="Selecione o portal" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {gyms.map((gym) => (
-                      <SelectItem key={gym.id} value={gym.id}>
-                        {gym.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <>
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha</Label>
+                <div className="relative">
                   <Input
-                    id="gym"
-                    type="text"
-                    placeholder="Digite o ID da academia"
-                    value={gymId}
-                    onChange={(e) => setGymId(e.target.value)}
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Sua senha"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
                     required
+                    className="pr-10"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Nenhuma academia cadastrada. Entre em contato com o administrador.
-                  </p>
-                </>
-              )}
-            </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                    aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
 
-            <Button type="submit" className="w-full" disabled={loading || loadingGyms}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Entrar
-            </Button>
+              <Button type="submit" className="w-full" disabled={loading || loadingGyms}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Entrar
+              </Button>
 
-            <div className="text-center space-y-2">
-              {/* <Button
+              <div className="text-center space-y-2">
+                {/* <Button
                 type="button"
                 variant="link"
                 size="sm"
@@ -301,30 +332,31 @@ export default function Auth() {
                 </span>
               </Button> */}
 
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-muted" />
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-muted" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">Ou</span>
+                  </div>
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Ou</span>
-                </div>
-              </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                onClick={() => navigate("/personal-login")}
-                className="w-full border-primary bg-primary/5 hover:bg-primary/10 hover:border-primary transition-all shadow-md hover:shadow-lg font-semibold group"
-              >
-                <Shield className="mr-2 h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
-                <span className="text-base">Área do Personal Trainer</span>
-              </Button>
-              <p className="text-xs text-center text-muted-foreground mt-2">
-                Para personal trainers que desejam gerenciar alunos
-              </p>
-            </div>
-          </form>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  onClick={() => navigate("/personal-login")}
+                  className="w-full border-primary bg-primary/5 hover:bg-primary/10 hover:border-primary transition-all shadow-md hover:shadow-lg font-semibold group"
+                >
+                  <Shield className="mr-2 h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+                  <span className="text-base">Área do Personal Trainer</span>
+                </Button>
+                <p className="text-xs text-center text-muted-foreground mt-2">
+                  Para personal trainers que desejam gerenciar alunos
+                </p>
+              </div>
+            </form>
+          )}
         </CardContent>
       </Card>
     </div>
