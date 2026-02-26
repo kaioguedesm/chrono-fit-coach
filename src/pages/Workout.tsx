@@ -540,7 +540,7 @@ export default function Workout() {
                         <WorkoutRefreshAlert
                           workoutName={plan.name}
                           completedWorkouts={plan.workouts_completed_count}
-                          maxWorkouts={plan.max_workouts_before_refresh || 12}
+                          maxWorkouts={12}
                           needsRefresh={plan.needs_refresh || false}
                           onRefresh={() => {
                             setSelectedWorkoutToRefresh(plan);
