@@ -36,6 +36,8 @@ export default function PersonalAuth() {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [step, setStep] = useState<"login" | "signup" | "portal_selection">("login");
+  const [checkingProfile, setCheckingProfile] = useState(false);
 
   // Buscar academias do banco
   useEffect(() => {
@@ -73,13 +75,13 @@ export default function PersonalAuth() {
         // Se ambos falharem
         console.error("❌ [PersonalAuth] Não foi possível carregar academias");
         setGyms([]);
-        toast.error("Erro ao carregar academias", {
+        toast.error("Erro ao carregar portais", {
           description: "Verifique se a tabela foi criada corretamente.",
         });
       } catch (error: any) {
         console.error("❌ [PersonalAuth] Erro:", error);
         setGyms([]);
-        toast.error("Erro ao carregar academias");
+        toast.error("Erro ao carregar portais");
       } finally {
         setLoadingGyms(false);
       }
@@ -89,22 +91,48 @@ export default function PersonalAuth() {
   }, []);
 
   useEffect(() => {
-    // Se já estiver logado como personal, redireciona
-    if (user && !roleLoading && isPersonal) {
-      navigate("/app");
-    }
-  }, [user, isPersonal, roleLoading, navigate]);
+    if (!user?.id || roleLoading) return;
+    if (!isPersonal) return;
+
+    const checkAndRedirect = async () => {
+      setCheckingProfile(true);
+      try {
+        const { data: roleRow, error: roleError } = await supabase
+          .from("user_roles")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("role", "personal")
+          .maybeSingle();
+
+        if (roleError || !roleRow) {
+          setCheckingProfile(false);
+          return;
+        }
+
+        const row = roleRow as { approved?: boolean; gym_id?: string };
+        if (!row.approved) {
+          setCheckingProfile(false);
+          return;
+        }
+
+        if (row.gym_id) {
+          navigate("/app");
+          return;
+        }
+
+        setStep("portal_selection");
+      } catch (e) {
+        console.error("Erro ao verificar perfil do personal:", e);
+      } finally {
+        setCheckingProfile(false);
+      }
+    };
+
+    checkAndRedirect();
+  }, [user?.id, isPersonal, roleLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validar gym_id no login
-    if (!gymId.trim()) {
-      toast.error("Academia obrigatória", {
-        description: "Por favor, selecione a academia.",
-      });
-      return;
-    }
 
     setLoading(true);
 
@@ -116,25 +144,16 @@ export default function PersonalAuth() {
 
       if (error) throw error;
 
-      // Aguardar um momento para garantir que a sessão esteja completamente estabelecida
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Verificar se o usuário é personal trainer e está aprovado
       const { data: roleData, error: roleError } = await supabase
         .from("user_roles")
-        .select("role, approved, gym_id")
+        .select("*")
         .eq("user_id", data.user.id)
         .eq("role", "personal")
         .maybeSingle();
 
       if (roleError) {
-        console.error("Role query error:", roleError);
-        console.error("Role query details:", {
-          code: roleError.code,
-          message: roleError.message,
-          details: roleError.details,
-          hint: roleError.hint,
-        });
         await supabase.auth.signOut();
         toast.error("Erro ao verificar permissões", {
           description: roleError.message || "Erro ao consultar o banco de dados. Tente novamente.",
@@ -142,8 +161,9 @@ export default function PersonalAuth() {
         return;
       }
 
-      if (!roleData || roleData.role !== "personal") {
-        // Se não for personal, faz logout
+      const row = roleData as { role?: string; approved?: boolean; gym_id?: string } | null;
+
+      if (!row || row.role !== "personal") {
         await supabase.auth.signOut();
         toast.error("Acesso negado", {
           description: "Esta área é exclusiva para personal trainers.",
@@ -151,8 +171,7 @@ export default function PersonalAuth() {
         return;
       }
 
-      // Verificar se o personal foi aprovado
-      if (!roleData.approved) {
+      if (!row.approved) {
         await supabase.auth.signOut();
         toast.warning("Aguardando aprovação", {
           description:
@@ -162,42 +181,64 @@ export default function PersonalAuth() {
         return;
       }
 
-      // Atualizar gym_id se foi selecionado (igual ao Auth.tsx para usuários comuns)
-      if (gymId.trim()) {
-        // Atualizar o user_roles com o gym_id (igual ao que é feito em profiles no Auth.tsx)
-        const { error: gymUpdateError } = await supabase
-          .from("user_roles")
-          .update({ gym_id: gymId.trim() })
-          .eq("user_id", data.user.id)
-          .eq("role", "personal");
-
-        if (gymUpdateError) {
-          console.error("Erro ao atualizar gym_id:", gymUpdateError);
-          // Tentar upsert caso o registro não exista (igual ao Auth.tsx)
-          await supabase.from("user_roles").upsert(
-            {
-              user_id: data.user.id,
-              role: "personal",
-              approved: roleData.approved,
-              gym_id: gymId.trim(),
-            },
-            {
-              onConflict: "user_id,role",
-            },
-          );
-        }
+      if (row.gym_id) {
+        toast.success("Bem-vindo de volta!", { description: "Login realizado com sucesso." });
+        navigate("/app");
+      } else {
+        setStep("portal_selection");
       }
-
-      toast.success("Bem-vindo de volta!", {
-        description: "Login realizado com sucesso.",
-      });
-
-      navigate("/app");
     } catch (error: any) {
       console.error("Login error:", error);
       toast.error("Erro no login", {
         description: error.message || "Verifique suas credenciais e tente novamente.",
       });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePortalSelectAndContinue = async () => {
+    if (!gymId.trim() || !user?.id) {
+      toast.error("Selecione o portal", { description: "Por favor, selecione o portal." });
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data: roleRow } = await supabase
+        .from("user_roles")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("role", "personal")
+        .maybeSingle();
+
+      const row = roleRow as { approved?: boolean } | null;
+      const { error: updateError } = await supabase
+        .from("user_roles")
+        .update({ gym_id: gymId.trim() } as any)
+        .eq("user_id", user.id)
+        .eq("role", "personal");
+
+      if (updateError) {
+        await supabase.from("user_roles").upsert(
+          {
+            user_id: user.id,
+            role: "personal",
+            approved: row?.approved ?? false,
+            gym_id: gymId.trim(),
+          } as any,
+          { onConflict: "user_id,role" },
+        );
+      }
+
+      await supabase
+        .from("profiles")
+        .update({ gym_id: gymId.trim() } as any)
+        .eq("user_id", user.id);
+
+      toast.success("Portal vinculado!", { description: "Bem-vindo!" });
+      navigate("/app");
+    } catch (error: any) {
+      toast.error("Erro ao salvar portal", { description: error.message });
     } finally {
       setLoading(false);
     }
@@ -236,8 +277,8 @@ export default function PersonalAuth() {
 
     // Validar gym_id no cadastro
     if (!gymId || !gymId.trim()) {
-      toast.error("Academia obrigatória", {
-        description: "Por favor, selecione a academia.",
+      toast.error("Portal obrigatório", {
+        description: "Por favor, selecione o portal.",
       });
       return;
     }
@@ -438,107 +479,108 @@ export default function PersonalAuth() {
 
               {/* Login Tab */}
               <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="seu@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
+                {checkingProfile ? (
+                  <div className="flex flex-col items-center justify-center py-8 gap-3">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-sm text-muted-foreground">Carregando...</p>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Senha</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="login-password"
-                        type={showLoginPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10 pr-10"
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowLoginPassword((prev) => !prev)}
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
-                        aria-label={showLoginPassword ? "Ocultar senha" : "Mostrar senha"}
-                      >
-                        {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
+                ) : step === "portal_selection" ? (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Selecione o portal em que você atua. Esta escolha não poderá ser alterada depois.
+                    </p>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-portal">Portal</Label>
+                      {loadingGyms ? (
+                        <div className="flex items-center justify-center py-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          <span className="ml-2 text-sm text-muted-foreground">Carregando portais...</span>
+                        </div>
+                      ) : gyms.length > 0 ? (
+                        <Select value={gymId} onValueChange={setGymId} disabled={loading}>
+                          <SelectTrigger id="login-portal" className="w-full">
+                            <SelectValue placeholder="Selecione o portal" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {gyms.map((gym) => (
+                              <SelectItem key={gym.id} value={gym.id}>
+                                {gym.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">Nenhum portal cadastrado.</p>
+                      )}
                     </div>
+                    <Button
+                      type="button"
+                      className="w-full"
+                      size="lg"
+                      disabled={loading || loadingGyms || !gymId.trim()}
+                      onClick={handlePortalSelectAndContinue}
+                    >
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Continuar
+                    </Button>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="login-gymId">Academia</Label>
-                    {loadingGyms ? (
-                      <div className="flex items-center justify-center py-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        <span className="ml-2 text-sm text-muted-foreground">Carregando academias...</span>
-                      </div>
-                    ) : gyms.length > 0 ? (
-                      <Select
-                        value={gymId}
-                        onValueChange={(value) => {
-                          console.log("📝 [PersonalAuth] Academia selecionada no login:", value);
-                          setGymId(value);
-                        }}
-                        disabled={loading || loadingGyms}
-                        required
-                      >
-                        <SelectTrigger id="login-gymId" className="w-full">
-                          <SelectValue placeholder="Selecione a academia" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {gyms.map((gym) => (
-                            <SelectItem key={gym.id} value={gym.id}>
-                              {gym.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <>
+                ) : (
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
-                          id="login-gymId"
-                          type="text"
-                          placeholder="Digite o ID da academia"
-                          value={gymId}
-                          onChange={(e) => setGymId(e.target.value)}
+                          id="login-email"
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
                           className="pl-10"
                           required
                         />
-                        <p className="text-xs text-muted-foreground">
-                          Nenhuma academia cadastrada. Entre em contato com o administrador.
-                        </p>
-                      </>
-                    )}
-                  </div>
+                      </div>
+                    </div>
 
-                  <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Entrando...
-                      </>
-                    ) : (
-                      <>
-                        <Shield className="mr-2 h-4 w-4" />
-                        Entrar como Personal
-                      </>
-                    )}
-                  </Button>
-                </form>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">Senha</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="login-password"
+                          type={showLoginPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10 pr-10"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowLoginPassword((prev) => !prev)}
+                          className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                          aria-label={showLoginPassword ? "Ocultar senha" : "Mostrar senha"}
+                        >
+                          {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Entrando...
+                        </>
+                      ) : (
+                        <>
+                          <Shield className="mr-2 h-4 w-4" />
+                          Entrar como Personal
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                )}
               </TabsContent>
 
               {/* Signup Tab */}
@@ -627,24 +669,16 @@ export default function PersonalAuth() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-gymId">Academia</Label>
+                    <Label htmlFor="signup-gymId">Portal</Label>
                     {loadingGyms ? (
                       <div className="flex items-center justify-center py-2">
                         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        <span className="ml-2 text-sm text-muted-foreground">Carregando academias...</span>
+                        <span className="ml-2 text-sm text-muted-foreground">Carregando portais...</span>
                       </div>
                     ) : gyms.length > 0 ? (
-                      <Select
-                        value={gymId}
-                        onValueChange={(value) => {
-                          console.log("📝 [PersonalAuth] Academia selecionada:", value);
-                          setGymId(value);
-                        }}
-                        disabled={loading || loadingGyms}
-                        required
-                      >
+                      <Select value={gymId} onValueChange={setGymId} disabled={loading || loadingGyms} required>
                         <SelectTrigger id="signup-gymId" className="w-full">
-                          <SelectValue placeholder="Selecione a academia" />
+                          <SelectValue placeholder="Selecione o portal" />
                         </SelectTrigger>
                         <SelectContent>
                           {gyms.map((gym) => (
@@ -659,20 +693,20 @@ export default function PersonalAuth() {
                         <Input
                           id="signup-gymId"
                           type="text"
-                          placeholder="Digite o ID da academia"
+                          placeholder="Digite o ID do portal"
                           value={gymId}
                           onChange={(e) => setGymId(e.target.value)}
                           className="pl-10"
                           required
                         />
                         <p className="text-xs text-muted-foreground">
-                          Nenhuma academia cadastrada. Entre em contato com o administrador.
+                          Nenhum portal cadastrado. Entre em contato com o administrador.
                         </p>
                       </>
                     )}
                     {!loadingGyms && gyms.length === 0 && (
                       <p className="text-xs text-muted-foreground">
-                        Nenhuma academia cadastrada. Entre em contato com o administrador.
+                        Nenhum portal cadastrado. Entre em contato com o administrador.
                       </p>
                     )}
                   </div>
