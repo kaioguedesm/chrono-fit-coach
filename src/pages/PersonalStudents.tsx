@@ -296,11 +296,15 @@ export default function PersonalStudents() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      const { error } = await supabase.from("personal_students").insert({
-        personal_id: user.id,
-        student_id: selectedStudentId,
-        is_active: true,
-      });
+      // Upsert: cria vínculo novo ou reativa um existente (ex.: após desvincular)
+      const { error } = await supabase.from("personal_students").upsert(
+        {
+          personal_id: user.id,
+          student_id: selectedStudentId,
+          is_active: true,
+        },
+        { onConflict: "personal_id,student_id", ignoreDuplicates: false },
+      );
 
       if (error) throw error;
 
@@ -310,11 +314,7 @@ export default function PersonalStudents() {
       fetchStudents();
     } catch (error: any) {
       console.error("Error adding student:", error);
-      if (error.code === "23505") {
-        toast.error("Este aluno já está vinculado");
-      } else {
-        toast.error("Erro ao vincular aluno");
-      }
+      toast.error("Erro ao vincular aluno");
     } finally {
       setAddingStudent(false);
     }
