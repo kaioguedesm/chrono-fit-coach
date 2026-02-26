@@ -36,6 +36,7 @@ import { WorkoutRefreshAlert } from "@/components/workout/WorkoutRefreshAlert";
 import { WorkoutRefreshDialog } from "@/components/workout/WorkoutRefreshDialog";
 import { LoadingState } from "@/components/common/LoadingState";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
 import { EmptyState } from "@/components/common/EmptyState";
 
 interface WorkoutPlan {
@@ -68,6 +69,7 @@ export default function Workout() {
   const { user } = useAuth();
   const { toast } = useToast();
   const { isPersonal, loading: roleLoading } = useUserRole();
+  const { canCreateWithoutPersonal } = useCanCreateWithoutPersonal();
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("plans");
@@ -442,8 +444,8 @@ export default function Workout() {
           </TabsList>
 
           <TabsContent value="plans" className="space-y-4">
-            {/* AI Workout Generator - apenas para personal */}
-            {isPersonal && <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />}
+            {/* AI Workout Generator - personal ou Portal 01 */}
+            {canCreateWithoutPersonal && <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />}
 
             {/* My Workouts Section */}
             <div className="flex justify-between items-center">
