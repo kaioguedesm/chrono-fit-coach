@@ -190,7 +190,7 @@ export default function Auth() {
 
   const handleGymSelectAndContinue = async () => {
     if (!gymId.trim() || !user?.id) {
-      toast({ title: "Selecione uma academia", variant: "destructive" });
+      toast({ title: "Selecione um portal", variant: "destructive" });
       return;
     }
     setLoading(true);
@@ -202,10 +202,10 @@ export default function Auth() {
 
       if (error) throw error;
 
-      toast({ title: "Academia vinculada!", description: "Bem-vindo! 🎉" });
+      toast({ title: "Portal vinculado!", description: "Bem-vindo! 🎉" });
       navigate("/app");
     } catch (error: any) {
-      toast({ title: "Erro ao salvar academia", description: error.message, variant: "destructive" });
+      toast({ title: "Erro ao salvar portal", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -238,19 +238,19 @@ export default function Auth() {
           ) : step === "gym_selection" ? (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Selecione a academia em que você treina. Esta escolha não poderá ser alterada depois.
+                Selecione o portal em que você treina. Esta escolha não poderá ser alterada depois.
               </p>
               <div className="space-y-2">
-                <Label htmlFor="gym">Academia</Label>
+                <Label htmlFor="gym">Portal</Label>
                 {loadingGyms ? (
                   <div className="flex items-center justify-center py-2">
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    <span className="ml-2 text-sm text-muted-foreground">Carregando academias...</span>
+                    <span className="ml-2 text-sm text-muted-foreground">Carregando portais...</span>
                   </div>
                 ) : gyms.length > 0 ? (
                   <Select value={gymId} onValueChange={setGymId} disabled={loading}>
                     <SelectTrigger id="gym" className="w-full">
-                      <SelectValue placeholder="Selecione a academia" />
+                      <SelectValue placeholder="Selecione o portal" />
                     </SelectTrigger>
                     <SelectContent>
                       {gyms.map((gym) => (
@@ -261,7 +261,7 @@ export default function Auth() {
                     </SelectContent>
                   </Select>
                 ) : (
-                  <p className="text-xs text-muted-foreground">Nenhuma academia cadastrada.</p>
+                  <p className="text-xs text-muted-foreground">Nenhum portal cadastrado.</p>
                 )}
               </div>
               <Button
