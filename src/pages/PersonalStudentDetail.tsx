@@ -470,17 +470,31 @@ export default function PersonalStudentDetail() {
 
         {/* Ações rápidas: Criar Treino e Dieta */}
         <div className="flex gap-2 flex-wrap">
-          <Button onClick={() => setShowCreateWorkout(true)} className="gap-2" variant="outline">
-            <Plus className="h-4 w-4" />
-            Criar Treino Manual para {student.name}
+          <Button
+            onClick={() => setShowCreateWorkout(true)}
+            className="gap-2 min-w-0 max-w-full"
+            variant="outline"
+            title={`Criar Treino Manual para ${student.name}`}
+          >
+            <Plus className="h-4 w-4 flex-shrink-0" />
+            <span className="truncate min-w-0">Criar Treino Manual para {student.name}</span>
           </Button>
-          <Button onClick={() => setShowCreateWorkoutAI(true)} className="gap-2">
-            <Dumbbell className="h-4 w-4" />
-            Criar Treino com IA para {student.name}
+          <Button
+            onClick={() => setShowCreateWorkoutAI(true)}
+            className="gap-2 min-w-0 max-w-full"
+            title={`Criar Treino com IA para ${student.name}`}
+          >
+            <Dumbbell className="h-4 w-4 flex-shrink-0" />
+            <span className="truncate min-w-0">Criar Treino com IA para {student.name}</span>
           </Button>
-          <Button onClick={() => setShowCreateNutrition(true)} className="gap-2" variant="outline">
-            <Apple className="h-4 w-4" />
-            Criar Dieta com IA para {student.name}
+          <Button
+            onClick={() => setShowCreateNutrition(true)}
+            className="gap-2 min-w-0 max-w-full"
+            variant="outline"
+            title={`Criar Dieta com IA para ${student.name}`}
+          >
+            <Apple className="h-4 w-4 flex-shrink-0" />
+            <span className="truncate min-w-0">Criar Dieta com IA para {student.name}</span>
           </Button>
         </div>
 
