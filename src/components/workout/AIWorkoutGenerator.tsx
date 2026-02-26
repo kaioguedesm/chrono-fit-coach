@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, Loader2, Dumbbell, Target, Zap, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +33,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { toast } = useToast();
-  const { isPersonal, loading: roleLoading } = useUserRole();
+  const { canCreateWithoutPersonal } = useCanCreateWithoutPersonal();
   const [generating, setGenerating] = useState(false);
   const [muscleGroup, setMuscleGroup] = useState("peito");
   const [duration, setDuration] = useState("60");
@@ -46,7 +46,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
   const generateWorkout = async () => {
     if (!user) return;
 
-    if (!isPersonal) {
+    if (!canCreateWithoutPersonal) {
       toast({
         title: "Acesso restrito",
         description: "Somente o personal pode gerar treinos com a IA.",
@@ -79,7 +79,8 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
         throw new Error("Resposta inválida da IA");
       }
 
-      // Create workout plan with pending approval status
+      const approvalStatus = canCreateWithoutPersonal ? "approved" : "pending";
+
       const { data: plan, error: planError } = await supabase
         .from("workout_plans")
         .insert({
@@ -87,14 +88,13 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
           name: functionData.workoutName,
           type: muscleGroup,
           created_by: "ai",
-          approval_status: "pending",
+          approval_status: approvalStatus,
         })
         .select()
         .single();
 
       if (planError) throw planError;
 
-      // Create exercises
       const exercisesData = functionData.exercises.map((ex: any, index: number) => ({
         workout_plan_id: plan.id,
         name: ex.name,
@@ -112,7 +112,10 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
 
       toast({
         title: "Treino criado pela IA! 🤖✨",
-        description: "Aguardando aprovação do personal trainer para liberar o treino.",
+        description:
+          approvalStatus === "approved"
+            ? "Treino liberado e pronto para usar!"
+            : "Aguardando aprovação do personal trainer para liberar o treino.",
       });
 
       onSuccess();
