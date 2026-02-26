@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sparkles, Loader2, Apple, ChefHat, Target, Utensils, Heart, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { Badge } from "@/components/ui/badge";
@@ -46,7 +46,7 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
   const { user } = useAuth();
   const { profile, calculateIMC } = useProfile();
   const { toast } = useToast();
-  const { isPersonal } = useUserRole();
+  const { canCreateWithoutPersonal } = useCanCreateWithoutPersonal();
   const [generating, setGenerating] = useState(false);
   const [dietType, setDietType] = useState("emagrecimento");
   const [mealsPerDay, setMealsPerDay] = useState("5");
@@ -66,7 +66,7 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
   const generateNutritionPlan = async () => {
     if (!user) return;
 
-    if (!isPersonal) {
+    if (!canCreateWithoutPersonal) {
       toast({
         title: "Acesso restrito",
         description: "Somente o personal pode gerar planos nutricionais com a IA.",
@@ -112,7 +112,8 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
         throw new Error("Resposta inválida da IA");
       }
 
-      // Create nutrition plan
+      const approvalStatus = canCreateWithoutPersonal ? "approved" : "pending";
+
       const { data: plan, error: planError } = await supabase
         .from("nutrition_plans")
         .insert({
@@ -120,14 +121,13 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
           title: functionData.planName,
           description: functionData.description,
           created_by: "ai",
-          approval_status: "pending",
+          approval_status: approvalStatus,
         })
         .select()
         .single();
 
       if (planError) throw planError;
 
-      // Create meals
       const mealsData = functionData.meals.map((meal: any) => ({
         nutrition_plan_id: plan.id,
         meal_type: meal.meal_type,
@@ -146,7 +146,10 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
 
       toast({
         title: "Plano nutricional criado! 🥗✨",
-        description: `${functionData.planName} foi gerado e aguarda aprovação do profissional da academia.`,
+        description:
+          approvalStatus === "approved"
+            ? `${functionData.planName} foi gerado e já está liberado para uso.`
+            : `${functionData.planName} foi gerado e aguarda aprovação do profissional da academia.`,
       });
 
       onSuccess();
