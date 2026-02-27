@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { 
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -13,15 +13,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Calendar, Clock, Dumbbell, ChevronDown, Trash2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+} from "@/components/ui/alert-dialog";
+import { Calendar, Clock, Dumbbell, ChevronDown, Trash2, Share2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { WorkoutSessionShareDialog } from "./WorkoutSessionShareDialog";
 
-interface WorkoutSession {
+export interface WorkoutSession {
   id: string;
   started_at: string;
   completed_at: string | null;
@@ -47,6 +48,8 @@ export function WorkoutHistory() {
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [sessionToShare, setSessionToShare] = useState<WorkoutSession | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -60,8 +63,9 @@ export function WorkoutHistory() {
 
     try {
       const { data, error } = await supabase
-        .from('workout_sessions')
-        .select(`
+        .from("workout_sessions")
+        .select(
+          `
           *,
           workout_plan:workout_plans!inner (
             name,
@@ -75,16 +79,17 @@ export function WorkoutHistory() {
               name
             )
           )
-        `)
-        .eq('user_id', user.id)
-        .not('completed_at', 'is', null)
-        .order('completed_at', { ascending: false })
+        `,
+        )
+        .eq("user_id", user.id)
+        .not("completed_at", "is", null)
+        .order("completed_at", { ascending: false })
         .limit(20);
 
       if (error) throw error;
       setSessions(data || []);
     } catch (error) {
-      console.error('Error fetching history:', error);
+      console.error("Error fetching history:", error);
     } finally {
       setLoading(false);
     }
@@ -96,32 +101,29 @@ export function WorkoutHistory() {
     try {
       // Delete exercise sessions first (due to foreign key constraints)
       const { error: exerciseError } = await supabase
-        .from('exercise_sessions')
+        .from("exercise_sessions")
         .delete()
-        .eq('workout_session_id', sessionToDelete);
+        .eq("workout_session_id", sessionToDelete);
 
       if (exerciseError) throw exerciseError;
 
       // Then delete the workout session
-      const { error: sessionError } = await supabase
-        .from('workout_sessions')
-        .delete()
-        .eq('id', sessionToDelete);
+      const { error: sessionError } = await supabase.from("workout_sessions").delete().eq("id", sessionToDelete);
 
       if (sessionError) throw sessionError;
 
       toast({
         title: "Treino excluído",
-        description: "O treino foi removido do histórico."
+        description: "O treino foi removido do histórico.",
       });
 
       // Update local state
-      setSessions(sessions.filter(s => s.id !== sessionToDelete));
+      setSessions(sessions.filter((s) => s.id !== sessionToDelete));
     } catch (error: any) {
       toast({
         title: "Erro",
         description: "Não foi possível excluir o treino.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setDeleteDialogOpen(false);
@@ -138,9 +140,7 @@ export function WorkoutHistory() {
       <div className="text-center py-12">
         <Clock className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
         <h3 className="text-lg font-semibold mb-2">Nenhum treino concluído</h3>
-        <p className="text-muted-foreground">
-          Complete seu primeiro treino para ver o histórico aqui
-        </p>
+        <p className="text-muted-foreground">Complete seu primeiro treino para ver o histórico aqui</p>
       </div>
     );
   }
@@ -180,7 +180,7 @@ export function WorkoutHistory() {
                     </div>
                   </CardHeader>
                 </CollapsibleTrigger>
-                
+
                 <CollapsibleContent>
                   <CardContent className="pt-0 space-y-3">
                     <div className="space-y-2 border-t pt-3">
@@ -198,19 +198,34 @@ export function WorkoutHistory() {
                         </div>
                       ))}
                     </div>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="w-full"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSessionToDelete(session.id);
-                        setDeleteDialogOpen(true);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Excluir Treino
-                    </Button>
+                    <div className="space-y-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSessionToShare(session);
+                          setShareDialogOpen(true);
+                        }}
+                      >
+                        <Share2 className="w-4 h-4 mr-2" />
+                        Compartilhar Treino
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSessionToDelete(session.id);
+                          setDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Excluir Treino
+                      </Button>
+                    </div>
                   </CardContent>
                 </CollapsibleContent>
               </Card>
@@ -229,12 +244,23 @@ export function WorkoutHistory() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteSession}>
-              Excluir
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteSession}>Excluir</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {sessionToShare && (
+        <WorkoutSessionShareDialog
+          open={shareDialogOpen}
+          onOpenChange={(open) => {
+            setShareDialogOpen(open);
+            if (!open) {
+              setSessionToShare(null);
+            }
+          }}
+          session={sessionToShare}
+        />
+      )}
     </>
   );
 }
