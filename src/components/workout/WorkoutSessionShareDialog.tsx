@@ -53,66 +53,35 @@ export function WorkoutSessionShareDialog({ open, onOpenChange, session }: Worko
 
     // Dimensões do card interno (bem menor que o canvas)
     const cardWidth = width * 0.78;
-    const cardHeight = height * 0.6;
     const cardX = (width - cardWidth) / 2;
     const cardY = height * 0.14;
+    const paddingX = 56;
+    const paddingTop = 48;
+    const paddingBottom = 48;
+    const rightPadding = 56;
 
-    // Limpa tudo (transparente)
-    ctx.clearRect(0, 0, width, height);
-
-    if (template === "card") {
-      // Fundo em gradiente ocupando o canvas inteiro
-      const gradient = ctx.createLinearGradient(0, 0, width, height);
-      gradient.addColorStop(0, "#0f172a"); // slate-900
-      gradient.addColorStop(0.4, "#1e293b"); // slate-800
-      gradient.addColorStop(1, "#22c55e"); // green-500
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
-
-      // Card interno bem menor
-      ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-      roundedRect(ctx, cardX, cardY, cardWidth, cardHeight, 40);
-      ctx.fill();
-    }
-
-    // Conteúdo textual (mais compacto)
+    // Conteúdo textual
     const primaryColor = "#22c55e";
     const textColor = "#e5e7eb";
     const mutedColor = "#9ca3af";
 
     ctx.textBaseline = "top";
 
-    // Cabeçalho (posicionado dentro do card menor)
-    const headerX = cardX + 56;
-    const headerY = cardY + 48;
+    // Layout base (calculamos o tamanho do card a partir do conteúdo)
+    const headerX = cardX + paddingX;
+    const headerY = cardY + paddingTop;
 
-    ctx.fillStyle = primaryColor;
-    ctx.font = 'bold 44px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    ctx.fillText("Treino concluído", headerX, headerY);
-
-    // Título do treino com quebra/reticências para não sair do card
+    const headerFont = 'bold 44px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     const titleFont = 'bold 52px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     const titleLineHeight = 58;
     const titleY = headerY + 60;
-    const rightPadding = 56;
-    const maxTitleWidth = cardX + cardWidth - headerX - rightPadding;
+    const maxTitleWidth = cardWidth - paddingX - rightPadding;
 
-    ctx.fillStyle = textColor;
     ctx.font = titleFont;
-    const titleLines = drawWrappedText(
-      ctx,
-      session.workout_plan.name,
-      headerX,
-      titleY,
-      maxTitleWidth,
-      titleLineHeight,
-      2,
-    );
+    const titleLines = wrapTextLines(ctx, session.workout_plan.name, maxTitleWidth, 2);
 
-    ctx.fillStyle = mutedColor;
-    ctx.font = '28px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    const dateY = titleY + titleLines * titleLineHeight + 10;
-    ctx.fillText(format(stats.date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }), headerX, dateY);
+    const dateFont = '28px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    const dateY = titleY + titleLines.length * titleLineHeight + 10;
 
     // Bloco de métricas (menor)
     const metricsY = dateY + 70;
@@ -144,6 +113,51 @@ export function WorkoutSessionShareDialog({ open, onOpenChange, session }: Worko
       });
     }
 
+    // Marca / logo (logo abaixo do conteúdo)
+    const logoSize = 72;
+    const logoX = cardX + paddingX;
+    const metricsBottomY = metricsY + metricBoxHeight;
+    const logoY = metricsBottomY + 40;
+
+    // Altura do card calculada para "abraçar" o conteúdo (remove espaço vazio embaixo)
+    const footerTextY = logoY + logoSize + 18;
+    const footerLineHeight = 32;
+    const cardHeight = footerTextY + footerLineHeight + paddingBottom - cardY;
+
+    // Limpa tudo (transparente)
+    ctx.clearRect(0, 0, width, height);
+
+    if (template === "card") {
+      // Fundo em gradiente ocupando o canvas inteiro
+      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      gradient.addColorStop(0, "#0f172a"); // slate-900
+      gradient.addColorStop(0.4, "#1e293b"); // slate-800
+      gradient.addColorStop(1, "#22c55e"); // green-500
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      // Card interno com altura dinâmica (sem espaço vazio)
+      ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
+      roundedRect(ctx, cardX, cardY, cardWidth, cardHeight, 40);
+      ctx.fill();
+    }
+
+    // Desenha conteúdo (após o fundo)
+    ctx.fillStyle = primaryColor;
+    ctx.font = headerFont;
+    ctx.fillText("Treino concluído", headerX, headerY);
+
+    ctx.fillStyle = textColor;
+    ctx.font = titleFont;
+    titleLines.forEach((line, idx) => {
+      ctx.fillText(line, headerX, titleY + idx * titleLineHeight);
+    });
+
+    ctx.fillStyle = mutedColor;
+    ctx.font = dateFont;
+    ctx.fillText(format(stats.date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }), headerX, dateY);
+
+    // Re-desenha métricas por cima (já com o fundo pronto)
     metrics.slice(0, 3).forEach((metric, index) => {
       const x = startX + index * (metricBoxWidth + gap);
       roundedRect(ctx, x, metricsY, metricBoxWidth, metricBoxHeight, metricRadius);
@@ -159,12 +173,6 @@ export function WorkoutSessionShareDialog({ open, onOpenChange, session }: Worko
       ctx.fillText(metric.value, x + 20, metricsY + 70);
     });
 
-    // Marca / logo no rodapé usando a logo Nex Fit
-    const logoSize = 72;
-    const logoX = cardX + 56;
-    // Sobe um pouco para não encostar/ser cortado no limite inferior do card
-    const logoY = cardY + cardHeight - 175;
-
     const drawFooter = () => {
       // Nome ao lado da logo
       ctx.fillStyle = primaryColor;
@@ -173,7 +181,7 @@ export function WorkoutSessionShareDialog({ open, onOpenChange, session }: Worko
 
       ctx.fillStyle = mutedColor;
       ctx.font = '28px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-      ctx.fillText("Compartilhado com o app Nex Fit", logoX, logoY + logoSize + 26);
+      ctx.fillText("Compartilhado com o app Nex Fit", logoX, footerTextY);
     };
 
     try {
@@ -359,15 +367,7 @@ function roundedRect(
   ctx.closePath();
 }
 
-function drawWrappedText(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  lineHeight: number,
-  maxLines: number,
-) {
+function wrapTextLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, maxLines: number) {
   const words = text.split(/\s+/).filter(Boolean);
   const lines: string[] = [];
 
@@ -410,11 +410,7 @@ function drawWrappedText(
     }
   }
 
-  lines.forEach((line, idx) => {
-    ctx.fillText(line, x, y + idx * lineHeight);
-  });
-
-  return lines.length;
+  return lines;
 }
 
 function ellipsize(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
