@@ -208,8 +208,32 @@ export function WorkoutSessionShareDialog({ open, onOpenChange, session }: Worko
     const isIOS = /iPad|iPhone|iPod/i.test(navigator.userAgent);
 
     if (isIOS) {
-      canvas.toBlob((blob) => {
+      canvas.toBlob(async (blob) => {
         if (!blob) return;
+
+        // Melhor fluxo no iPhone: abrir o share sheet com o arquivo e escolher "Salvar imagem"
+        try {
+          const file = new File([blob], filename, { type: "image/png" });
+          const canShareFiles =
+            typeof navigator.share === "function" &&
+            (typeof (navigator as any).canShare !== "function" || (navigator as any).canShare({ files: [file] }));
+
+          if (canShareFiles) {
+            await navigator.share({
+              files: [file],
+              title: "Treino",
+            });
+            toast({
+              title: "Salvar no iPhone",
+              description: "No menu que abriu, toque em “Salvar imagem” para salvar no Fotos.",
+            });
+            return;
+          }
+        } catch {
+          // se falhar, cai no fallback abaixo
+        }
+
+        // Fallback: abre a imagem em outra tela (o jeito mais compatível)
         const url = URL.createObjectURL(blob);
         window.open(url, "_blank", "noopener,noreferrer");
         setTimeout(() => URL.revokeObjectURL(url), 30_000);
