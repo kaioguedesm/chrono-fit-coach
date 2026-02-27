@@ -244,32 +244,14 @@ export function WorkoutSessionShareDialog({ open, onOpenChange, session }: Worko
         }
       }
 
-      // Fallback 1 (mobile): abrir compartilhamento nativo com a imagem
-      const file = new File([blob], `treino-${format(stats.date, "yyyyMMdd")}.png`, { type: "image/png" });
-      const canShareFiles =
-        typeof navigator.share === "function" &&
-        (typeof (navigator as any).canShare !== "function" || (navigator as any).canShare({ files: [file] }));
-
-      if (canShareFiles) {
-        await navigator.share({
-          files: [file],
-          title: "Treino",
-        });
-        toast({
-          title: "Abrindo compartilhamento",
-          description: "Escolha o app e use a opção “Copiar” se estiver disponível.",
-        });
-        return;
-      }
-
-      // Fallback 2: abrir a imagem em outra aba/janela para copiar com toque longo
+      // Fallback (mobile): abrir a imagem para copiar com toque longo
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank", "noopener,noreferrer");
       setTimeout(() => URL.revokeObjectURL(url), 30_000);
 
       toast({
-        title: "Abra a imagem e copie",
-        description: "No celular, toque e segure na imagem e escolha “Copiar”.",
+        title: "Copiar no celular",
+        description: "Abri a imagem em outra tela. Toque e segure na imagem e escolha “Copiar”.",
       });
     } catch {
       toast({
