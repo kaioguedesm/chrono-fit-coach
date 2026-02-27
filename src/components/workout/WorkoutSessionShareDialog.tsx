@@ -216,21 +216,65 @@ export function WorkoutSessionShareDialog({ open, onOpenChange, session }: Worko
 
       const blob: Blob | null = await new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/png"));
 
-      if (!blob || !navigator.clipboard || !(window as any).ClipboardItem) {
-        throw new Error("Clipboard API não suportada");
+      if (!blob) {
+        throw new Error("Falha ao gerar imagem");
       }
 
-      const item = new (window as any).ClipboardItem({ "image/png": blob });
-      await navigator.clipboard.write([item]);
+      const ClipboardItemCtor = (window as any).ClipboardItem as
+        | (new (items: Record<string, Blob>) => ClipboardItem)
+        | undefined;
+
+      const supportsClipboardImage =
+        !!navigator.clipboard &&
+        typeof navigator.clipboard.write === "function" &&
+        typeof ClipboardItemCtor === "function";
+
+      if (supportsClipboardImage) {
+        try {
+          const item = new ClipboardItemCtor({ "image/png": blob });
+          await navigator.clipboard.write([item]);
+
+          toast({
+            title: "Imagem copiada",
+            description: "Agora é só colar no Instagram ou em outro app.",
+          });
+          return;
+        } catch {
+          // cai para fallback abaixo (muito comum em iOS / WebView)
+        }
+      }
+
+      // Fallback 1 (mobile): abrir compartilhamento nativo com a imagem
+      const file = new File([blob], `treino-${format(stats.date, "yyyyMMdd")}.png`, { type: "image/png" });
+      const canShareFiles =
+        typeof navigator.share === "function" &&
+        (typeof (navigator as any).canShare !== "function" || (navigator as any).canShare({ files: [file] }));
+
+      if (canShareFiles) {
+        await navigator.share({
+          files: [file],
+          title: "Treino",
+        });
+        toast({
+          title: "Abrindo compartilhamento",
+          description: "Escolha o app e use a opção “Copiar” se estiver disponível.",
+        });
+        return;
+      }
+
+      // Fallback 2: abrir a imagem em outra aba/janela para copiar com toque longo
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 30_000);
 
       toast({
-        title: "Imagem copiada",
-        description: "Agora é só colar no Instagram ou em outro app.",
+        title: "Abra a imagem e copie",
+        description: "No celular, toque e segure na imagem e escolha “Copiar”.",
       });
     } catch {
       toast({
         title: "Não foi possível copiar a imagem",
-        description: "Mas você ainda pode salvar o arquivo e enviar manualmente.",
+        description: "Use “Salvar imagem” e compartilhe pela galeria.",
         variant: "destructive",
       });
     }
