@@ -90,16 +90,32 @@ export function WorkoutSessionShareDialog({ open, onOpenChange, session }: Worko
     ctx.font = 'bold 44px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     ctx.fillText("Treino concluído", headerX, headerY);
 
+    // Título do treino com quebra/reticências para não sair do card
+    const titleFont = 'bold 52px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    const titleLineHeight = 58;
+    const titleY = headerY + 60;
+    const rightPadding = 56;
+    const maxTitleWidth = cardX + cardWidth - headerX - rightPadding;
+
     ctx.fillStyle = textColor;
-    ctx.font = 'bold 52px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    ctx.fillText(session.workout_plan.name, headerX, headerY + 60);
+    ctx.font = titleFont;
+    const titleLines = drawWrappedText(
+      ctx,
+      session.workout_plan.name,
+      headerX,
+      titleY,
+      maxTitleWidth,
+      titleLineHeight,
+      2,
+    );
 
     ctx.fillStyle = mutedColor;
     ctx.font = '28px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    ctx.fillText(format(stats.date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }), headerX, headerY + 120);
+    const dateY = titleY + titleLines * titleLineHeight + 10;
+    ctx.fillText(format(stats.date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }), headerX, dateY);
 
     // Bloco de métricas (menor)
-    const metricsY = headerY + 200;
+    const metricsY = dateY + 70;
     const metricBoxWidth = 220;
     const metricBoxHeight = 150;
     const metricRadius = 24;
@@ -146,7 +162,8 @@ export function WorkoutSessionShareDialog({ open, onOpenChange, session }: Worko
     // Marca / logo no rodapé usando a logo Nex Fit
     const logoSize = 72;
     const logoX = cardX + 56;
-    const logoY = cardY + cardHeight - 140;
+    // Sobe um pouco para não encostar/ser cortado no limite inferior do card
+    const logoY = cardY + cardHeight - 175;
 
     const drawFooter = () => {
       // Nome ao lado da logo
@@ -156,7 +173,7 @@ export function WorkoutSessionShareDialog({ open, onOpenChange, session }: Worko
 
       ctx.fillStyle = mutedColor;
       ctx.font = '28px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-      ctx.fillText("Compartilhado com o app Nex Fit", logoX, logoY + logoSize + 32);
+      ctx.fillText("Compartilhado com o app Nex Fit", logoX, logoY + logoSize + 26);
     };
 
     try {
@@ -323,4 +340,73 @@ function roundedRect(
   ctx.lineTo(x, y + r);
   ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
+}
+
+function drawWrappedText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+  maxLines: number,
+) {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+
+  let current = "";
+  for (const word of words) {
+    const test = current ? `${current} ${word}` : word;
+    if (ctx.measureText(test).width <= maxWidth) {
+      current = test;
+      continue;
+    }
+
+    if (current) {
+      lines.push(current);
+      current = word;
+    } else {
+      // Palavra gigantesca: corta para caber
+      lines.push(ellipsize(ctx, word, maxWidth));
+      current = "";
+    }
+
+    if (lines.length >= maxLines) break;
+  }
+
+  if (lines.length < maxLines && current) {
+    lines.push(current);
+  }
+
+  // Se excedeu, ajusta última linha com reticências
+  if (lines.length > maxLines) {
+    lines.length = maxLines;
+  }
+
+  if (lines.length === maxLines) {
+    const joined = words.join(" ");
+    const rendered = lines.join(" ");
+    if (rendered.length < joined.length) {
+      lines[maxLines - 1] = ellipsize(ctx, lines[maxLines - 1], maxWidth);
+    } else if (ctx.measureText(lines[maxLines - 1]).width > maxWidth) {
+      lines[maxLines - 1] = ellipsize(ctx, lines[maxLines - 1], maxWidth);
+    }
+  }
+
+  lines.forEach((line, idx) => {
+    ctx.fillText(line, x, y + idx * lineHeight);
+  });
+
+  return lines.length;
+}
+
+function ellipsize(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
+  const ellipsis = "…";
+  if (ctx.measureText(text).width <= maxWidth) return text;
+
+  let t = text;
+  while (t.length > 1 && ctx.measureText(t + ellipsis).width > maxWidth) {
+    t = t.slice(0, -1);
+  }
+  return t + ellipsis;
 }
