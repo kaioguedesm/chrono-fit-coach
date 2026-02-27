@@ -201,65 +201,35 @@ export function WorkoutSessionShareDialog({ open, onOpenChange, session }: Worko
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    const dateString = format(stats.date, "yyyyMMdd");
+    const filename = `treino-${dateString}.png`;
+
+    // iOS/Safari/WebView: "download" pode não funcionar; abre a imagem em outra aba
+    const isIOS = /iPad|iPhone|iPod/i.test(navigator.userAgent);
+
+    if (isIOS) {
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank", "noopener,noreferrer");
+        setTimeout(() => URL.revokeObjectURL(url), 30_000);
+        toast({
+          title: "Salvar no iPhone",
+          description: "Abri a imagem em outra tela. Toque e segure na imagem e selecione “Salvar em Fotos”.",
+        });
+      }, "image/png");
+      return;
+    }
+
     const url = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = url;
-    const dateString = format(stats.date, "yyyyMMdd");
-    link.download = `treino-${dateString}.png`;
+    link.download = filename;
     link.click();
-  };
-
-  const handleCopyImage = async () => {
-    try {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const blob: Blob | null = await new Promise((resolve) => canvas.toBlob((b) => resolve(b), "image/png"));
-
-      if (!blob) {
-        throw new Error("Falha ao gerar imagem");
-      }
-
-      const ClipboardItemCtor = (window as any).ClipboardItem as
-        | (new (items: Record<string, Blob>) => ClipboardItem)
-        | undefined;
-
-      const supportsClipboardImage =
-        !!navigator.clipboard &&
-        typeof navigator.clipboard.write === "function" &&
-        typeof ClipboardItemCtor === "function";
-
-      if (supportsClipboardImage) {
-        try {
-          const item = new ClipboardItemCtor({ "image/png": blob });
-          await navigator.clipboard.write([item]);
-
-          toast({
-            title: "Imagem copiada",
-            description: "Agora é só colar no Instagram ou em outro app.",
-          });
-          return;
-        } catch {
-          // cai para fallback abaixo (muito comum em iOS / WebView)
-        }
-      }
-
-      // Fallback (mobile): abrir a imagem para copiar com toque longo
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener,noreferrer");
-      setTimeout(() => URL.revokeObjectURL(url), 30_000);
-
-      toast({
-        title: "Copiar no celular",
-        description: "Abri a imagem em outra tela. Toque e segure na imagem e escolha “Copiar”.",
-      });
-    } catch {
-      toast({
-        title: "Não foi possível copiar a imagem",
-        description: "Use “Salvar imagem” e compartilhe pela galeria.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Imagem salva",
+      description: "Agora é só compartilhar pelo Instagram/WhatsApp a partir da galeria.",
+    });
   };
 
   const handleCanvasRef = (node: HTMLCanvasElement | null) => {
@@ -332,9 +302,6 @@ export function WorkoutSessionShareDialog({ open, onOpenChange, session }: Worko
             </div>
 
             <div className="flex flex-wrap gap-2 justify-end">
-              <Button variant="outline" size="sm" onClick={handleCopyImage}>
-                Copiar imagem
-              </Button>
               <Button size="sm" onClick={handleDownload}>
                 Salvar imagem
               </Button>
