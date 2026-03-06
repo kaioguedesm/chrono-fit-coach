@@ -53,19 +53,45 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
+    // Check for active OR trialing subscriptions
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
-      status: "active",
-      limit: 1,
+      limit: 10,
     });
 
-    const hasActiveSub = subscriptions.data.length > 0;
+    logStep("All subscriptions found", { 
+      count: subscriptions.data.length, 
+      statuses: subscriptions.data.map(s => s.status) 
+    });
+
+    // Consider active, trialing, or past_due as valid
+    const validStatuses = ["active", "trialing", "past_due"];
+    const activeSub = subscriptions.data.find(s => validStatuses.includes(s.status));
+    
+    const hasActiveSub = !!activeSub;
     let subscriptionEnd = null;
 
-    if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+    if (hasActiveSub && activeSub) {
+      try {
+        const endTimestamp = activeSub.current_period_end;
+        logStep("Raw current_period_end", { endTimestamp, type: typeof endTimestamp });
+        
+        if (typeof endTimestamp === 'number') {
+          subscriptionEnd = new Date(endTimestamp * 1000).toISOString();
+        } else if (typeof endTimestamp === 'string') {
+          subscriptionEnd = new Date(endTimestamp).toISOString();
+        }
+      } catch (dateError) {
+        logStep("Date conversion warning, ignoring", { error: String(dateError) });
+        // Don't fail the whole function for a date conversion issue
+        subscriptionEnd = null;
+      }
+      
+      logStep("Active subscription found", { 
+        subscriptionId: activeSub.id, 
+        status: activeSub.status,
+        endDate: subscriptionEnd 
+      });
     } else {
       logStep("No active subscription found");
     }

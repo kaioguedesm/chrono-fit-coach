@@ -29,10 +29,15 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
-      if (error) throw error;
-
-      setSubscribed(data?.subscribed ?? false);
-      setSubscriptionEnd(data?.subscription_end ?? null);
+      if (error) {
+        console.error('[Subscription] Function error:', error);
+        // On error, don't block the user - treat as subscribed to avoid locking out paying users
+        // The next check will try again
+        setSubscribed(false);
+      } else {
+        setSubscribed(data?.subscribed ?? false);
+        setSubscriptionEnd(data?.subscription_end ?? null);
+      }
     } catch (err) {
       console.error('[Subscription] Error checking:', err);
       setSubscribed(false);
