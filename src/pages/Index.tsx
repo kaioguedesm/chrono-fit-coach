@@ -29,13 +29,13 @@ const Index = () => {
 
   // Handle checkout redirect
   useEffect(() => {
-    const checkoutStatus = searchParams.get('checkout');
-    if (checkoutStatus === 'success') {
-      toast({ title: '🎉 Assinatura ativada!', description: 'Bem-vindo ao NexFit! Aproveite todos os recursos.' });
+    const checkoutStatus = searchParams.get("checkout");
+    if (checkoutStatus === "success") {
+      toast({ title: "🎉 Assinatura ativada!", description: "Bem-vindo ao NexFit! Aproveite todos os recursos." });
       checkSubscription();
       setSearchParams({}, { replace: true });
-    } else if (checkoutStatus === 'cancel') {
-      toast({ title: 'Checkout cancelado', description: 'Você pode assinar quando quiser.', variant: 'destructive' });
+    } else if (checkoutStatus === "cancel") {
+      toast({ title: "Checkout cancelado", description: "Você pode assinar quando quiser.", variant: "destructive" });
       setSearchParams({}, { replace: true });
     }
   }, [searchParams]);
@@ -87,9 +87,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-24 pt-16 touch-manipulation">
-      <div className="h-full animate-fade-in">
-        {needsPaywall ? <SubscriptionPaywall /> : renderActiveTab()}
-      </div>
+      <div className="h-full animate-fade-in">{needsPaywall ? <SubscriptionPaywall /> : renderActiveTab()}</div>
       <InstallPWA />
       {!needsPaywall && <Navigation activeTab={activeTab} onTabChange={setActiveTab} isPersonal={isPersonal} />}
     </div>
