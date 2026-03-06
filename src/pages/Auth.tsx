@@ -25,10 +25,11 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [loadingGyms, setLoadingGyms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [step, setStep] = useState<"login" | "gym_selection">("login");
+  const [step, setStep] = useState<"login" | "signup" | "gym_selection">("login");
   const [checkingProfile, setCheckingProfile] = useState(false);
+  const [name, setName] = useState("");
 
-  const { signIn, user } = useAuth();
+  const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -143,46 +144,44 @@ export default function Auth() {
     setLoading(true);
 
     try {
-      const result = await signIn(email, password);
-
-      if (result.error) {
-        toast({
-          title: "Erro",
-          description: result.error.message,
-          variant: "destructive",
-        });
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
-        if (!currentUser) {
+      if (step === "signup") {
+        if (!name.trim()) {
+          toast({ title: "Erro", description: "Informe seu nome.", variant: "destructive" });
           setLoading(false);
           return;
         }
-
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("gym_id")
-          .eq("user_id", currentUser.id)
-          .maybeSingle();
-
-        if (profileError) throw profileError;
-
-        if (profile?.gym_id) {
-          toast({ title: "Login realizado!", description: "Bem-vindo de volta! 🎉" });
-          navigate("/app");
+        const result = await signUp(email, password, name.trim());
+        if (result.error) {
+          toast({ title: "Erro", description: result.error.message, variant: "destructive" });
         } else {
-          setStep("gym_selection");
+          toast({ title: "Conta criada!", description: "Verifique seu email para confirmar o cadastro. 📧" });
+          setStep("login");
+        }
+      } else {
+        const result = await signIn(email, password);
+
+        if (result.error) {
+          toast({ title: "Erro", description: result.error.message, variant: "destructive" });
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+
+          const { data: { user: currentUser } } = await supabase.auth.getUser();
+          if (!currentUser) { setLoading(false); return; }
+
+          const { data: profile, error: profileError } = await supabase
+            .from("profiles").select("gym_id").eq("user_id", currentUser.id).maybeSingle();
+          if (profileError) throw profileError;
+
+          if (profile?.gym_id) {
+            toast({ title: "Login realizado!", description: "Bem-vindo de volta! 🎉" });
+            navigate("/app");
+          } else {
+            setStep("gym_selection");
+          }
         }
       }
     } catch (error: any) {
-      toast({
-        title: "Erro",
-        description: error.message || "Ocorreu um erro inesperado.",
-        variant: "destructive",
-      });
+      toast({ title: "Erro", description: error.message || "Ocorreu um erro inesperado.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -225,7 +224,9 @@ export default function Auth() {
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
               Nex Fit
             </CardTitle>
-            <CardDescription className="text-base">Entre na sua conta</CardDescription>
+            <CardDescription className="text-base">
+              {step === "signup" ? "Crie sua conta" : "Entre na sua conta"}
+            </CardDescription>
           </div>
         </CardHeader>
 
@@ -276,6 +277,20 @@ export default function Auth() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
+              {step === "signup" && (
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="Seu nome completo"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={loading}
+                    required
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -315,23 +330,22 @@ export default function Auth() {
 
               <Button type="submit" className="w-full" disabled={loading || loadingGyms}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Entrar
+                {step === "signup" ? "Criar conta" : "Entrar"}
               </Button>
 
-              <div className="text-center space-y-2">
-                {/* <Button
-                type="button"
-                variant="link"
-                size="sm"
-                onClick={() => navigate("/home")}
-                className="text-muted-foreground hover:text-primary transition-colors group w-full"
-              >
-                <span className="flex items-center justify-center gap-2 text-sm">
-                  ✨ Conheça mais sobre o Nex Fit
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </span>
-              </Button> */}
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  onClick={() => setStep(step === "signup" ? "login" : "signup")}
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  {step === "signup" ? "Já tem uma conta? Entrar" : "Não tem conta? Criar conta"}
+                </Button>
+              </div>
 
+              <div className="text-center space-y-2">
                 <div className="relative my-4">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t border-muted" />
