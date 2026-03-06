@@ -38,52 +38,56 @@ export function SubscriptionPaywall() {
 
   const features = [
     'Treinos personalizados com IA',
-    'Planos nutricionais completos',
+    'Planos nutricionais estruturados',
     'Acompanhamento de progresso',
+    'Evolução de cargas e medidas',
     'Agenda de treinos',
-    'Análise de fotos de refeições',
-    'Suporte ao personal trainer',
+    'Análise inteligente de refeições',
+    'Sistema completo de evolução física',
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-lg animate-fade-in">
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-          <Lock className="w-8 h-8 text-primary" />
+    <div className="container mx-auto px-4 py-10 max-w-md animate-fade-in">
+      <Card className="border-primary/20 shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-primary to-primary/70 px-6 py-4 flex items-center gap-2">
+          <Crown className="w-5 h-5 text-primary-foreground" />
+          <span className="font-bold text-sm uppercase tracking-widest text-primary-foreground">
+            Plano NexFit
+          </span>
         </div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">
-          Acesso Bloqueado
-        </h2>
-        <p className="text-muted-foreground">
-          Assine o plano para desbloquear todas as funcionalidades do app.
-        </p>
-      </div>
 
-      <Card className="border-primary/30 shadow-xl overflow-hidden">
-        <div className="bg-gradient-to-r from-primary to-primary/80 p-4">
-          <div className="flex items-center gap-2 text-primary-foreground">
-            <Crown className="w-5 h-5" />
-            <span className="font-semibold text-sm uppercase tracking-wide">Plano NexFit</span>
+        <CardContent className="px-6 py-8 space-y-6">
+          {/* Price */}
+          <div className="text-center">
+            <div className="flex items-baseline justify-center gap-1">
+              <span className="text-4xl font-extrabold text-foreground">R$29</span>
+              <span className="text-2xl font-bold text-muted-foreground">,90</span>
+              <span className="text-sm text-muted-foreground font-medium">/mês</span>
+            </div>
+            <p className="text-muted-foreground text-sm mt-2">
+              Tenha treino, dieta e acompanhamento completo.
+            </p>
           </div>
-        </div>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-baseline gap-1">
-            <span className="text-4xl font-bold">R$29</span>
-            <span className="text-2xl font-bold text-muted-foreground">,90</span>
-            <span className="text-muted-foreground text-sm font-normal">/mês</span>
-          </CardTitle>
-          <CardDescription>Acesso completo a todas as funcionalidades</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+
+          {/* Features */}
           <ul className="space-y-3">
             {features.map((feature) => (
-              <li key={feature} className="flex items-center gap-3 text-sm">
+              <li key={feature} className="flex items-center gap-3 text-sm text-foreground">
                 <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />
                 <span>{feature}</span>
               </li>
             ))}
           </ul>
 
+          {/* Separator + motivational text */}
+          <div className="border-t border-border pt-4 text-center">
+            <p className="text-xs text-muted-foreground italic">
+              Menos que o preço de um lanche por semana.
+            </p>
+          </div>
+
+          {/* CTA */}
           <Button
             onClick={handleSubscribe}
             disabled={loading}
