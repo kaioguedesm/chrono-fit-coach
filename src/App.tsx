@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { SubscriptionProvider } from "@/hooks/useSubscription";
 import { ProtectedRoute } from "@/components/common/ProtectedRoute";
 import { AdminRoute } from "@/components/common/AdminRoute";
 import { RootRedirect } from "@/components/common/RootRedirect";
@@ -34,6 +35,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="nexfit-theme">
         <AuthProvider>
+          <SubscriptionProvider>
           <TooltipProvider>
             <Toaster />
             <Sonner />
@@ -88,6 +90,7 @@ const App = () => (
               </Routes>
             </BrowserRouter>
           </TooltipProvider>
+          </SubscriptionProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
