@@ -13,8 +13,6 @@ interface Profile {
   avatar_url: string | null;
   dietary_preferences: string[];
   dietary_restrictions: string[];
-  gym_id: string | null;
-  gym_name: string | null;
 }
 
 export function useProfile() {
@@ -42,31 +40,6 @@ export function useProfile() {
       if (error) throw error;
 
       if (data) {
-        // Buscar gym_id - primeiro da tabela profiles, depois de user_roles (para personal trainers)
-        let gymId: string | null = data.gym_id || null;
-
-        // Se não tiver gym_id no profile, verificar se é personal trainer e buscar de user_roles
-        if (!gymId) {
-          const { data: roleData } = await supabase
-            .from("user_roles")
-            .select("gym_id")
-            .eq("user_id", user.id)
-            .eq("role", "personal")
-            .maybeSingle();
-
-          if (roleData?.gym_id) {
-            gymId = roleData.gym_id;
-          }
-        }
-
-        // Buscar nome da academia se houver gym_id
-        let gymName: string | null = null;
-        if (gymId) {
-          const { data: gymData } = await supabase.from("gyms").select("name").eq("id", gymId).maybeSingle();
-
-          gymName = gymData?.name || null;
-        }
-
         setProfile({
           name: data.name || "",
           age: data.age,
@@ -78,8 +51,6 @@ export function useProfile() {
           avatar_url: data.avatar_url,
           dietary_preferences: data.dietary_preferences || [],
           dietary_restrictions: data.dietary_restrictions || [],
-          gym_id: gymId,
-          gym_name: gymName,
         });
       }
     } catch (err) {
@@ -94,13 +65,14 @@ export function useProfile() {
     if (!user) return { error: new Error("No user logged in") };
 
     try {
-      const { error } = await supabase
+      console.log("[updateProfile] sending updates:", JSON.stringify(updates));
+      const { error, data: updateData } = await supabase
         .from("profiles")
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id);
+        .update(updates)
+        .eq("user_id", user.id)
+        .select();
+
+      console.log("[updateProfile] error:", JSON.stringify(error), "data:", updateData);
 
       if (error) throw error;
 
