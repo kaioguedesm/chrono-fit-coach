@@ -74,10 +74,13 @@ const Index = () => {
     }
   };
 
-  // Personal trainers skip paywall
-  const needsPaywall = !isPersonal && !subscribed && !subLoading;
+  // Show loading while auth, role, or subscription status is being determined
+  const isLoading = roleLoading || subLoading;
 
-  if (subLoading && !roleLoading) {
+  // Personal trainers skip paywall - only determine after loading is complete
+  const needsPaywall = !isLoading && !isPersonal && !subscribed;
+
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
