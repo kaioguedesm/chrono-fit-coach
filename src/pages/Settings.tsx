@@ -398,12 +398,7 @@ export default function Settings() {
                 {section.items.map((item, itemIndex) => (
                   <div key={itemIndex}>
                     <div className="flex items-center justify-between py-2">
-                      <Label
-                        className="text-sm font-normal cursor-pointer flex-1"
-                        onClick={!item.hasSwitch ? item.action : undefined}
-                      >
-                        {item.label}
-                      </Label>
+                      <Label className="text-sm font-normal cursor-pointer">{item.label}</Label>
                       {item.hasSwitch ? (
                         <Switch checked={item.value || false} onCheckedChange={item.onChange} />
                       ) : (
