@@ -466,6 +466,7 @@ export type Database = {
           dietary_preferences: string[] | null
           dietary_restrictions: string[] | null
           experience_level: string | null
+          free_access: boolean
           gender: string | null
           goal: string | null
           gym_id: string | null
@@ -483,6 +484,7 @@ export type Database = {
           dietary_preferences?: string[] | null
           dietary_restrictions?: string[] | null
           experience_level?: string | null
+          free_access?: boolean
           gender?: string | null
           goal?: string | null
           gym_id?: string | null
@@ -500,6 +502,7 @@ export type Database = {
           dietary_preferences?: string[] | null
           dietary_restrictions?: string[] | null
           experience_level?: string | null
+          free_access?: boolean
           gender?: string | null
           goal?: string | null
           gym_id?: string | null
