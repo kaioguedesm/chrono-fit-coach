@@ -19,7 +19,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const hasCheckedRef = useRef(false);
 
   const checkSubscription = useCallback(async () => {
-    if (!session?.access_token) {
+    if (!session?.access_token || !user?.id) {
       setSubscribed(false);
       setLoading(false);
       return;
@@ -27,14 +27,28 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
     try {
       setLoading(true);
+
+      // Check free_access flag in profiles first (fast, no edge function call)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('free_access')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (profile?.free_access === true) {
+        hasCheckedRef.current = true;
+        setSubscribed(true);
+        setSubscriptionEnd(null);
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
       if (error) {
         console.error('[Subscription] Function error:', error);
-        // If we already had a successful check before, keep the previous state
-        // to avoid flashing the paywall on transient errors
         if (!hasCheckedRef.current) {
           setSubscribed(false);
         }
@@ -51,7 +65,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [session?.access_token]);
+  }, [session?.access_token, user?.id]);
 
   // Don't check subscription until auth is fully loaded
   useEffect(() => {
