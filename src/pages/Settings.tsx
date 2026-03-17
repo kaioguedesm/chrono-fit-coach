@@ -102,13 +102,13 @@ export default function Settings() {
 
   const handleUpdateProfile = async () => {
     const { error } = await updateProfile({
-      name,
-      age,
-      gender,
-      weight,
-      height,
-      goal,
-      experience_level: experienceLevel,
+      name: name.trim() || "Usuário",
+      age: age || null,
+      gender: gender || null,
+      weight: weight || null,
+      height: height || null,
+      goal: goal || null,
+      experience_level: experienceLevel || null,
     });
 
     if (!error) {
