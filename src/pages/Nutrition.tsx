@@ -237,6 +237,18 @@ export default function Nutrition() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => {
+                              setPlanToSwap({ id: plan.id, title: plan.title });
+                              setSwapModalOpen(true);
+                            }}
+                            className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                            title="Trocar alimentos com IA"
+                          >
+                            <Repeat className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => confirmDeletePlan(plan.id)}
                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             title="Excluir dieta"
