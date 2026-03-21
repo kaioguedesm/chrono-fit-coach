@@ -90,7 +90,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   // Auto-refresh every 60s
   useEffect(() => {
     if (!user || !session?.access_token) return;
-    const interval = setInterval(checkSubscription, 60000);
+    const interval = setInterval(() => checkSubscription(true), 60000);
     return () => clearInterval(interval);
   }, [user, session?.access_token, checkSubscription]);
 
