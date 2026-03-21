@@ -75,6 +75,8 @@ export default function Nutrition() {
   const [planToDelete, setPlanToDelete] = useState<string | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [planToEdit, setPlanToEdit] = useState<string | null>(null);
+  const [swapModalOpen, setSwapModalOpen] = useState(false);
+  const [planToSwap, setPlanToSwap] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
     if (user) {
