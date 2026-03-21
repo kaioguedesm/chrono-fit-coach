@@ -56,47 +56,41 @@ export function FrequencyReport() {
       const monthStart = startOfMonth(now);
       const monthEnd = endOfMonth(now);
 
-      // Weekly completed workouts
-      const { data: weeklyData } = await supabase
-        .from('workout_schedule')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('completed', true)
-        .gte('scheduled_date', weekStart.toISOString().split('T')[0])
-        .lte('scheduled_date', weekEnd.toISOString().split('T')[0]);
-
-      // Monthly completed workouts
-      const { data: monthlyData } = await supabase
-        .from('workout_schedule')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('completed', true)
-        .gte('scheduled_date', monthStart.toISOString().split('T')[0])
-        .lte('scheduled_date', monthEnd.toISOString().split('T')[0]);
-
-      // Total scheduled this month
-      const { data: scheduledData } = await supabase
-        .from('workout_schedule')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('scheduled_date', monthStart.toISOString().split('T')[0])
-        .lte('scheduled_date', monthEnd.toISOString().split('T')[0]);
-
-      // Last workout
-      const { data: lastWorkoutData } = await supabase
-        .from('workout_schedule')
+      // Fetch completed workout sessions (real completed workouts)
+      const { data: sessions } = await supabase
+        .from('workout_sessions')
         .select('completed_at')
         .eq('user_id', user.id)
-        .eq('completed', true)
-        .order('completed_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .not('completed_at', 'is', null)
+        .order('completed_at', { ascending: false });
+
+      const allSessions = sessions || [];
+
+      // Weekly completed sessions
+      const weeklySessions = allSessions.filter(s => {
+        const d = new Date(s.completed_at!);
+        return d >= weekStart && d <= weekEnd;
+      });
+
+      // Monthly completed sessions
+      const monthlySessions = allSessions.filter(s => {
+        const d = new Date(s.completed_at!);
+        return d >= monthStart && d <= monthEnd;
+      });
+
+      // Total scheduled this month (from workout_schedule)
+      const { data: scheduledData } = await supabase
+        .from('workout_schedule')
+        .select('id')
+        .eq('user_id', user.id)
+        .gte('scheduled_date', monthStart.toISOString().split('T')[0])
+        .lte('scheduled_date', monthEnd.toISOString().split('T')[0]);
 
       setStats({
-        weeklyCount: weeklyData?.length || 0,
-        monthlyCount: monthlyData?.length || 0,
+        weeklyCount: weeklySessions.length,
+        monthlyCount: monthlySessions.length,
         totalScheduled: scheduledData?.length || 0,
-        lastWorkout: lastWorkoutData?.completed_at || null
+        lastWorkout: allSessions.length > 0 ? allSessions[0].completed_at : null
       });
     } catch (error: any) {
       console.error('Error fetching stats:', error);
