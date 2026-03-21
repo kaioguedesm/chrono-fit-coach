@@ -26,6 +26,7 @@ import { LoadingState } from "@/components/common/LoadingState";
 import { EmptyState } from "@/components/common/EmptyState";
 import { NutritionApprovalBadge } from "@/components/nutrition/NutritionApprovalBadge";
 import { EditNutritionPlanModal } from "@/components/nutrition/EditNutritionPlanModal";
+import { FoodSwapModal } from "@/components/nutrition/FoodSwapModal";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
 
