@@ -208,52 +208,55 @@ export default function Nutrition() {
                 {nutritionPlans.map((plan) => (
                   <Card key={plan.id}>
                     <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="flex items-center gap-2">
-                          <Apple className="w-5 h-5" />
-                          {plan.title}
-                        </CardTitle>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start gap-2">
+                          <CardTitle className="flex items-center gap-2 text-base sm:text-lg leading-tight">
+                            <Apple className="w-5 h-5 shrink-0" />
+                            <span className="line-clamp-2">{plan.title}</span>
+                          </CardTitle>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {plan.approval_status && plan.created_by === "ai" && (
+                              <NutritionApprovalBadge
+                                status={plan.approval_status}
+                                rejectionReason={plan.rejection_reason}
+                              />
+                            )}
+                            {(!plan.approval_status || plan.approval_status === "approved") && (
+                              <Badge variant={plan.created_by === "ai" ? "default" : "secondary"} className="text-xs whitespace-nowrap">
+                                {plan.created_by === "ai" ? "IA" : "Custom"}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
                         <div className="flex items-center gap-1">
-                          {plan.approval_status && plan.created_by === "ai" && (
-                            <NutritionApprovalBadge
-                              status={plan.approval_status}
-                              rejectionReason={plan.rejection_reason}
-                            />
-                          )}
-                          {(!plan.approval_status || plan.approval_status === "approved") && (
-                            <Badge variant={plan.created_by === "ai" ? "default" : "secondary"}>
-                              {plan.created_by === "ai" ? "IA Nutricional" : "Personalizado"}
-                            </Badge>
-                          )}
                           <Button
-                            variant="ghost"
-                            size="icon"
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleEditPlan(plan.id)}
-                            className="text-muted-foreground hover:text-primary hover:bg-primary/10"
-                            title="Editar dieta"
+                            className="flex-1 gap-1.5 text-xs h-8"
                           >
-                            <Pencil className="w-4 h-4" />
+                            <Pencil className="w-3.5 h-3.5" />
+                            Editar
                           </Button>
                           <Button
-                            variant="ghost"
-                            size="icon"
+                            variant="outline"
+                            size="sm"
                             onClick={() => {
                               setPlanToSwap({ id: plan.id, title: plan.title });
                               setSwapModalOpen(true);
                             }}
-                            className="text-muted-foreground hover:text-primary hover:bg-primary/10"
-                            title="Trocar alimentos com IA"
+                            className="flex-1 gap-1.5 text-xs h-8"
                           >
-                            <Repeat className="w-4 h-4" />
+                            <Repeat className="w-3.5 h-3.5" />
+                            Trocar
                           </Button>
                           <Button
-                            variant="ghost"
-                            size="icon"
+                            variant="outline"
+                            size="sm"
                             onClick={() => confirmDeletePlan(plan.id)}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            title="Excluir dieta"
+                            className="gap-1.5 text-xs h-8 text-destructive border-destructive/30 hover:bg-destructive/10"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </div>
                       </div>
