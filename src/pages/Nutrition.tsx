@@ -17,7 +17,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Apple, Upload, Trash2, Pencil } from "lucide-react";
+import { Apple, Upload, Trash2, Pencil, Repeat } from "lucide-react";
 import { AINutritionGenerator } from "@/components/nutrition/AINutritionGenerator";
 import { MealPhotoAnalyzer } from "@/components/nutrition/MealPhotoAnalyzer";
 import { DietUploader } from "@/components/nutrition/DietUploader";
@@ -26,6 +26,7 @@ import { LoadingState } from "@/components/common/LoadingState";
 import { EmptyState } from "@/components/common/EmptyState";
 import { NutritionApprovalBadge } from "@/components/nutrition/NutritionApprovalBadge";
 import { EditNutritionPlanModal } from "@/components/nutrition/EditNutritionPlanModal";
+import { FoodSwapModal } from "@/components/nutrition/FoodSwapModal";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
 
@@ -74,6 +75,8 @@ export default function Nutrition() {
   const [planToDelete, setPlanToDelete] = useState<string | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [planToEdit, setPlanToEdit] = useState<string | null>(null);
+  const [swapModalOpen, setSwapModalOpen] = useState(false);
+  const [planToSwap, setPlanToSwap] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -234,6 +237,18 @@ export default function Nutrition() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => {
+                              setPlanToSwap({ id: plan.id, title: plan.title });
+                              setSwapModalOpen(true);
+                            }}
+                            className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                            title="Trocar alimentos com IA"
+                          >
+                            <Repeat className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => confirmDeletePlan(plan.id)}
                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             title="Excluir dieta"
@@ -380,6 +395,20 @@ export default function Nutrition() {
             if (!open) setPlanToEdit(null);
           }}
           nutritionPlanId={planToEdit}
+          onSuccess={fetchNutritionPlans}
+        />
+      )}
+
+      {/* Food Swap Modal */}
+      {planToSwap && (
+        <FoodSwapModal
+          open={swapModalOpen}
+          onOpenChange={(open) => {
+            setSwapModalOpen(open);
+            if (!open) setPlanToSwap(null);
+          }}
+          nutritionPlanId={planToSwap.id}
+          planTitle={planToSwap.title}
           onSuccess={fetchNutritionPlans}
         />
       )}
