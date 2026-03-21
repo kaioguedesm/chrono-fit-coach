@@ -398,6 +398,20 @@ export default function Nutrition() {
           onSuccess={fetchNutritionPlans}
         />
       )}
+
+      {/* Food Swap Modal */}
+      {planToSwap && (
+        <FoodSwapModal
+          open={swapModalOpen}
+          onOpenChange={(open) => {
+            setSwapModalOpen(open);
+            if (!open) setPlanToSwap(null);
+          }}
+          nutritionPlanId={planToSwap.id}
+          planTitle={planToSwap.title}
+          onSuccess={fetchNutritionPlans}
+        />
+      )}
     </div>
   );
 }
