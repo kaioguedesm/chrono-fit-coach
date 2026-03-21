@@ -18,7 +18,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const hasCheckedRef = useRef(false);
 
-  const checkSubscription = useCallback(async () => {
+  const checkSubscription = useCallback(async (isBackground = false) => {
     if (!session?.access_token || !user?.id) {
       setSubscribed(false);
       setLoading(false);
@@ -26,7 +26,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      setLoading(true);
+      // Only show loading spinner on initial check, not background refreshes
+      if (!isBackground) {
+        setLoading(true);
+      }
 
       // Check free_access flag in profiles first (fast, no edge function call)
       const { data: profile } = await supabase
@@ -39,7 +42,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         hasCheckedRef.current = true;
         setSubscribed(true);
         setSubscriptionEnd(null);
-        setLoading(false);
+        if (!isBackground) setLoading(false);
         return;
       }
 
@@ -63,7 +66,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         setSubscribed(false);
       }
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   }, [session?.access_token, user?.id]);
 
