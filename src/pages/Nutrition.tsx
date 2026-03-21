@@ -4,12 +4,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Apple, Upload, Bot, BookOpen, Plus, Trash2 } from "lucide-react";
+import { Apple, Upload, Trash2, Pencil } from "lucide-react";
 import { AINutritionGenerator } from "@/components/nutrition/AINutritionGenerator";
 import { MealPhotoAnalyzer } from "@/components/nutrition/MealPhotoAnalyzer";
 import { DietUploader } from "@/components/nutrition/DietUploader";
@@ -17,6 +25,7 @@ import { RecipeExplorer } from "@/components/nutrition/RecipeExplorer";
 import { LoadingState } from "@/components/common/LoadingState";
 import { EmptyState } from "@/components/common/EmptyState";
 import { NutritionApprovalBadge } from "@/components/nutrition/NutritionApprovalBadge";
+import { EditNutritionPlanModal } from "@/components/nutrition/EditNutritionPlanModal";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
 
@@ -61,6 +70,10 @@ export default function Nutrition() {
   const [nutritionPlans, setNutritionPlans] = useState<NutritionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("plans");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState<string | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [planToEdit, setPlanToEdit] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -74,12 +87,7 @@ export default function Nutrition() {
     try {
       const { data, error } = await supabase
         .from("nutrition_plans")
-        .select(
-          `
-          *,
-          meals (*)
-        `,
-        )
+        .select(`*, meals (*)`)
         .eq("user_id", user.id)
         .eq("is_active", true)
         .order("created_at", { ascending: false });
@@ -98,44 +106,6 @@ export default function Nutrition() {
     }
   };
 
-  // Sample data for demonstration
-  const samplePlans: NutritionPlan[] = [
-    {
-      id: "sample-1",
-      title: "Plano Emagrecimento",
-      description: "Dieta hipocalórica para perda de peso",
-      file_url: null,
-      created_by: "ai",
-      is_active: true,
-      meals: [
-        {
-          id: "1",
-          meal_type: "cafe_da_manha",
-          name: "Café da Manhã Proteico",
-          ingredients: ["2 ovos", "1 fatia pão integral", "1 xícara café", "Azeite de oliva"],
-          calories: 350,
-          protein: 25,
-          carbs: 30,
-          fat: 15,
-          instructions: "Prepare os ovos mexidos com pouco azeite",
-        },
-        {
-          id: "2",
-          meal_type: "almoco",
-          name: "Frango Grelhado com Legumes",
-          ingredients: ["150g peito de frango", "100g brócolis", "80g batata doce", "1 colher azeite"],
-          calories: 480,
-          protein: 40,
-          carbs: 35,
-          fat: 12,
-          instructions: "Grelhe o frango e refogue os legumes",
-        },
-      ],
-    },
-  ];
-
-  const displayPlans = nutritionPlans.length > 0 ? nutritionPlans : samplePlans;
-
   const getMealsByType = (meals: Meal[], type: string) => {
     return meals.filter((meal) => meal.meal_type === type);
   };
@@ -152,31 +122,26 @@ export default function Nutrition() {
     );
   };
 
-  const handleDeletePlan = async (planId: string) => {
-    if (!user) return;
+  const confirmDeletePlan = (planId: string) => {
+    setPlanToDelete(planId);
+    setDeleteDialogOpen(true);
+  };
 
-    // Não permitir deletar planos de exemplo
-    if (planId.startsWith("sample-")) {
-      toast({
-        title: "Atenção",
-        description: "Este é um plano de exemplo. Crie sua própria dieta para poder gerenciá-la.",
-        variant: "default",
-      });
-      return;
-    }
+  const handleDeletePlan = async () => {
+    if (!user || !planToDelete) return;
 
     try {
       const { error } = await supabase
         .from("nutrition_plans")
         .update({ is_active: false })
-        .eq("id", planId)
+        .eq("id", planToDelete)
         .eq("user_id", user.id);
 
       if (error) throw error;
 
       toast({
-        title: "Sucesso",
-        description: "Plano nutricional excluído com sucesso.",
+        title: "Dieta excluída ✅",
+        description: "Seu plano nutricional foi removido com sucesso.",
       });
 
       fetchNutritionPlans();
@@ -186,7 +151,15 @@ export default function Nutrition() {
         description: "Não foi possível excluir o plano nutricional.",
         variant: "destructive",
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setPlanToDelete(null);
     }
+  };
+
+  const handleEditPlan = (planId: string) => {
+    setPlanToEdit(planId);
+    setEditModalOpen(true);
   };
 
   if (loading || roleLoading) {
@@ -214,17 +187,11 @@ export default function Nutrition() {
           </TabsList>
 
           <TabsContent value="plans" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">Seus Planos Nutricionais</h2>
-              <Button size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Plano
-              </Button>
-            </div>
+            <h2 className="text-lg font-semibold">Seus Planos Nutricionais</h2>
 
             {loading ? (
               <LoadingState type="card" count={2} />
-            ) : displayPlans.length === 0 ? (
+            ) : nutritionPlans.length === 0 ? (
               <EmptyState
                 icon={Apple}
                 title="Nenhum plano nutricional"
@@ -235,15 +202,15 @@ export default function Nutrition() {
               />
             ) : (
               <div className="space-y-4">
-                {displayPlans.map((plan) => (
+                {nutritionPlans.map((plan) => (
                   <Card key={plan.id}>
                     <CardHeader>
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between items-start">
                         <CardTitle className="flex items-center gap-2">
                           <Apple className="w-5 h-5" />
                           {plan.title}
                         </CardTitle>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           {plan.approval_status && plan.created_by === "ai" && (
                             <NutritionApprovalBadge
                               status={plan.approval_status}
@@ -258,10 +225,20 @@ export default function Nutrition() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDeletePlan(plan.id)}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleEditPlan(plan.id)}
+                            className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                            title="Editar dieta"
                           >
-                            <Trash2 className="w-4 w-4" />
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => confirmDeletePlan(plan.id)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            title="Excluir dieta"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
@@ -275,7 +252,6 @@ export default function Nutrition() {
                     </CardHeader>
 
                     <CardContent className="space-y-4">
-                      {/* Daily Macros Summary */}
                       {plan.meals.length > 0 && (
                         <div className="grid grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
                           {(() => {
@@ -308,7 +284,6 @@ export default function Nutrition() {
                         </div>
                       )}
 
-                      {/* Meals by Type */}
                       <div className="space-y-3">
                         {mealTypes.map((mealType) => {
                           const mealsOfType = getMealsByType(plan.meals, mealType.key);
@@ -374,6 +349,40 @@ export default function Nutrition() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir plano nutricional?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta dieta? Essa ação não poderá ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeletePlan}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit Nutrition Plan Modal */}
+      {planToEdit && (
+        <EditNutritionPlanModal
+          open={editModalOpen}
+          onOpenChange={(open) => {
+            setEditModalOpen(open);
+            if (!open) setPlanToEdit(null);
+          }}
+          nutritionPlanId={planToEdit}
+          onSuccess={fetchNutritionPlans}
+        />
+      )}
     </div>
   );
 }
