@@ -18,7 +18,7 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
-  const [photoType, setPhotoType] = useState<'frente' | 'lado' | 'costas'>('frente');
+  const [photoType, setPhotoType] = useState<'front' | 'side' | 'back'>('front');
   const [description, setDescription] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -150,9 +150,9 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="frente">Frontal</SelectItem>
-              <SelectItem value="lado">Lateral</SelectItem>
-              <SelectItem value="costas">Costas</SelectItem>
+              <SelectItem value="front">Frontal</SelectItem>
+              <SelectItem value="side">Lateral</SelectItem>
+              <SelectItem value="back">Costas</SelectItem>
             </SelectContent>
           </Select>
         </div>
