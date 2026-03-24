@@ -12,8 +12,15 @@ export function SubscriptionPaywall() {
   const { toast } = useToast();
 
   const handleLogout = async () => {
-    await signOut();
-    window.location.href = '/auth';
+    // Force full sign out from Supabase first, then hard reload to /auth
+    // This avoids the auth listener re-triggering and redirecting back
+    try {
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch (e) {
+      console.error('Sign out error:', e);
+    }
+    // Hard reload clears all in-memory state (auth context, subscription context)
+    window.location.replace('/auth');
   };
 
   const handleSubscribe = async () => {
