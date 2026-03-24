@@ -73,25 +73,6 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
       description 
     });
 
-    // Validate all fields
-    try {
-      photoUploadSchema.parse({
-        file: selectedFile,
-        photo_type: photoType,
-        description: description || undefined,
-      });
-      console.log('Validação completa passou');
-    } catch (error: any) {
-      const errorMessage = error.errors?.[0]?.message || 'Dados inválidos';
-      console.error('Erro na validação completa:', error);
-      toast({
-        title: "Erro de validação",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      return;
-    }
-
     setUploading(true);
     try {
       const fileExt = selectedFile.name.split('.').pop();
