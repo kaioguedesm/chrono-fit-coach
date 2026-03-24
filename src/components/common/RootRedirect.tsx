@@ -1,21 +1,9 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
 export function RootRedirect() {
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading) {
-      if (user) {
-        navigate('/app', { replace: true });
-      } else {
-        navigate('/auth', { replace: true });
-      }
-    }
-  }, [user, loading, navigate]);
 
   if (loading) {
     return (
@@ -25,5 +13,5 @@ export function RootRedirect() {
     );
   }
 
-  return null;
+  return <Navigate to={user ? '/app' : '/auth'} replace />;
 }
