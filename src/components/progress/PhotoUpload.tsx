@@ -29,16 +29,21 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
 
     console.log('Arquivo selecionado:', file.name, file.size, file.type);
 
-    // Validate file
-    try {
-      photoUploadSchema.pick({ file: true }).parse({ file });
-      console.log('Validação do arquivo passou');
-    } catch (error: any) {
-      const errorMessage = error.errors?.[0]?.message || 'Arquivo inválido';
-      console.error('Erro na validação do arquivo:', error);
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
       toast({
         title: "Erro de validação",
-        description: errorMessage,
+        description: "Arquivo muito grande (máx 10MB)",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Accept any image type (including HEIC from mobile cameras)
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Erro de validação",
+        description: "Tipo de arquivo inválido. Selecione uma imagem.",
         variant: "destructive"
       });
       return;
