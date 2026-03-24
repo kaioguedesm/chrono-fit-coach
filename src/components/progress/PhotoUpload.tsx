@@ -150,9 +150,9 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="frente">Frontal</SelectItem>
-              <SelectItem value="lado">Lateral</SelectItem>
-              <SelectItem value="costas">Costas</SelectItem>
+              <SelectItem value="front">Frontal</SelectItem>
+              <SelectItem value="side">Lateral</SelectItem>
+              <SelectItem value="back">Costas</SelectItem>
             </SelectContent>
           </Select>
         </div>
