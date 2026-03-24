@@ -8,8 +8,13 @@ import { useToast } from '@/hooks/use-toast';
 
 export function SubscriptionPaywall() {
   const [loading, setLoading] = useState(false);
-  const { session } = useAuth();
+  const { session, signOut } = useAuth();
   const { toast } = useToast();
+
+  const handleLogout = async () => {
+    await signOut();
+    window.location.href = '/auth';
+  };
 
   const handleSubscribe = async () => {
     if (!session?.access_token) return;
