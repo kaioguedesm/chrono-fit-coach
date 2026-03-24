@@ -1,15 +1,20 @@
 import { useState } from 'react';
-import { Lock, CreditCard, CheckCircle2, Loader2, Crown } from 'lucide-react';
+import { CreditCard, CheckCircle2, Loader2, Crown, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 export function SubscriptionPaywall() {
   const [loading, setLoading] = useState(false);
-  const { session } = useAuth();
+  const { session, signOut } = useAuth();
   const { toast } = useToast();
+
+  const handleLogout = async () => {
+    await signOut();
+    window.location.href = '/auth';
+  };
 
   const handleSubscribe = async () => {
     if (!session?.access_token) return;
@@ -105,6 +110,15 @@ export function SubscriptionPaywall() {
           <p className="text-xs text-muted-foreground text-center">
             Pagamento seguro via Stripe. Cancele a qualquer momento.
           </p>
+
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+            className="w-full text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sair e voltar ao login
+          </Button>
         </CardContent>
       </Card>
     </div>
