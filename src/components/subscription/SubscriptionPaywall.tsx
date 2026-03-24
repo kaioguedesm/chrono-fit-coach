@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Lock, CreditCard, CheckCircle2, Loader2, Crown } from 'lucide-react';
+import { CreditCard, CheckCircle2, Loader2, Crown, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
