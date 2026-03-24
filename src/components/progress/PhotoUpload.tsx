@@ -203,7 +203,7 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
             <Input
               id="photo-upload"
               type="file"
-              accept="image/jpeg,image/png,image/webp"
+              accept="image/*"
               className="hidden"
               onChange={handleFileSelect}
             />
