@@ -110,6 +110,15 @@ export function SubscriptionPaywall() {
           <p className="text-xs text-muted-foreground text-center">
             Pagamento seguro via Stripe. Cancele a qualquer momento.
           </p>
+
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+            className="w-full text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sair e voltar ao login
+          </Button>
         </CardContent>
       </Card>
     </div>
