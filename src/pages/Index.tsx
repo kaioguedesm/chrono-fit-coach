@@ -68,6 +68,8 @@ const Index = () => {
         return <Nutrition />;
       case "progress":
         return <Progress />;
+      case "transformation":
+        return <TransformationProjects />;
       case "settings":
         return <Settings />;
       default:

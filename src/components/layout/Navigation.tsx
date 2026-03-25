@@ -16,6 +16,7 @@ const baseNavigationItems = [
   { id: "schedule", label: "Agenda", icon: Calendar },
   { id: "nutrition", label: "Nutrição", icon: Apple },
   { id: "progress", label: "Progresso", icon: BarChart3 },
+  { id: "transformation", label: "Projeto", icon: Rocket },
   { id: "settings", label: "Config", icon: Settings },
 ];
 
