@@ -9,6 +9,7 @@ import Schedule from "./Schedule";
 import Nutrition from "./Nutrition";
 import Progress from "./Progress";
 import Settings from "./Settings";
+import TransformationProjects from "./TransformationProjects";
 import PersonalArea from "./PersonalArea";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
