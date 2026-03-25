@@ -38,11 +38,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         .eq('user_id', user.id)
         .maybeSingle();
 
+      console.log('[Subscription] Profile free_access check:', { free_access: profile?.free_access, profileFound: !!profile });
+
       if (profile?.free_access === true) {
         hasCheckedRef.current = true;
         setSubscribed(true);
         setSubscriptionEnd(null);
         if (!isBackground) setLoading(false);
+        console.log('[Subscription] Free access granted, skipping edge function');
         return;
       }
 

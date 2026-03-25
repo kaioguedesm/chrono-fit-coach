@@ -393,6 +393,16 @@ export default function Workout() {
 
   const displayPlans = workoutPlans.length > 0 ? workoutPlans : samplePlans;
 
+  console.log('[Workout] Debug:', { 
+    userId: user?.id, 
+    isPersonal, 
+    canCreateWithoutPersonal, 
+    workoutPlansCount: workoutPlans.length, 
+    loading, 
+    roleLoading,
+    displayingRealPlans: workoutPlans.length > 0
+  });
+
   if (loading || roleLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
