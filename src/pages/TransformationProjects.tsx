@@ -35,9 +35,7 @@ export default function TransformationProjects() {
       <ProjectCompletion
         project={activeProject}
         completedDays={completedDays}
-        onStartNew={() => {
-          refetch();
-        }}
+        onStartNew={(days: number) => startProject(days)}
       />
     );
   }
