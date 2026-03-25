@@ -54,10 +54,20 @@ export function ProjectCompletion({ project, completedDays, onStartNew }: Projec
       </Card>
 
       {/* Start New */}
-      <Button onClick={onStartNew} size="lg" className="w-full h-12">
-        <RotateCcw className="w-4 h-4 mr-2" />
-        Iniciar novo projeto
-      </Button>
+      <div className="space-y-2">
+        {[30, 45, 60, 90].map((days) => (
+          <Button
+            key={days}
+            onClick={() => onStartNew(days)}
+            variant={days === 30 ? "default" : "outline"}
+            size="lg"
+            className="w-full"
+          >
+            <RotateCcw className="w-4 h-4 mr-2" />
+            Iniciar projeto de {days} dias
+          </Button>
+        ))}
+      </div>
     </div>
   );
 }
