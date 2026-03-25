@@ -607,6 +607,77 @@ export type Database = {
         }
         Relationships: []
       }
+      transformation_checkins: {
+        Row: {
+          checked_at: string
+          created_at: string
+          day_number: number
+          id: string
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          checked_at?: string
+          created_at?: string
+          day_number: number
+          id?: string
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          checked_at?: string
+          created_at?: string
+          day_number?: number
+          id?: string
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transformation_checkins_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "transformation_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transformation_projects: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_streak: number
+          duration_days: number
+          id: string
+          max_streak: number
+          started_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_streak?: number
+          duration_days: number
+          id?: string
+          max_streak?: number
+          started_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_streak?: number
+          duration_days?: number
+          id?: string
+          max_streak?: number
+          started_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_type: string
