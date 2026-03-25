@@ -6,7 +6,7 @@ import { TransformationProject } from "@/hooks/useTransformationProject";
 interface ProjectCompletionProps {
   project: TransformationProject;
   completedDays: number;
-  onStartNew: () => void;
+  onStartNew: (days: number) => void;
 }
 
 export function ProjectCompletion({ project, completedDays, onStartNew }: ProjectCompletionProps) {
