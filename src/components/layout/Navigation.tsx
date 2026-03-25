@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { Home, User, Dumbbell, Calendar, Apple, BarChart3, Settings, Shield } from "lucide-react";
+import { Home, User, Dumbbell, Calendar, Apple, BarChart3, Settings, Shield, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
