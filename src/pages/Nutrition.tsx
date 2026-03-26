@@ -17,7 +17,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Apple, Upload, Trash2, Pencil, Repeat } from "lucide-react";
+import { Apple, Upload, Trash2, Pencil, Repeat, Lock } from "lucide-react";
 import { AINutritionGenerator } from "@/components/nutrition/AINutritionGenerator";
 import { MealPhotoAnalyzer } from "@/components/nutrition/MealPhotoAnalyzer";
 import { DietUploader } from "@/components/nutrition/DietUploader";
@@ -185,12 +185,24 @@ export default function Nutrition() {
       <Header title="Nutrição" />
 
       <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={(val) => {
+            if ((val === 'create' || val === 'photo') && !isPremium) {
+              setPaywallOpen(true);
+              return;
+            }
+            setActiveTab(val);
+          }} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="plans">Planos</TabsTrigger>
-            <TabsTrigger value="photo">Foto IA</TabsTrigger>
+            <TabsTrigger value="photo">
+              {!isPremium && <Lock className="w-3.5 h-3.5 mr-1" />}
+              Foto IA
+            </TabsTrigger>
             <TabsTrigger value="recipes">Receitas</TabsTrigger>
-            <TabsTrigger value="create">Criar</TabsTrigger>
+            <TabsTrigger value="create">
+              {!isPremium && <Lock className="w-3.5 h-3.5 mr-1" />}
+              Criar
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="plans" className="space-y-4">

@@ -24,7 +24,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical, Edit, Dumbbell } from "lucide-react";
+import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical, Edit, Dumbbell, Lock } from "lucide-react";
 import { ActiveWorkoutSession } from "@/components/workout/ActiveWorkoutSession";
 import { WorkoutHistory } from "@/components/workout/WorkoutHistory";
 import { CreateWorkoutForm } from "@/components/workout/CreateWorkoutForm";
@@ -477,7 +477,13 @@ export default function Workout() {
       <Header title="Treinos" />
 
       <div className="container mx-auto px-4 pt-28 py-8 pb-20 space-y-8 max-w-7xl">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={(val) => {
+            if (val === 'create' && !isPremium) {
+              setPaywallOpen(true);
+              return;
+            }
+            setActiveTab(val);
+          }} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="plans">
               <Play className="w-4 h-4 mr-1" />
@@ -488,7 +494,7 @@ export default function Workout() {
               Histórico
             </TabsTrigger>
             <TabsTrigger value="create">
-              <Plus className="w-4 h-4 mr-1" />
+              {!isPremium ? <Lock className="w-4 h-4 mr-1" /> : <Plus className="w-4 h-4 mr-1" />}
               Criar
             </TabsTrigger>
           </TabsList>
