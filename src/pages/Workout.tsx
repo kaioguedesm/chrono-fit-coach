@@ -490,8 +490,15 @@ export default function Workout() {
           </TabsList>
 
           <TabsContent value="plans" className="space-y-4">
-            {/* AI Workout Generator - personal ou Portal 01 */}
-            {canCreateWithoutPersonal && <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />}
+            {/* AI Workout Generator - with paywall for free users */}
+            {canCreateWithoutPersonal && (
+              <div className="relative">
+                {!isPremium && <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Gere treinos personalizados com IA" />}
+                <div className={!isPremium ? "pointer-events-none" : ""}>
+                  <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />
+                </div>
+              </div>
+            )}
 
             {/* My Workouts Section */}
             <div className="flex justify-between items-center">
