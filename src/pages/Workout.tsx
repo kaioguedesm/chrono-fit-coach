@@ -73,6 +73,7 @@ export default function Workout() {
   const { toast } = useToast();
   const { isPersonal, loading: roleLoading } = useUserRole();
   const { canCreateWithoutPersonal } = useCanCreateWithoutPersonal();
+  const { isPremium, paywallOpen, setPaywallOpen, requirePremium } = usePaywall();
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("plans");
