@@ -29,6 +29,9 @@ import { EditNutritionPlanModal } from "@/components/nutrition/EditNutritionPlan
 import { FoodSwapModal } from "@/components/nutrition/FoodSwapModal";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
+import { PremiumLockOverlay } from "@/components/subscription/PremiumLockOverlay";
 
 interface NutritionPlan {
   id: string;
@@ -68,6 +71,7 @@ export default function Nutrition() {
   const { toast } = useToast();
   const { isPersonal, loading: roleLoading } = useUserRole();
   const { canCreateWithoutPersonal } = useCanCreateWithoutPersonal();
+  const { isPremium, paywallOpen, setPaywallOpen, requirePremium } = usePaywall();
   const [nutritionPlans, setNutritionPlans] = useState<NutritionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("plans");
@@ -347,10 +351,13 @@ export default function Nutrition() {
 
           <TabsContent value="create" className="space-y-4">
             {canCreateWithoutPersonal ? (
-              <>
-                <AINutritionGenerator onSuccess={fetchNutritionPlans} />
-                <DietUploader />
-              </>
+              <div className="relative">
+                {!isPremium && <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Crie dietas personalizadas com IA" />}
+                <div className={!isPremium ? "pointer-events-none" : ""}>
+                  <AINutritionGenerator onSuccess={fetchNutritionPlans} />
+                  <DietUploader />
+                </div>
+              </div>
             ) : (
               <Card>
                 <CardHeader>
@@ -415,6 +422,8 @@ export default function Nutrition() {
           onSuccess={fetchNutritionPlans}
         />
       )}
+
+      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 }

@@ -38,6 +38,9 @@ import { LoadingState } from "@/components/common/LoadingState";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
 import { EmptyState } from "@/components/common/EmptyState";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
+import { PremiumLockOverlay } from "@/components/subscription/PremiumLockOverlay";
 
 interface WorkoutPlan {
   id: string;
@@ -70,6 +73,7 @@ export default function Workout() {
   const { toast } = useToast();
   const { isPersonal, loading: roleLoading } = useUserRole();
   const { canCreateWithoutPersonal } = useCanCreateWithoutPersonal();
+  const { isPremium, paywallOpen, setPaywallOpen, requirePremium } = usePaywall();
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("plans");
@@ -207,6 +211,10 @@ export default function Workout() {
 
   const startWorkout = async (plan: WorkoutPlan) => {
     if (!user) return;
+    if (!isPremium) {
+      setPaywallOpen(true);
+      return;
+    }
 
     // Check if workout needs refresh
     if (plan.needs_refresh) {
@@ -486,8 +494,15 @@ export default function Workout() {
           </TabsList>
 
           <TabsContent value="plans" className="space-y-4">
-            {/* AI Workout Generator - personal ou Portal 01 */}
-            {canCreateWithoutPersonal && <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />}
+            {/* AI Workout Generator - with paywall for free users */}
+            {canCreateWithoutPersonal && (
+              <div className="relative">
+                {!isPremium && <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Gere treinos personalizados com IA" />}
+                <div className={!isPremium ? "pointer-events-none" : ""}>
+                  <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />
+                </div>
+              </div>
+            )}
 
             {/* My Workouts Section */}
             <div className="flex justify-between items-center">
@@ -495,7 +510,7 @@ export default function Workout() {
                 <h2 className="text-xl font-bold">Seus Treinos</h2>
                 <p className="text-sm text-muted-foreground">Escolha um treino para começar</p>
               </div>
-              <Button size="sm" onClick={() => setActiveTab("create")}>
+              <Button size="sm" onClick={() => requirePremium(() => setActiveTab("create"))}>
                 <Plus className="w-4 h-4 mr-2" />
                 Novo
               </Button>
@@ -699,6 +714,8 @@ export default function Workout() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
       </div>
     </div>
   );
