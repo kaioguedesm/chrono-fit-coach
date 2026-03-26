@@ -71,6 +71,7 @@ export default function Nutrition() {
   const { toast } = useToast();
   const { isPersonal, loading: roleLoading } = useUserRole();
   const { canCreateWithoutPersonal } = useCanCreateWithoutPersonal();
+  const { isPremium, paywallOpen, setPaywallOpen, requirePremium } = usePaywall();
   const [nutritionPlans, setNutritionPlans] = useState<NutritionPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("plans");
