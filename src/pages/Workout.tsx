@@ -714,6 +714,8 @@ export default function Workout() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
       </div>
     </div>
   );
