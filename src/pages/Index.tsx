@@ -24,7 +24,7 @@ const Index = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
   const { isPersonal, loading: roleLoading } = useUserRole();
-  const { subscribed, loading: subLoading, checkSubscription } = useSubscription();
+  const { isPremium, loading: paywallLoading, paywallOpen, setPaywallOpen } = usePaywall();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
 
