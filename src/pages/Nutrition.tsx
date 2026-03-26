@@ -29,6 +29,9 @@ import { EditNutritionPlanModal } from "@/components/nutrition/EditNutritionPlan
 import { FoodSwapModal } from "@/components/nutrition/FoodSwapModal";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
+import { PremiumLockOverlay } from "@/components/subscription/PremiumLockOverlay";
 
 interface NutritionPlan {
   id: string;
