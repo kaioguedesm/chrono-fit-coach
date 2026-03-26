@@ -17,7 +17,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Apple, Upload, Trash2, Pencil, Repeat } from "lucide-react";
+import { Apple, Upload, Trash2, Pencil, Repeat, Lock } from "lucide-react";
 import { AINutritionGenerator } from "@/components/nutrition/AINutritionGenerator";
 import { MealPhotoAnalyzer } from "@/components/nutrition/MealPhotoAnalyzer";
 import { DietUploader } from "@/components/nutrition/DietUploader";
