@@ -204,7 +204,6 @@ export default function Nutrition() {
               Criar
             </TabsTrigger>
           </TabsList>
-          </TabsList>
 
           <TabsContent value="plans" className="space-y-4">
             <h2 className="text-lg font-semibold">Seus Planos Nutricionais</h2>
