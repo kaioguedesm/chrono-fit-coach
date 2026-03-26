@@ -211,6 +211,10 @@ export default function Workout() {
 
   const startWorkout = async (plan: WorkoutPlan) => {
     if (!user) return;
+    if (!isPremium) {
+      setPaywallOpen(true);
+      return;
+    }
 
     // Check if workout needs refresh
     if (plan.needs_refresh) {
