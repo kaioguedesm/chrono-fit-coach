@@ -33,7 +33,6 @@ const Index = () => {
     const checkoutStatus = searchParams.get("checkout");
     if (checkoutStatus === "success") {
       toast({ title: "🎉 Assinatura ativada!", description: "Bem-vindo ao NexFit! Aproveite todos os recursos." });
-      checkSubscription();
       setSearchParams({}, { replace: true });
     } else if (checkoutStatus === "cancel") {
       toast({ title: "Checkout cancelado", description: "Você pode assinar quando quiser.", variant: "destructive" });
