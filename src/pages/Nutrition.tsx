@@ -422,6 +422,8 @@ export default function Nutrition() {
           onSuccess={fetchNutritionPlans}
         />
       )}
+
+      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 }
