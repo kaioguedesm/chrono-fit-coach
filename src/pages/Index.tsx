@@ -76,11 +76,8 @@ const Index = () => {
     }
   };
 
-  // Show loading while auth, role, or subscription status is being determined
-  const isLoading = roleLoading || subLoading;
-
-  // Personal trainers skip paywall - only determine after loading is complete
-  const needsPaywall = !isLoading && !isPersonal && !subscribed;
+  // Show loading while auth or role is being determined
+  const isLoading = roleLoading || paywallLoading;
 
   if (isLoading) {
     return (
