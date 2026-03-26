@@ -506,7 +506,7 @@ export default function Workout() {
                 <h2 className="text-xl font-bold">Seus Treinos</h2>
                 <p className="text-sm text-muted-foreground">Escolha um treino para começar</p>
               </div>
-              <Button size="sm" onClick={() => setActiveTab("create")}>
+              <Button size="sm" onClick={() => requirePremium(() => setActiveTab("create"))}>
                 <Plus className="w-4 h-4 mr-2" />
                 Novo
               </Button>
