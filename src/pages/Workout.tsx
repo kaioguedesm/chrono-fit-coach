@@ -275,12 +275,44 @@ export default function Workout() {
     if (!planToDelete || !user) return;
 
     try {
-      // Delete exercises first (due to foreign key constraints)
-      const { error: exercisesError } = await supabase.from("exercises").delete().eq("workout_plan_id", planToDelete);
+      // 1. Delete exercise_sessions linked to workout_sessions of this plan
+      const { data: sessions } = await supabase
+        .from("workout_sessions")
+        .select("id")
+        .eq("workout_plan_id", planToDelete);
 
-      if (exercisesError) throw exercisesError;
+      if (sessions && sessions.length > 0) {
+        const sessionIds = sessions.map((s) => s.id);
+        await supabase.from("exercise_sessions").delete().in("workout_session_id", sessionIds);
+      }
 
-      // Then delete the workout plan
+      // 2. Delete workout_sessions
+      await supabase.from("workout_sessions").delete().eq("workout_plan_id", planToDelete);
+
+      // 3. Delete workout_schedule
+      await supabase.from("workout_schedule").delete().eq("workout_plan_id", planToDelete);
+
+      // 4. Delete workout_share_invites linked to shares of this plan
+      const { data: shares } = await supabase
+        .from("workout_shares")
+        .select("id")
+        .eq("workout_plan_id", planToDelete);
+
+      if (shares && shares.length > 0) {
+        const shareIds = shares.map((s) => s.id);
+        await supabase.from("workout_share_invites").delete().in("share_id", shareIds);
+      }
+
+      // 5. Delete workout_shares
+      await supabase.from("workout_shares").delete().eq("workout_plan_id", planToDelete);
+
+      // 6. Delete workout_plan_revisions
+      await supabase.from("workout_plan_revisions").delete().eq("workout_plan_id", planToDelete);
+
+      // 7. Delete exercises
+      await supabase.from("exercises").delete().eq("workout_plan_id", planToDelete);
+
+      // 8. Finally delete the workout plan
       const { error: planError } = await supabase.from("workout_plans").delete().eq("id", planToDelete);
 
       if (planError) throw planError;
