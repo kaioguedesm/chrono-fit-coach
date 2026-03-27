@@ -38,7 +38,7 @@ interface QuickActionsProps {
   isPremium?: boolean;
 }
 
-export function QuickActions({ onActionClick, isStartingWorkout }: QuickActionsProps) {
+export function QuickActions({ onActionClick, isStartingWorkout, isPremium = false }: QuickActionsProps) {
   return (
     <div className="space-y-5 md:space-y-4">
       <h3 className="text-lg md:text-base font-semibold text-foreground">
