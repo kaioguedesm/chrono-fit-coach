@@ -240,7 +240,7 @@ export default function Progress() {
       <Header title="Progresso" />
       
       <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl relative">
-        {!isPremium && <PremiumLockOverlay message="Acompanhe sua evolução com gráficos e fotos" onUnlock={() => setPaywallOpen(true)} />}
+        
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
