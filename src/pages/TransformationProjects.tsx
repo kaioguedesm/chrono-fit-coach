@@ -33,15 +33,13 @@ export default function TransformationProjects() {
     );
   }
 
-  if (!isPremium) {
-    return (
-      <div className="relative min-h-[60vh]">
-        <PremiumLockOverlay message="Inicie projetos de transformação de 30, 45, 60 ou 90 dias" onUnlock={() => setPaywallOpen(true)} />
-        <ProjectSelection onSelectProject={() => {}} />
-        <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
-      </div>
-    );
-  }
+  const handleSelectProject = (days: number) => {
+    if (!isPremium) {
+      setPaywallOpen(true);
+      return;
+    }
+    startProject(days);
+  };
 
   // Completed project view
   if (activeProject?.status === 'completed') {
