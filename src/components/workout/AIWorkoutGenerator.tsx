@@ -48,6 +48,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
 
   const generateWorkout = async () => {
     if (!user) return;
+    if (!isPremium) { setPaywallOpen(true); return; }
 
     if (!canCreateWithoutPersonal) {
       toast({

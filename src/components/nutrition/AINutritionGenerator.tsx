@@ -68,6 +68,7 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
 
   const generateNutritionPlan = async () => {
     if (!user) return;
+    if (!isPremium) { setPaywallOpen(true); return; }
 
     if (!canCreateWithoutPersonal) {
       toast({
