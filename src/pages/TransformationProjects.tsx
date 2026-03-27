@@ -70,5 +70,10 @@ export default function TransformationProjects() {
   }
 
   // No active project - show selection
-  return <ProjectSelection onSelectProject={startProject} />;
+  return (
+    <>
+      <ProjectSelection onSelectProject={handleSelectProject} />
+      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
+    </>
+  );
 }

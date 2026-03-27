@@ -502,7 +502,10 @@ export default function Schedule() {
                           {!workout.completed && (
                             <Button
                               size="sm"
-                              onClick={() => markAsCompleted(workout.id)}
+                              onClick={() => {
+                                if (!isPremium) { setPaywallOpen(true); return; }
+                                markAsCompleted(workout.id);
+                              }}
                             >
                               <Check className="w-4 h-4 mr-1" />
                               Concluir

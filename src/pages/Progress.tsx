@@ -689,7 +689,10 @@ export default function Progress() {
                   </div>
                 </div>
 
-                <Button onClick={saveMeasurement} className="w-full">
+                <Button onClick={() => {
+                  if (!isPremium) { setPaywallOpen(true); return; }
+                  saveMeasurement();
+                }} className="w-full">
                   <Plus className="w-4 h-4 mr-2" />
                   Salvar Medidas
                 </Button>

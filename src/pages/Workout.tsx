@@ -502,12 +502,7 @@ export default function Workout() {
           <TabsContent value="plans" className="space-y-4">
             {/* AI Workout Generator - with paywall for free users */}
             {canCreateWithoutPersonal && (
-              <div className="relative">
-                {!isPremium && <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Gere treinos personalizados com IA" />}
-                <div className={!isPremium ? "pointer-events-none" : ""}>
-                  <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />
-                </div>
-              </div>
+              <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />
             )}
 
             {/* My Workouts Section */}
