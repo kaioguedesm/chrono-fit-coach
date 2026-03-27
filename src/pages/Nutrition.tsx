@@ -185,13 +185,7 @@ export default function Nutrition() {
       <Header title="Nutrição" />
 
       <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl">
-        <Tabs value={activeTab} onValueChange={(val) => {
-            if ((val === 'create' || val === 'photo') && !isPremium) {
-              setPaywallOpen(true);
-              return;
-            }
-            setActiveTab(val);
-          }} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="plans">Planos</TabsTrigger>
             <TabsTrigger value="photo">
