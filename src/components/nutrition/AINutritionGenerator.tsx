@@ -173,6 +173,7 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
   const selectedMeals = mealsOptions.find((m) => m.value === mealsPerDay);
 
   return (
+    <>
     <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent">
       <CardHeader>
         <div className="flex items-center justify-between">

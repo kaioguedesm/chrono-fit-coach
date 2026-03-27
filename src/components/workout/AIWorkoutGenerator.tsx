@@ -138,6 +138,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
   const selectedMuscleGroup = muscleGroups.find((g) => g.value === muscleGroup);
 
   return (
+    <>
     <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent">
       <CardHeader>
         <div className="flex items-center justify-between">
