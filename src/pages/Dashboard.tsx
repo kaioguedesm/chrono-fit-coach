@@ -194,6 +194,8 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
           }}
         />
 
+        <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg md:text-base">
