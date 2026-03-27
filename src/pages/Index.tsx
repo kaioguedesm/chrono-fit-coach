@@ -80,9 +80,6 @@ const Index = () => {
   // Show loading while auth, role, or subscription status is being determined
   const isLoading = roleLoading || subLoading;
 
-  // Personal trainers skip paywall - only determine after loading is complete
-  const needsPaywall = !isLoading && !isPersonal && !subscribed;
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -93,9 +90,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 pb-24 pt-16 touch-manipulation">
-      <div className="h-full animate-fade-in">{needsPaywall ? <SubscriptionPaywall /> : renderActiveTab()}</div>
+      <div className="h-full animate-fade-in">{renderActiveTab()}</div>
       <InstallPWA />
-      {!needsPaywall && <Navigation activeTab={activeTab} onTabChange={setActiveTab} isPersonal={isPersonal} />}
+      <Navigation activeTab={activeTab} onTabChange={setActiveTab} isPersonal={isPersonal} />
     </div>
   );
 };
