@@ -35,6 +35,7 @@ const quickActions = [
 interface QuickActionsProps {
   onActionClick: (action: string) => void;
   isStartingWorkout?: boolean;
+  isPremium?: boolean;
 }
 
 export function QuickActions({ onActionClick, isStartingWorkout }: QuickActionsProps) {
