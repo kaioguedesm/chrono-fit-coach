@@ -376,7 +376,7 @@ export default function Schedule() {
       <Header title="Agenda" />
       
       <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl relative">
-        {!isPremium && <PremiumLockOverlay message="Agende seus treinos e acompanhe sua frequência" />}
+        {!isPremium && <PremiumLockOverlay message="Agende seus treinos e acompanhe sua frequência" onUnlock={() => setPaywallOpen(true)} />}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="schedule">Agenda</TabsTrigger>
