@@ -188,15 +188,9 @@ export default function Nutrition() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="plans">Planos</TabsTrigger>
-            <TabsTrigger value="photo">
-              {!isPremium && <Lock className="w-3.5 h-3.5 mr-1" />}
-              Foto IA
-            </TabsTrigger>
+            <TabsTrigger value="photo">Foto IA</TabsTrigger>
             <TabsTrigger value="recipes">Receitas</TabsTrigger>
-            <TabsTrigger value="create">
-              {!isPremium && <Lock className="w-3.5 h-3.5 mr-1" />}
-              Criar
-            </TabsTrigger>
+            <TabsTrigger value="create">Criar</TabsTrigger>
           </TabsList>
 
           <TabsContent value="plans" className="space-y-4">
