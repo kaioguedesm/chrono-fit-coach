@@ -57,8 +57,13 @@ export function QuickActions({ onActionClick, isStartingWorkout, isPremium = fal
               }`}
             >
               <CardContent className="p-5 md:p-4 flex flex-col items-start gap-4 md:gap-3">
-                <div className="w-12 h-12 md:w-11 md:h-11 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+                <div className="w-12 h-12 md:w-11 md:h-11 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors relative">
                   <Icon className="w-6 h-6 md:w-5 md:h-5 text-primary" strokeWidth={2} />
+                  {!isPremium && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-muted flex items-center justify-center">
+                      <Lock className="w-3 h-3 text-muted-foreground" />
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-1 md:space-y-0.5">
                   <p className="font-semibold text-base md:text-sm text-foreground leading-tight">{action.title}</p>
