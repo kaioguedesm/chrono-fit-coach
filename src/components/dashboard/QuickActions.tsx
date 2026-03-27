@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Plus, Camera, Timer } from "lucide-react";
+import { Play, Plus, Camera, Timer, Lock } from "lucide-react";
 
 const quickActions = [
   {
