@@ -36,6 +36,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
   const { profile } = useProfile();
   const { toast } = useToast();
   const { canCreateWithoutPersonal } = useCanCreateWithoutPersonal();
+  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const [generating, setGenerating] = useState(false);
   const [muscleGroup, setMuscleGroup] = useState("peito");
   const [duration, setDuration] = useState("60");
