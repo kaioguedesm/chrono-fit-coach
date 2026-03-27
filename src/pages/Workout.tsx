@@ -40,7 +40,7 @@ import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal
 import { EmptyState } from "@/components/common/EmptyState";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
-import { PremiumLockOverlay } from "@/components/subscription/PremiumLockOverlay";
+
 
 interface WorkoutPlan {
   id: string;

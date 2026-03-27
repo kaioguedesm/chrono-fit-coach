@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, TrendingDown, Scale, Ruler, Plus, Activity, Target, ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { usePaywall } from '@/hooks/usePaywall';
 import { PaywallModal } from '@/components/subscription/PaywallModal';
-import { PremiumLockOverlay } from '@/components/subscription/PremiumLockOverlay';
+
 import { LoadingState } from '@/components/common/LoadingState';
 import { EmptyState } from '@/components/common/EmptyState';
 import { 

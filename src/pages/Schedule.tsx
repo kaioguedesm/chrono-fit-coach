@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { usePaywall } from '@/hooks/usePaywall';
 import { PaywallModal } from '@/components/subscription/PaywallModal';
-import { PremiumLockOverlay } from '@/components/subscription/PremiumLockOverlay';
+
 import { 
   CalendarDays, 
   Check, 
