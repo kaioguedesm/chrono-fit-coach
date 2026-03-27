@@ -11,6 +11,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
 import { Badge } from "@/components/ui/badge";
 
 interface AIWorkoutGeneratorProps {
