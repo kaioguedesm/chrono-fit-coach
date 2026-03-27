@@ -64,6 +64,7 @@ interface NewMeasurement {
 }
 
 export default function Progress() {
+  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const { user } = useAuth();
   const { toast } = useToast();
   const { goals } = useGoals();
