@@ -79,6 +79,7 @@ export function MealPhotoAnalyzer() {
 
   const analyzePhoto = async () => {
     if (!selectedFile) return;
+    if (!isPremium) { setPaywallOpen(true); return; }
 
     setIsAnalyzing(true);
     try {
