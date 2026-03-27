@@ -24,7 +24,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical, Edit, Dumbbell, Lock } from "lucide-react";
+import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical, Edit, Dumbbell } from "lucide-react";
 import { ActiveWorkoutSession } from "@/components/workout/ActiveWorkoutSession";
 import { WorkoutHistory } from "@/components/workout/WorkoutHistory";
 import { CreateWorkoutForm } from "@/components/workout/CreateWorkoutForm";
@@ -40,7 +40,7 @@ import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal
 import { EmptyState } from "@/components/common/EmptyState";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PaywallModal } from "@/components/subscription/PaywallModal";
-import { PremiumLockOverlay } from "@/components/subscription/PremiumLockOverlay";
+
 
 interface WorkoutPlan {
   id: string;
@@ -477,13 +477,7 @@ export default function Workout() {
       <Header title="Treinos" />
 
       <div className="container mx-auto px-4 pt-28 py-8 pb-20 space-y-8 max-w-7xl">
-        <Tabs value={activeTab} onValueChange={(val) => {
-            if (val === 'create' && !isPremium) {
-              setPaywallOpen(true);
-              return;
-            }
-            setActiveTab(val);
-          }} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="plans">
               <Play className="w-4 h-4 mr-1" />
@@ -494,7 +488,7 @@ export default function Workout() {
               Histórico
             </TabsTrigger>
             <TabsTrigger value="create">
-              {!isPremium ? <Lock className="w-4 h-4 mr-1" /> : <Plus className="w-4 h-4 mr-1" />}
+              <Plus className="w-4 h-4 mr-1" />
               Criar
             </TabsTrigger>
           </TabsList>
@@ -502,12 +496,7 @@ export default function Workout() {
           <TabsContent value="plans" className="space-y-4">
             {/* AI Workout Generator - with paywall for free users */}
             {canCreateWithoutPersonal && (
-              <div className="relative">
-                {!isPremium && <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Gere treinos personalizados com IA" />}
-                <div className={!isPremium ? "pointer-events-none" : ""}>
-                  <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />
-                </div>
-              </div>
+              <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />
             )}
 
             {/* My Workouts Section */}

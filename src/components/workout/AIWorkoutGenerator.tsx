@@ -11,6 +11,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
 import { Badge } from "@/components/ui/badge";
 
 interface AIWorkoutGeneratorProps {
@@ -34,6 +36,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
   const { profile } = useProfile();
   const { toast } = useToast();
   const { canCreateWithoutPersonal } = useCanCreateWithoutPersonal();
+  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const [generating, setGenerating] = useState(false);
   const [muscleGroup, setMuscleGroup] = useState("peito");
   const [duration, setDuration] = useState("60");
@@ -45,6 +48,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
 
   const generateWorkout = async () => {
     if (!user) return;
+    if (!isPremium) { setPaywallOpen(true); return; }
 
     if (!canCreateWithoutPersonal) {
       toast({
@@ -134,6 +138,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
   const selectedMuscleGroup = muscleGroups.find((g) => g.value === muscleGroup);
 
   return (
+    <>
     <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent">
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -257,5 +262,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
         </Button>
       </CardContent>
     </Card>
+    <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
+    </>
   );
 }

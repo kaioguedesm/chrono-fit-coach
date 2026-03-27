@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, TrendingDown, Scale, Ruler, Plus, Activity, Target, ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { usePaywall } from '@/hooks/usePaywall';
 import { PaywallModal } from '@/components/subscription/PaywallModal';
-import { PremiumLockOverlay } from '@/components/subscription/PremiumLockOverlay';
+
 import { LoadingState } from '@/components/common/LoadingState';
 import { EmptyState } from '@/components/common/EmptyState';
 import { 
@@ -240,7 +240,7 @@ export default function Progress() {
       <Header title="Progresso" />
       
       <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl relative">
-        {!isPremium && <PremiumLockOverlay message="Acompanhe sua evolução com gráficos e fotos" onUnlock={() => setPaywallOpen(true)} />}
+        
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
@@ -689,7 +689,10 @@ export default function Progress() {
                   </div>
                 </div>
 
-                <Button onClick={saveMeasurement} className="w-full">
+                <Button onClick={() => {
+                  if (!isPremium) { setPaywallOpen(true); return; }
+                  saveMeasurement();
+                }} className="w-full">
                   <Plus className="w-4 h-4 mr-2" />
                   Salvar Medidas
                 </Button>

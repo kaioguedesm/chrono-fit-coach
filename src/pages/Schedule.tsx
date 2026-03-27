@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { usePaywall } from '@/hooks/usePaywall';
 import { PaywallModal } from '@/components/subscription/PaywallModal';
-import { PremiumLockOverlay } from '@/components/subscription/PremiumLockOverlay';
+
 import { 
   CalendarDays, 
   Check, 
@@ -376,7 +376,7 @@ export default function Schedule() {
       <Header title="Agenda" />
       
       <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl relative">
-        {!isPremium && <PremiumLockOverlay message="Agende seus treinos e acompanhe sua frequência" onUnlock={() => setPaywallOpen(true)} />}
+        
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="schedule">Agenda</TabsTrigger>
@@ -452,7 +452,10 @@ export default function Schedule() {
                     <CalendarDays className="w-5 h-5" />
                     {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
                   </CardTitle>
-                  <Button size="sm" onClick={() => setShowScheduleModal(true)}>
+                  <Button size="sm" onClick={() => {
+                    if (!isPremium) { setPaywallOpen(true); return; }
+                    setShowScheduleModal(true);
+                  }}>
                     <Plus className="w-4 h-4 mr-2" />
                     Agendar
                   </Button>
@@ -499,7 +502,10 @@ export default function Schedule() {
                           {!workout.completed && (
                             <Button
                               size="sm"
-                              onClick={() => markAsCompleted(workout.id)}
+                              onClick={() => {
+                                if (!isPremium) { setPaywallOpen(true); return; }
+                                markAsCompleted(workout.id);
+                              }}
                             >
                               <Check className="w-4 h-4 mr-1" />
                               Concluir
