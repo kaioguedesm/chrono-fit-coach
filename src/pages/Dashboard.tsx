@@ -159,7 +159,7 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
         
         <StreakCounter />
         
-        <QuickActions onActionClick={handleActionClick} isStartingWorkout={isStarting} />
+        <QuickActions onActionClick={handleActionClick} isStartingWorkout={isStarting} isPremium={isPremium} />
 
         <ProgressChart />
         
