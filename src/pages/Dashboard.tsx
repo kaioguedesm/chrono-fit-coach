@@ -52,6 +52,7 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
   const { profile } = useProfile();
   const navigate = useNavigate();
   const { quickStartWorkout, isStarting } = useQuickStartWorkout();
+  const { isPremium, paywallOpen, setPaywallOpen, requirePremium } = usePaywall();
   
   const [measurementModalOpen, setMeasurementModalOpen] = useState(false);
   const [timerModalOpen, setTimerModalOpen] = useState(false);
