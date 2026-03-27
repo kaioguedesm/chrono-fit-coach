@@ -392,5 +392,7 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
         </Button>
       </CardContent>
     </Card>
+    <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
+    </>
   );
 }

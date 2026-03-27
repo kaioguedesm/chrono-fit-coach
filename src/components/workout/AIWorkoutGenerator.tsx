@@ -261,5 +261,7 @@ export function AIWorkoutGenerator({ onSuccess }: AIWorkoutGeneratorProps) {
         </Button>
       </CardContent>
     </Card>
+    <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
+    </>
   );
 }
