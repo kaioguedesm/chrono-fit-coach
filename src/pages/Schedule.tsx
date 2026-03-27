@@ -71,6 +71,7 @@ interface FrequencyStats {
 }
 
 export default function Schedule() {
+  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
