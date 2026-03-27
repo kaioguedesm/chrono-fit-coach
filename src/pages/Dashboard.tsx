@@ -74,16 +74,16 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
 
     switch (action) {
       case 'start-workout':
-        setWorkoutModalOpen(true);
+        requirePremium(() => setWorkoutModalOpen(true));
         break;
       case 'add-measurements':
-        setMeasurementModalOpen(true);
+        requirePremium(() => setMeasurementModalOpen(true));
         break;
       case 'take-photo':
-        setPhotoModalOpen(true);
+        requirePremium(() => setPhotoModalOpen(true));
         break;
       case 'rest-timer':
-        setTimerModalOpen(true);
+        requirePremium(() => setTimerModalOpen(true));
         break;
       default:
         break;
