@@ -4,6 +4,9 @@ import { ProjectSelection } from "@/components/transformation/ProjectSelection";
 import { ProjectTracking } from "@/components/transformation/ProjectTracking";
 import { ProjectCompletion } from "@/components/transformation/ProjectCompletion";
 import { Loader2 } from "lucide-react";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
+import { PremiumLockOverlay } from "@/components/subscription/PremiumLockOverlay";
 
 export default function TransformationProjects() {
   const {

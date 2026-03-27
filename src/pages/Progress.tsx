@@ -738,6 +738,7 @@ export default function Progress() {
           </TabsContent>
         </Tabs>
       </div>
+      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 }
