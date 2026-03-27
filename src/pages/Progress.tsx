@@ -10,6 +10,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { TrendingUp, TrendingDown, Scale, Ruler, Plus, Activity, Target, ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { usePaywall } from '@/hooks/usePaywall';
+import { PaywallModal } from '@/components/subscription/PaywallModal';
+import { PremiumLockOverlay } from '@/components/subscription/PremiumLockOverlay';
 import { LoadingState } from '@/components/common/LoadingState';
 import { EmptyState } from '@/components/common/EmptyState';
 import { 
@@ -61,6 +64,7 @@ interface NewMeasurement {
 }
 
 export default function Progress() {
+  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const { user } = useAuth();
   const { toast } = useToast();
   const { goals } = useGoals();
@@ -235,7 +239,8 @@ export default function Progress() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Progresso" />
       
-      <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl">
+      <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl relative">
+        {!isPremium && <PremiumLockOverlay message="Acompanhe sua evolução com gráficos e fotos" onUnlock={() => setPaywallOpen(true)} />}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Visão Geral</TabsTrigger>
@@ -733,6 +738,7 @@ export default function Progress() {
           </TabsContent>
         </Tabs>
       </div>
+      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 }

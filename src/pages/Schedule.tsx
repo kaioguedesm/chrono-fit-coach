@@ -8,6 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { usePaywall } from '@/hooks/usePaywall';
+import { PaywallModal } from '@/components/subscription/PaywallModal';
+import { PremiumLockOverlay } from '@/components/subscription/PremiumLockOverlay';
 import { 
   CalendarDays, 
   Check, 
@@ -68,6 +71,7 @@ interface FrequencyStats {
 }
 
 export default function Schedule() {
+  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -371,7 +375,8 @@ export default function Schedule() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Agenda" />
       
-      <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl">
+      <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl relative">
+        {!isPremium && <PremiumLockOverlay message="Agende seus treinos e acompanhe sua frequência" onUnlock={() => setPaywallOpen(true)} />}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="schedule">Agenda</TabsTrigger>
@@ -734,6 +739,7 @@ export default function Schedule() {
           setRefreshKey(prev => prev + 1);
         }}
       />
+      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 }

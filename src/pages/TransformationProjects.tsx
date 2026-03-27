@@ -4,8 +4,12 @@ import { ProjectSelection } from "@/components/transformation/ProjectSelection";
 import { ProjectTracking } from "@/components/transformation/ProjectTracking";
 import { ProjectCompletion } from "@/components/transformation/ProjectCompletion";
 import { Loader2 } from "lucide-react";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
+import { PremiumLockOverlay } from "@/components/subscription/PremiumLockOverlay";
 
 export default function TransformationProjects() {
+  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const {
     activeProject,
     checkins,
@@ -25,6 +29,16 @@ export default function TransformationProjects() {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isPremium) {
+    return (
+      <div className="relative min-h-[60vh]">
+        <PremiumLockOverlay message="Inicie projetos de transformação de 30, 45, 60 ou 90 dias" onUnlock={() => setPaywallOpen(true)} />
+        <ProjectSelection onSelectProject={() => {}} />
+        <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
       </div>
     );
   }
