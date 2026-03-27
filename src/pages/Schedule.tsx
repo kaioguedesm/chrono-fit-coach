@@ -739,6 +739,7 @@ export default function Schedule() {
           setRefreshKey(prev => prev + 1);
         }}
       />
+      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 }
