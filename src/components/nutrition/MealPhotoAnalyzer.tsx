@@ -34,6 +34,7 @@ interface NutritionData {
 }
 
 export function MealPhotoAnalyzer() {
+  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [description, setDescription] = useState('');
