@@ -452,7 +452,10 @@ export default function Schedule() {
                     <CalendarDays className="w-5 h-5" />
                     {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
                   </CardTitle>
-                  <Button size="sm" onClick={() => setShowScheduleModal(true)}>
+                  <Button size="sm" onClick={() => {
+                    if (!isPremium) { setPaywallOpen(true); return; }
+                    setShowScheduleModal(true);
+                  }}>
                     <Plus className="w-4 h-4 mr-2" />
                     Agendar
                   </Button>
