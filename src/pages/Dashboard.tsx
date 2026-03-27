@@ -19,6 +19,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuickStartWorkout } from "@/hooks/useQuickStartWorkout";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
 
 const upcomingWorkouts = [
   {
