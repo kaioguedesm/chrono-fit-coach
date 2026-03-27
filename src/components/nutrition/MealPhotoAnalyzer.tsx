@@ -338,6 +338,7 @@ export function MealPhotoAnalyzer() {
           </Button>
         </Card>
       )}
+      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 }
