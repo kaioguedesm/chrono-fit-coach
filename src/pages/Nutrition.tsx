@@ -367,7 +367,7 @@ export default function Nutrition() {
                 <AINutritionGenerator onSuccess={fetchNutritionPlans} />
                 <DietUploader />
               </div>
-              </div>
+            
             ) : (
               <Card>
                 <CardHeader>
