@@ -49,6 +49,7 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
   const { profile, calculateIMC } = useProfile();
   const { toast } = useToast();
   const { canCreateWithoutPersonal } = useCanCreateWithoutPersonal();
+  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const [generating, setGenerating] = useState(false);
   const [dietType, setDietType] = useState("emagrecimento");
   const [mealsPerDay, setMealsPerDay] = useState("5");
