@@ -9,8 +9,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCanCreateWithoutPersonal } from "@/hooks/useCanCreateWithoutPersonal";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
-import { usePaywall } from "@/hooks/usePaywall";
-import { PaywallModal } from "@/components/subscription/PaywallModal";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,7 +47,6 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
   const { profile, calculateIMC } = useProfile();
   const { toast } = useToast();
   const { canCreateWithoutPersonal } = useCanCreateWithoutPersonal();
-  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const [generating, setGenerating] = useState(false);
   const [dietType, setDietType] = useState("emagrecimento");
   const [mealsPerDay, setMealsPerDay] = useState("5");
@@ -68,7 +65,6 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
 
   const generateNutritionPlan = async () => {
     if (!user) return;
-    if (!isPremium) { setPaywallOpen(true); return; }
 
     if (!canCreateWithoutPersonal) {
       toast({
@@ -173,7 +169,6 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
   const selectedMeals = mealsOptions.find((m) => m.value === mealsPerDay);
 
   return (
-    <>
     <Card className="border-primary/50 bg-gradient-to-br from-primary/5 to-transparent">
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -393,7 +388,5 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
         </Button>
       </CardContent>
     </Card>
-    <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
-    </>
   );
 }

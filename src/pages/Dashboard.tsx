@@ -19,8 +19,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuickStartWorkout } from "@/hooks/useQuickStartWorkout";
-import { usePaywall } from "@/hooks/usePaywall";
-import { PaywallModal } from "@/components/subscription/PaywallModal";
 
 const upcomingWorkouts = [
   {
@@ -52,7 +50,6 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
   const { profile } = useProfile();
   const navigate = useNavigate();
   const { quickStartWorkout, isStarting } = useQuickStartWorkout();
-  const { isPremium, paywallOpen, setPaywallOpen, requirePremium } = usePaywall();
   
   const [measurementModalOpen, setMeasurementModalOpen] = useState(false);
   const [timerModalOpen, setTimerModalOpen] = useState(false);
@@ -74,16 +71,16 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
 
     switch (action) {
       case 'start-workout':
-        requirePremium(() => setWorkoutModalOpen(true));
+        setWorkoutModalOpen(true);
         break;
       case 'add-measurements':
-        requirePremium(() => setMeasurementModalOpen(true));
+        setMeasurementModalOpen(true);
         break;
       case 'take-photo':
-        requirePremium(() => setPhotoModalOpen(true));
+        setPhotoModalOpen(true);
         break;
       case 'rest-timer':
-        requirePremium(() => setTimerModalOpen(true));
+        setTimerModalOpen(true);
         break;
       default:
         break;
@@ -159,7 +156,7 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
         
         <StreakCounter />
         
-        <QuickActions onActionClick={handleActionClick} isStartingWorkout={isStarting} isPremium={isPremium} />
+        <QuickActions onActionClick={handleActionClick} isStartingWorkout={isStarting} />
 
         <ProgressChart />
         
@@ -193,8 +190,6 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
             onNavigateToTab?.('workout');
           }}
         />
-
-        <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
 
         <Card>
           <CardHeader>

@@ -13,8 +13,8 @@ import TransformationProjects from "./TransformationProjects";
 import PersonalArea from "./PersonalArea";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
-import { useSubscription } from "@/hooks/useSubscription";
-import { SubscriptionPaywall } from "@/components/subscription/SubscriptionPaywall";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -24,7 +24,7 @@ const Index = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
   const { isPersonal, loading: roleLoading } = useUserRole();
-  const { subscribed, loading: subLoading, checkSubscription } = useSubscription();
+  const { isPremium, loading: paywallLoading, paywallOpen, setPaywallOpen } = usePaywall();
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
 
@@ -33,7 +33,6 @@ const Index = () => {
     const checkoutStatus = searchParams.get("checkout");
     if (checkoutStatus === "success") {
       toast({ title: "🎉 Assinatura ativada!", description: "Bem-vindo ao NexFit! Aproveite todos os recursos." });
-      checkSubscription();
       setSearchParams({}, { replace: true });
     } else if (checkoutStatus === "cancel") {
       toast({ title: "Checkout cancelado", description: "Você pode assinar quando quiser.", variant: "destructive" });
@@ -77,8 +76,8 @@ const Index = () => {
     }
   };
 
-  // Show loading while auth, role, or subscription status is being determined
-  const isLoading = roleLoading || subLoading;
+  // Show loading while auth or role is being determined
+  const isLoading = roleLoading || paywallLoading;
 
   if (isLoading) {
     return (
@@ -93,6 +92,7 @@ const Index = () => {
       <div className="h-full animate-fade-in">{renderActiveTab()}</div>
       <InstallPWA />
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} isPersonal={isPersonal} />
+      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 };

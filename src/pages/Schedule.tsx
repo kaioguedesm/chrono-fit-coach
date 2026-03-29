@@ -8,9 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { usePaywall } from '@/hooks/usePaywall';
-import { PaywallModal } from '@/components/subscription/PaywallModal';
-
 import { 
   CalendarDays, 
   Check, 
@@ -71,7 +68,6 @@ interface FrequencyStats {
 }
 
 export default function Schedule() {
-  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -375,8 +371,7 @@ export default function Schedule() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       <Header title="Agenda" />
       
-      <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl relative">
-        
+      <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="schedule">Agenda</TabsTrigger>
@@ -452,10 +447,7 @@ export default function Schedule() {
                     <CalendarDays className="w-5 h-5" />
                     {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
                   </CardTitle>
-                  <Button size="sm" onClick={() => {
-                    if (!isPremium) { setPaywallOpen(true); return; }
-                    setShowScheduleModal(true);
-                  }}>
+                  <Button size="sm" onClick={() => setShowScheduleModal(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Agendar
                   </Button>
@@ -502,10 +494,7 @@ export default function Schedule() {
                           {!workout.completed && (
                             <Button
                               size="sm"
-                              onClick={() => {
-                                if (!isPremium) { setPaywallOpen(true); return; }
-                                markAsCompleted(workout.id);
-                              }}
+                              onClick={() => markAsCompleted(workout.id)}
                             >
                               <Check className="w-4 h-4 mr-1" />
                               Concluir
@@ -745,7 +734,6 @@ export default function Schedule() {
           setRefreshKey(prev => prev + 1);
         }}
       />
-      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 }

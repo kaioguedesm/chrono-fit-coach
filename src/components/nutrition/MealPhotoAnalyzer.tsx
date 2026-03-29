@@ -6,8 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { usePaywall } from '@/hooks/usePaywall';
-import { PaywallModal } from '@/components/subscription/PaywallModal';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
@@ -34,7 +32,6 @@ interface NutritionData {
 }
 
 export function MealPhotoAnalyzer() {
-  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [description, setDescription] = useState('');
@@ -79,7 +76,6 @@ export function MealPhotoAnalyzer() {
 
   const analyzePhoto = async () => {
     if (!selectedFile) return;
-    if (!isPremium) { setPaywallOpen(true); return; }
 
     setIsAnalyzing(true);
     try {
@@ -338,7 +334,6 @@ export function MealPhotoAnalyzer() {
           </Button>
         </Card>
       )}
-      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 }

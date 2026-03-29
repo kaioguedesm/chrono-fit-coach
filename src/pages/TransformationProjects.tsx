@@ -4,12 +4,8 @@ import { ProjectSelection } from "@/components/transformation/ProjectSelection";
 import { ProjectTracking } from "@/components/transformation/ProjectTracking";
 import { ProjectCompletion } from "@/components/transformation/ProjectCompletion";
 import { Loader2 } from "lucide-react";
-import { usePaywall } from "@/hooks/usePaywall";
-import { PaywallModal } from "@/components/subscription/PaywallModal";
-
 
 export default function TransformationProjects() {
-  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const {
     activeProject,
     checkins,
@@ -32,14 +28,6 @@ export default function TransformationProjects() {
       </div>
     );
   }
-
-  const handleSelectProject = (days: number) => {
-    if (!isPremium) {
-      setPaywallOpen(true);
-      return;
-    }
-    startProject(days);
-  };
 
   // Completed project view
   if (activeProject?.status === 'completed') {
@@ -70,10 +58,5 @@ export default function TransformationProjects() {
   }
 
   // No active project - show selection
-  return (
-    <>
-      <ProjectSelection onSelectProject={handleSelectProject} />
-      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
-    </>
-  );
+  return <ProjectSelection onSelectProject={startProject} />;
 }
