@@ -17,7 +17,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Apple, Upload, Trash2, Pencil, Repeat } from "lucide-react";
+import { Apple, Upload, Trash2, Pencil, Repeat, Lock, Crown } from "lucide-react";
 import { AINutritionGenerator } from "@/components/nutrition/AINutritionGenerator";
 import { MealPhotoAnalyzer } from "@/components/nutrition/MealPhotoAnalyzer";
 import { DietUploader } from "@/components/nutrition/DietUploader";
@@ -350,12 +350,37 @@ export default function Nutrition() {
           </TabsContent>
 
           <TabsContent value="create" className="space-y-4">
-            {canCreateWithoutPersonal ? (
+            {!isPremium ? (
+              <Card className="relative overflow-hidden">
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/70 backdrop-blur-sm">
+                  <div className="flex flex-col items-center gap-4 p-6 text-center">
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Lock className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-foreground">Funcionalidade Premium</p>
+                      <p className="text-sm text-muted-foreground mt-1">Assine para criar planos nutricionais personalizados</p>
+                    </div>
+                    <Button onClick={() => setPaywallOpen(true)} className="gap-2">
+                      <Crown className="w-4 h-4" />
+                      Ver Plano Premium
+                    </Button>
+                  </div>
+                </div>
+                <CardContent className="p-6 opacity-30 pointer-events-none">
+                  <div className="space-y-4">
+                    <div className="h-10 bg-muted rounded-lg" />
+                    <div className="h-10 bg-muted rounded-lg" />
+                    <div className="h-32 bg-muted rounded-lg" />
+                    <div className="h-10 bg-muted rounded-lg w-1/2" />
+                  </div>
+                </CardContent>
+              </Card>
+            ) : canCreateWithoutPersonal ? (
               <div>
                 <AINutritionGenerator onSuccess={fetchNutritionPlans} />
                 <DietUploader />
               </div>
-            
             ) : (
               <Card>
                 <CardHeader>
