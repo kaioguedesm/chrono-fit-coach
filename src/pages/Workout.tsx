@@ -24,7 +24,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical, Edit, Dumbbell } from "lucide-react";
+import { Play, Plus, Weight, RotateCcw, TrendingUp, Share2, Trash2, MoreVertical, Edit, Dumbbell, Lock, Crown } from "lucide-react";
 import { ActiveWorkoutSession } from "@/components/workout/ActiveWorkoutSession";
 import { WorkoutHistory } from "@/components/workout/WorkoutHistory";
 import { CreateWorkoutForm } from "@/components/workout/CreateWorkoutForm";

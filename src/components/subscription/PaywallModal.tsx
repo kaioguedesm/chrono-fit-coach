@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   CreditCard,
   Loader2,
-  Lock,
   Dumbbell,
   Apple,
   TrendingUp,
@@ -30,7 +29,14 @@ export function PaywallModal({ open, onOpenChange }: PaywallModalProps) {
   const { toast } = useToast();
 
   const handleSubscribe = async () => {
-    if (!session?.access_token) return;
+    if (!session?.access_token) {
+      toast({
+        title: 'Erro',
+        description: 'Você precisa estar logado para assinar. Faça login novamente.',
+        variant: 'destructive',
+      });
+      return;
+    }
     setLoading(true);
 
     try {
@@ -41,12 +47,14 @@ export function PaywallModal({ open, onOpenChange }: PaywallModalProps) {
       if (error) throw error;
       if (data?.url) {
         window.location.href = data.url;
+      } else {
+        throw new Error('URL de checkout não recebida');
       }
     } catch (err) {
       console.error('Checkout error:', err);
       toast({
-        title: 'Erro',
-        description: 'Não foi possível iniciar o checkout. Tente novamente.',
+        title: 'Erro ao iniciar pagamento',
+        description: 'Não foi possível conectar ao sistema de pagamento. Verifique sua conexão e tente novamente.',
         variant: 'destructive',
       });
     } finally {
@@ -65,7 +73,9 @@ export function PaywallModal({ open, onOpenChange }: PaywallModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-primary/20">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-primary/20 gap-0">
+        <DialogTitle className="sr-only">Plano Premium NexFit</DialogTitle>
+        
         {/* Header gradient */}
         <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/70 px-6 py-8 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.1),transparent_50%)]" />
@@ -87,7 +97,7 @@ export function PaywallModal({ open, onOpenChange }: PaywallModalProps) {
           <ul className="space-y-3">
             {benefits.map(({ icon: Icon, text }) => (
               <li key={text} className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 shrink-0">
                   <Icon className="w-4 h-4 text-primary" />
                 </div>
                 <span className="text-sm font-medium text-foreground">{text}</span>
@@ -97,7 +107,7 @@ export function PaywallModal({ open, onOpenChange }: PaywallModalProps) {
 
           {/* Social proof */}
           <div className="flex items-center gap-2 bg-muted/50 rounded-lg p-3">
-            <Users className="w-4 h-4 text-muted-foreground" />
+            <Users className="w-4 h-4 text-muted-foreground shrink-0" />
             <p className="text-xs text-muted-foreground">
               <span className="font-semibold text-foreground">+500 pessoas</span> já estão transformando seus corpos
             </p>
@@ -115,17 +125,17 @@ export function PaywallModal({ open, onOpenChange }: PaywallModalProps) {
             </p>
           </div>
 
-          {/* CTA */}
+          {/* CTA Button */}
           <Button
             onClick={handleSubscribe}
             disabled={loading}
-            className="w-full h-12 text-base font-semibold"
+            className="w-full h-12 text-base font-semibold gap-2"
             size="lg"
           >
             {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <CreditCard className="w-5 h-5 mr-2" />
+              <CreditCard className="w-5 h-5" />
             )}
             {loading ? 'Redirecionando...' : 'Assinar Agora'}
           </Button>
