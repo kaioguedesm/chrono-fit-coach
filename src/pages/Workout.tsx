@@ -494,157 +494,209 @@ export default function Workout() {
           </TabsList>
 
           <TabsContent value="plans" className="space-y-4">
-            {/* AI Workout Generator - with paywall for free users */}
-            {canCreateWithoutPersonal && (
-              <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />
-            )}
-
-            {/* My Workouts Section */}
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-bold">Seus Treinos</h2>
-                <p className="text-sm text-muted-foreground">Escolha um treino para começar</p>
-              </div>
-              <Button size="sm" onClick={() => requirePremium(() => setActiveTab("create"))}>
-                <Plus className="w-4 h-4 mr-2" />
-                Novo
-              </Button>
-            </div>
-
-            {displayPlans.length === 0 ? (
-              <EmptyState
-                icon={Dumbbell}
-                title="Nenhum treino criado"
-                description="Crie seu primeiro treino personalizado ou use a IA para gerar um plano completo adaptado aos seus objetivos."
-                motivation="O primeiro passo é sempre o mais importante!"
-                actionLabel="Criar Primeiro Treino"
-                onAction={() => setActiveTab("create")}
-              />
-            ) : (
+            {!isPremium ? (
               <div className="space-y-4">
-                {displayPlans.map((plan) => (
-                  <Card key={plan.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <CardTitle className="text-lg">{plan.name}</CardTitle>
-                            <Badge variant={plan.created_by === "ai" ? "default" : "secondary"}>
-                              {plan.created_by === "ai" ? "🤖 IA" : "👤 Custom"}
-                            </Badge>
-                            {plan.created_by === "ai" && plan.approval_status && (
-                              <WorkoutApprovalBadge
-                                status={plan.approval_status}
-                                rejectionReason={plan.rejection_reason}
-                                size="sm"
-                              />
+                {/* AI Generator preview - locked */}
+                <Card className="relative overflow-hidden">
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/70 backdrop-blur-sm">
+                    <div className="flex flex-col items-center gap-4 p-6 text-center">
+                      <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Lock className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-base font-semibold text-foreground">Área Premium</p>
+                        <p className="text-sm text-muted-foreground mt-1">Assine para acessar seus treinos e gerar fichas com IA</p>
+                      </div>
+                      <Button onClick={() => setPaywallOpen(true)} className="gap-2">
+                        <Crown className="w-4 h-4" />
+                        Ver Plano Premium
+                      </Button>
+                    </div>
+                  </div>
+                  <CardContent className="p-6 opacity-20 pointer-events-none">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="h-6 w-40 bg-muted rounded" />
+                          <div className="h-4 w-56 bg-muted rounded mt-2" />
+                        </div>
+                        <div className="h-8 w-20 bg-muted rounded" />
+                      </div>
+                      {/* Fake workout cards */}
+                      {[1, 2].map((i) => (
+                        <Card key={i} className="border-muted">
+                          <CardContent className="p-4 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <div className="h-5 w-48 bg-muted rounded" />
+                              <div className="h-5 w-12 bg-muted rounded" />
+                            </div>
+                            <div className="space-y-2">
+                              {[1, 2, 3].map((j) => (
+                                <div key={j} className="h-8 bg-muted/50 rounded" />
+                              ))}
+                            </div>
+                            <div className="h-10 bg-muted rounded" />
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <>
+                {/* AI Workout Generator */}
+                {canCreateWithoutPersonal && (
+                  <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />
+                )}
+
+                {/* My Workouts Section */}
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-xl font-bold">Seus Treinos</h2>
+                    <p className="text-sm text-muted-foreground">Escolha um treino para começar</p>
+                  </div>
+                  <Button size="sm" onClick={() => setActiveTab("create")}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Novo
+                  </Button>
+                </div>
+
+                {displayPlans.length === 0 ? (
+                  <EmptyState
+                    icon={Dumbbell}
+                    title="Nenhum treino criado"
+                    description="Crie seu primeiro treino personalizado ou use a IA para gerar um plano completo adaptado aos seus objetivos."
+                    motivation="O primeiro passo é sempre o mais importante!"
+                    actionLabel="Criar Primeiro Treino"
+                    onAction={() => setActiveTab("create")}
+                  />
+                ) : (
+                  <div className="space-y-4">
+                    {displayPlans.map((plan) => (
+                      <Card key={plan.id} className="hover:shadow-lg transition-shadow">
+                        <CardHeader className="pb-3">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <CardTitle className="text-lg">{plan.name}</CardTitle>
+                                <Badge variant={plan.created_by === "ai" ? "default" : "secondary"}>
+                                  {plan.created_by === "ai" ? "🤖 IA" : "👤 Custom"}
+                                </Badge>
+                                {plan.created_by === "ai" && plan.approval_status && (
+                                  <WorkoutApprovalBadge
+                                    status={plan.approval_status}
+                                    rejectionReason={plan.rejection_reason}
+                                    size="sm"
+                                  />
+                                )}
+                              </div>
+                              <Badge variant="outline">Treino {plan.type}</Badge>
+                            </div>
+                            {user && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedWorkoutToEdit(plan.id);
+                                      setEditModalOpen(true);
+                                    }}
+                                  >
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Visualizar e Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedWorkoutToShare({ id: plan.id, name: plan.name });
+                                      setShareModalOpen(true);
+                                    }}
+                                  >
+                                    <Share2 className="w-4 h-4 mr-2" />
+                                    Compartilhar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setPlanToDelete(plan.id);
+                                      setDeleteDialogOpen(true);
+                                    }}
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Excluir treino
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             )}
                           </div>
-                          <Badge variant="outline">Treino {plan.type}</Badge>
-                        </div>
-                        {user && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedWorkoutToEdit(plan.id);
-                                  setEditModalOpen(true);
-                                }}
-                              >
-                                <Edit className="w-4 h-4 mr-2" />
-                                Visualizar e Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedWorkoutToShare({ id: plan.id, name: plan.name });
-                                  setShareModalOpen(true);
-                                }}
-                              >
-                                <Share2 className="w-4 h-4 mr-2" />
-                                Compartilhar
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setPlanToDelete(plan.id);
-                                  setDeleteDialogOpen(true);
-                                }}
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Excluir treino
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
-                      </div>
-                    </CardHeader>
+                        </CardHeader>
 
-                    <CardContent className="space-y-4">
-                      {/* Workout refresh alert */}
-                      {plan.workouts_completed_count && plan.workouts_completed_count > 0 && (
-                        <WorkoutRefreshAlert
-                          workoutName={plan.name}
-                          completedWorkouts={plan.workouts_completed_count}
-                          maxWorkouts={12}
-                          needsRefresh={plan.needs_refresh || false}
-                          onRefresh={() => {
-                            setSelectedWorkoutToRefresh(plan);
-                            setRefreshDialogOpen(true);
-                          }}
-                        />
-                      )}
+                        <CardContent className="space-y-4">
+                          {plan.workouts_completed_count && plan.workouts_completed_count > 0 && (
+                            <WorkoutRefreshAlert
+                              workoutName={plan.name}
+                              completedWorkouts={plan.workouts_completed_count}
+                              maxWorkouts={12}
+                              needsRefresh={plan.needs_refresh || false}
+                              onRefresh={() => {
+                                setSelectedWorkoutToRefresh(plan);
+                                setRefreshDialogOpen(true);
+                              }}
+                            />
+                          )}
 
-                      <div className="space-y-2">
-                        {plan.exercises.slice(0, 4).map((exercise) => (
-                          <div
-                            key={exercise.id}
-                            className="flex justify-between items-center text-sm bg-muted/50 p-2 rounded"
+                          <div className="space-y-2">
+                            {plan.exercises.slice(0, 4).map((exercise) => (
+                              <div
+                                key={exercise.id}
+                                className="flex justify-between items-center text-sm bg-muted/50 p-2 rounded"
+                              >
+                                <span className="font-medium">{exercise.name}</span>
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <span>
+                                    {exercise.sets}×{exercise.reps}
+                                  </span>
+                                  {exercise.weight && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <Weight className="w-3 h-3 mr-1" />
+                                      {exercise.weight}kg
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                            {plan.exercises.length > 4 && (
+                              <div className="text-sm text-muted-foreground text-center">
+                                +{plan.exercises.length - 4} exercícios
+                              </div>
+                            )}
+                          </div>
+
+                          <Button
+                            className="w-full"
+                            size="lg"
+                            onClick={() => startWorkout(plan)}
+                            disabled={plan.created_by === "ai" && plan.approval_status !== "approved"}
                           >
-                            <span className="font-medium">{exercise.name}</span>
-                            <div className="flex items-center gap-2 text-muted-foreground">
-                              <span>
-                                {exercise.sets}×{exercise.reps}
-                              </span>
-                              {exercise.weight && (
-                                <Badge variant="secondary" className="text-xs">
-                                  <Weight className="w-3 h-3 mr-1" />
-                                  {exercise.weight}kg
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                        {plan.exercises.length > 4 && (
-                          <div className="text-sm text-muted-foreground text-center">
-                            +{plan.exercises.length - 4} exercícios
-                          </div>
-                        )}
-                      </div>
-
-                      <Button
-                        className="w-full"
-                        size="lg"
-                        onClick={() => startWorkout(plan)}
-                        disabled={plan.created_by === "ai" && plan.approval_status !== "approved"}
-                      >
-                        <Play className="w-5 h-5 mr-2" />
-                        {plan.created_by === "ai" && plan.approval_status === "pending"
-                          ? "Aguardando Aprovação"
-                          : "Iniciar Treino"}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                            <Play className="w-5 h-5 mr-2" />
+                            {plan.created_by === "ai" && plan.approval_status === "pending"
+                              ? "Aguardando Aprovação"
+                              : "Iniciar Treino"}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
 

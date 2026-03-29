@@ -194,150 +194,194 @@ export default function Nutrition() {
           </TabsList>
 
           <TabsContent value="plans" className="space-y-4">
-            <h2 className="text-lg font-semibold">Seus Planos Nutricionais</h2>
-
-            {loading ? (
-              <LoadingState type="card" count={2} />
-            ) : nutritionPlans.length === 0 ? (
-              <EmptyState
-                icon={Apple}
-                title="Nenhum plano nutricional"
-                description="Comece criando um plano personalizado ou use a IA para gerar um plano alimentar completo adaptado aos seus objetivos."
-                motivation="Alimentação é 70% do sucesso!"
-                actionLabel="Criar Plano com IA"
-                onAction={() => setActiveTab("create")}
-              />
-            ) : (
-              <div className="space-y-4">
-                {nutritionPlans.map((plan) => (
-                  <Card key={plan.id}>
-                    <CardHeader>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-start gap-2">
-                          <CardTitle className="flex items-center gap-2 text-base sm:text-lg leading-tight">
-                            <Apple className="w-5 h-5 shrink-0" />
-                            <span className="line-clamp-2">{plan.title}</span>
-                          </CardTitle>
-                          <div className="flex items-center gap-1 shrink-0">
-                            {plan.approval_status && plan.created_by === "ai" && (
-                              <NutritionApprovalBadge
-                                status={plan.approval_status}
-                                rejectionReason={plan.rejection_reason}
-                              />
-                            )}
-                            {(!plan.approval_status || plan.approval_status === "approved") && (
-                              <Badge variant={plan.created_by === "ai" ? "default" : "secondary"} className="text-xs whitespace-nowrap">
-                                {plan.created_by === "ai" ? "IA" : "Custom"}
-                              </Badge>
-                            )}
+            {!isPremium ? (
+              <Card className="relative overflow-hidden">
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/70 backdrop-blur-sm">
+                  <div className="flex flex-col items-center gap-4 p-6 text-center">
+                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Lock className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-foreground">Área Premium</p>
+                      <p className="text-sm text-muted-foreground mt-1">Assine para acessar seus planos nutricionais</p>
+                    </div>
+                    <Button onClick={() => setPaywallOpen(true)} className="gap-2">
+                      <Crown className="w-4 h-4" />
+                      Ver Plano Premium
+                    </Button>
+                  </div>
+                </div>
+                <CardContent className="p-6 opacity-20 pointer-events-none">
+                  <div className="space-y-4">
+                    <div className="h-6 w-52 bg-muted rounded" />
+                    {[1, 2].map((i) => (
+                      <Card key={i} className="border-muted">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="h-5 w-48 bg-muted rounded" />
+                          <div className="grid grid-cols-4 gap-2">
+                            {[1, 2, 3, 4].map((j) => (
+                              <div key={j} className="h-12 bg-muted/50 rounded" />
+                            ))}
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditPlan(plan.id)}
-                            className="flex-1 gap-1.5 text-xs h-8"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                            Editar
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setPlanToSwap({ id: plan.id, title: plan.title });
-                              setSwapModalOpen(true);
-                            }}
-                            className="flex-1 gap-1.5 text-xs h-8"
-                          >
-                            <Repeat className="w-3.5 h-3.5" />
-                            Trocar
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => confirmDeletePlan(plan.id)}
-                            className="gap-1.5 text-xs h-8 text-destructive border-destructive/30 hover:bg-destructive/10"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                      {plan.description && <p className="text-sm text-muted-foreground">{plan.description}</p>}
-                      {plan.rejection_reason && (
-                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 mt-2">
-                          <p className="text-sm font-medium text-destructive mb-1">Motivo da Rejeição:</p>
-                          <p className="text-xs text-muted-foreground">{plan.rejection_reason}</p>
-                        </div>
-                      )}
-                    </CardHeader>
+                          <div className="space-y-2">
+                            {[1, 2].map((j) => (
+                              <div key={j} className="h-6 bg-muted/50 rounded" />
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <h2 className="text-lg font-semibold">Seus Planos Nutricionais</h2>
 
-                    <CardContent className="space-y-4">
-                      {plan.meals.length > 0 && (
-                        <div className="grid grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
-                          {(() => {
-                            const totals = calculateTotalMacros(plan.meals);
-                            return (
-                              <>
-                                <div className="text-center">
-                                  <div className="text-lg font-semibold text-primary">{totals.calories}</div>
-                                  <div className="text-xs text-muted-foreground">kcal</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="text-lg font-semibold text-blue-600">
-                                    {totals.protein.toFixed(0)}g
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">Proteína</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="text-lg font-semibold text-orange-600">
-                                    {totals.carbs.toFixed(0)}g
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">Carbo</div>
-                                </div>
-                                <div className="text-center">
-                                  <div className="text-lg font-semibold text-yellow-600">{totals.fat.toFixed(0)}g</div>
-                                  <div className="text-xs text-muted-foreground">Gordura</div>
-                                </div>
-                              </>
-                            );
-                          })()}
-                        </div>
-                      )}
-
-                      <div className="space-y-3">
-                        {mealTypes.map((mealType) => {
-                          const mealsOfType = getMealsByType(plan.meals, mealType.key);
-                          if (mealsOfType.length === 0) return null;
-
-                          return (
-                            <div key={mealType.key} className="border-l-4 border-primary pl-4">
-                              <h4 className="font-medium text-sm text-primary mb-2">{mealType.label}</h4>
-                              {mealsOfType.map((meal) => (
-                                <div key={meal.id} className="text-sm">
-                                  <div className="font-medium">{meal.name}</div>
-                                  <div className="text-muted-foreground text-xs">{meal.ingredients.join(", ")}</div>
-                                  {meal.calories && (
-                                    <div className="text-xs text-muted-foreground">{meal.calories} kcal</div>
-                                  )}
-                                </div>
-                              ))}
+                {loading ? (
+                  <LoadingState type="card" count={2} />
+                ) : nutritionPlans.length === 0 ? (
+                  <EmptyState
+                    icon={Apple}
+                    title="Nenhum plano nutricional"
+                    description="Comece criando um plano personalizado ou use a IA para gerar um plano alimentar completo adaptado aos seus objetivos."
+                    motivation="Alimentação é 70% do sucesso!"
+                    actionLabel="Criar Plano com IA"
+                    onAction={() => setActiveTab("create")}
+                  />
+                ) : (
+                  <div className="space-y-4">
+                    {nutritionPlans.map((plan) => (
+                      <Card key={plan.id}>
+                        <CardHeader>
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-start gap-2">
+                              <CardTitle className="flex items-center gap-2 text-base sm:text-lg leading-tight">
+                                <Apple className="w-5 h-5 shrink-0" />
+                                <span className="line-clamp-2">{plan.title}</span>
+                              </CardTitle>
+                              <div className="flex items-center gap-1 shrink-0">
+                                {plan.approval_status && plan.created_by === "ai" && (
+                                  <NutritionApprovalBadge
+                                    status={plan.approval_status}
+                                    rejectionReason={plan.rejection_reason}
+                                  />
+                                )}
+                                {(!plan.approval_status || plan.approval_status === "approved") && (
+                                  <Badge variant={plan.created_by === "ai" ? "default" : "secondary"} className="text-xs whitespace-nowrap">
+                                    {plan.created_by === "ai" ? "IA" : "Custom"}
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
-                          );
-                        })}
-                      </div>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditPlan(plan.id)}
+                                className="flex-1 gap-1.5 text-xs h-8"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                                Editar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setPlanToSwap({ id: plan.id, title: plan.title });
+                                  setSwapModalOpen(true);
+                                }}
+                                className="flex-1 gap-1.5 text-xs h-8"
+                              >
+                                <Repeat className="w-3.5 h-3.5" />
+                                Trocar
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => confirmDeletePlan(plan.id)}
+                                className="gap-1.5 text-xs h-8 text-destructive border-destructive/30 hover:bg-destructive/10"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                          {plan.description && <p className="text-sm text-muted-foreground">{plan.description}</p>}
+                          {plan.rejection_reason && (
+                            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 mt-2">
+                              <p className="text-sm font-medium text-destructive mb-1">Motivo da Rejeição:</p>
+                              <p className="text-xs text-muted-foreground">{plan.rejection_reason}</p>
+                            </div>
+                          )}
+                        </CardHeader>
 
-                      {plan.file_url && (
-                        <Button variant="outline" className="w-full">
-                          <Upload className="w-4 h-4 mr-2" />
-                          Ver Dieta Completa
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                        <CardContent className="space-y-4">
+                          {plan.meals.length > 0 && (
+                            <div className="grid grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
+                              {(() => {
+                                const totals = calculateTotalMacros(plan.meals);
+                                return (
+                                  <>
+                                    <div className="text-center">
+                                      <div className="text-lg font-semibold text-primary">{totals.calories}</div>
+                                      <div className="text-xs text-muted-foreground">kcal</div>
+                                    </div>
+                                    <div className="text-center">
+                                      <div className="text-lg font-semibold text-blue-600">
+                                        {totals.protein.toFixed(0)}g
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">Proteína</div>
+                                    </div>
+                                    <div className="text-center">
+                                      <div className="text-lg font-semibold text-orange-600">
+                                        {totals.carbs.toFixed(0)}g
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">Carbo</div>
+                                    </div>
+                                    <div className="text-center">
+                                      <div className="text-lg font-semibold text-yellow-600">{totals.fat.toFixed(0)}g</div>
+                                      <div className="text-xs text-muted-foreground">Gordura</div>
+                                    </div>
+                                  </>
+                                );
+                              })()}
+                            </div>
+                          )}
+
+                          <div className="space-y-3">
+                            {mealTypes.map((mealType) => {
+                              const mealsOfType = getMealsByType(plan.meals, mealType.key);
+                              if (mealsOfType.length === 0) return null;
+
+                              return (
+                                <div key={mealType.key} className="border-l-4 border-primary pl-4">
+                                  <h4 className="font-medium text-sm text-primary mb-2">{mealType.label}</h4>
+                                  {mealsOfType.map((meal) => (
+                                    <div key={meal.id} className="text-sm">
+                                      <div className="font-medium">{meal.name}</div>
+                                      <div className="text-muted-foreground text-xs">{meal.ingredients.join(", ")}</div>
+                                      {meal.calories && (
+                                        <div className="text-xs text-muted-foreground">{meal.calories} kcal</div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {plan.file_url && (
+                            <Button variant="outline" className="w-full">
+                              <Upload className="w-4 h-4 mr-2" />
+                              Ver Dieta Completa
+                            </Button>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
 
