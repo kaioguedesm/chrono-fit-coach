@@ -1,5 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, Plus, Camera, Timer } from "lucide-react";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PremiumLockOverlay } from "@/components/subscription/PremiumLockOverlay";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
 
 const quickActions = [
   {
