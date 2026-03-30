@@ -350,7 +350,7 @@ export default function Nutrition() {
                   <div className="text-center space-y-3 opacity-40">
                     <p className="text-muted-foreground">Analise suas refeições com IA</p>
                   </div>
-                  <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Assine para usar a Foto IA" />
+                  <PremiumLockOverlay message="Assine para usar a Foto IA" />
                 </CardContent>
               </Card>
             )}
