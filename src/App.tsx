@@ -87,6 +87,7 @@ const App = () => (
                   } 
                 />
                 <Route path="/shared/:token" element={<SharedWorkout />} />
+                <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
