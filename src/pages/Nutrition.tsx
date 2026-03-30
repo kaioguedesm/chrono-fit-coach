@@ -342,7 +342,18 @@ export default function Nutrition() {
           </TabsContent>
 
           <TabsContent value="photo" className="space-y-4">
-            <MealPhotoAnalyzer />
+            {isPremium ? (
+              <MealPhotoAnalyzer />
+            ) : (
+              <Card className="relative overflow-hidden">
+                <CardContent className="p-6 min-h-[200px] flex items-center justify-center">
+                  <div className="text-center space-y-3 opacity-40">
+                    <p className="text-muted-foreground">Analise suas refeições com IA</p>
+                  </div>
+                  <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Assine para usar a Foto IA" />
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="recipes" className="space-y-4">

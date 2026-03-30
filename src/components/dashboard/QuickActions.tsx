@@ -41,6 +41,8 @@ interface QuickActionsProps {
 }
 
 export function QuickActions({ onActionClick, isStartingWorkout }: QuickActionsProps) {
+  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
+
   return (
     <div className="space-y-5 md:space-y-4">
       <h3 className="text-lg md:text-base font-semibold text-foreground">
