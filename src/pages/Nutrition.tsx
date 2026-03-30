@@ -363,7 +363,7 @@ export default function Nutrition() {
           <TabsContent value="create" className="space-y-4">
             {canCreateWithoutPersonal ? (
               <div className="relative">
-                {!isPremium && <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Crie dietas personalizadas com IA" />}
+                {!isPremium && <PremiumLockOverlay message="Crie dietas personalizadas com IA" />}}
                 <div className={!isPremium ? "pointer-events-none" : ""}>
                   <AINutritionGenerator onSuccess={fetchNutritionPlans} />
                   <DietUploader />

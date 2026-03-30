@@ -497,7 +497,7 @@ export default function Workout() {
             {/* AI Workout Generator - with paywall for free users */}
             {canCreateWithoutPersonal && (
               <div className="relative">
-                {!isPremium && <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Gere treinos personalizados com IA" />}
+                {!isPremium && <PremiumLockOverlay message="Gere treinos personalizados com IA" />}
                 <div className={!isPremium ? "pointer-events-none" : ""}>
                   <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />
                 </div>
