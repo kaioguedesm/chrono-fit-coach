@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Play, Plus, Camera, Timer } from "lucide-react";
 import { usePaywall } from "@/hooks/usePaywall";
 import { PremiumLockOverlay } from "@/components/subscription/PremiumLockOverlay";
-import { PaywallModal } from "@/components/subscription/PaywallModal";
+import { useNavigate } from "react-router-dom";
 
 const quickActions = [
   {
@@ -41,7 +41,8 @@ interface QuickActionsProps {
 }
 
 export function QuickActions({ onActionClick, isStartingWorkout }: QuickActionsProps) {
-  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
+  const { isPremium } = usePaywall();
+  const navigate = useNavigate();
 
   return (
     <div className="space-y-5 md:space-y-4">
@@ -58,7 +59,7 @@ export function QuickActions({ onActionClick, isStartingWorkout }: QuickActionsP
               onClick={() => {
                 if (isStartingWorkout && action.action === 'start-workout') return;
                 if (!isPremium) {
-                  setPaywallOpen(true);
+                  navigate('/paywall');
                   return;
                 }
                 onActionClick(action.action);
@@ -77,14 +78,12 @@ export function QuickActions({ onActionClick, isStartingWorkout }: QuickActionsP
                 </div>
               </CardContent>
               {!isPremium && (
-                <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Assine para usar" />
+                <PremiumLockOverlay message="Assine para usar" />
               )}
             </Card>
           );
         })}
       </div>
-
-      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 }
