@@ -70,6 +70,7 @@ interface Exercise {
 }
 
 export default function Workout() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const { isPersonal, loading: roleLoading } = useUserRole();
