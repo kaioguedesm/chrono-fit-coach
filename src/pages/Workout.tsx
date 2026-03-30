@@ -212,7 +212,7 @@ export default function Workout() {
   const startWorkout = async (plan: WorkoutPlan) => {
     if (!user) return;
     if (!isPremium) {
-      setPaywallOpen(true);
+      navigate('/paywall');
       return;
     }
 
