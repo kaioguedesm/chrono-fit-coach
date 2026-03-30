@@ -19,7 +19,6 @@ import PersonalStudents from "./pages/PersonalStudents";
 import PersonalStudentDetail from "./pages/PersonalStudentDetail";
 import AdminApprovals from "./pages/AdminApprovals";
 import SharedWorkout from "./pages/SharedWorkout";
-import Paywall from "./pages/Paywall";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -87,7 +86,6 @@ const App = () => (
                   } 
                 />
                 <Route path="/shared/:token" element={<SharedWorkout />} />
-                <Route path="/paywall" element={<ProtectedRoute><Paywall /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

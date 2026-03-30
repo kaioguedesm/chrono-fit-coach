@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -70,7 +69,6 @@ interface Exercise {
 }
 
 export default function Workout() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const { isPersonal, loading: roleLoading } = useUserRole();
@@ -214,7 +212,7 @@ export default function Workout() {
   const startWorkout = async (plan: WorkoutPlan) => {
     if (!user) return;
     if (!isPremium) {
-      navigate('/paywall');
+      setPaywallOpen(true);
       return;
     }
 
@@ -499,7 +497,7 @@ export default function Workout() {
             {/* AI Workout Generator - with paywall for free users */}
             {canCreateWithoutPersonal && (
               <div className="relative">
-                {!isPremium && <PremiumLockOverlay message="Gere treinos personalizados com IA" />}
+                {!isPremium && <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Gere treinos personalizados com IA" />}
                 <div className={!isPremium ? "pointer-events-none" : ""}>
                   <AIWorkoutGenerator onSuccess={fetchWorkoutPlans} />
                 </div>

@@ -350,7 +350,7 @@ export default function Nutrition() {
                   <div className="text-center space-y-3 opacity-40">
                     <p className="text-muted-foreground">Analise suas refeições com IA</p>
                   </div>
-                  <PremiumLockOverlay message="Assine para usar a Foto IA" />
+                  <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Assine para usar a Foto IA" />
                 </CardContent>
               </Card>
             )}
@@ -363,7 +363,7 @@ export default function Nutrition() {
           <TabsContent value="create" className="space-y-4">
             {canCreateWithoutPersonal ? (
               <div className="relative">
-                {!isPremium && <PremiumLockOverlay message="Crie dietas personalizadas com IA" />}
+                {!isPremium && <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Crie dietas personalizadas com IA" />}
                 <div className={!isPremium ? "pointer-events-none" : ""}>
                   <AINutritionGenerator onSuccess={fetchNutritionPlans} />
                   <DietUploader />
