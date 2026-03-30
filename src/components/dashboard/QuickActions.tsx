@@ -1,5 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, Plus, Camera, Timer } from "lucide-react";
+import { usePaywall } from "@/hooks/usePaywall";
+import { PremiumLockOverlay } from "@/components/subscription/PremiumLockOverlay";
+import { PaywallModal } from "@/components/subscription/PaywallModal";
 
 const quickActions = [
   {
@@ -38,6 +41,8 @@ interface QuickActionsProps {
 }
 
 export function QuickActions({ onActionClick, isStartingWorkout }: QuickActionsProps) {
+  const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
+
   return (
     <div className="space-y-5 md:space-y-4">
       <h3 className="text-lg md:text-base font-semibold text-foreground">
@@ -50,8 +55,15 @@ export function QuickActions({ onActionClick, isStartingWorkout }: QuickActionsP
           return (
             <Card
               key={index}
-              onClick={() => !isStartingWorkout && onActionClick(action.action)}
-              className={`cursor-pointer hover:shadow-[var(--shadow-lg)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group ${
+              onClick={() => {
+                if (isStartingWorkout && action.action === 'start-workout') return;
+                if (!isPremium) {
+                  setPaywallOpen(true);
+                  return;
+                }
+                onActionClick(action.action);
+              }}
+              className={`cursor-pointer hover:shadow-[var(--shadow-lg)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group relative ${
                 isStartingWorkout && action.action === 'start-workout' ? 'opacity-50 cursor-wait' : ''
               }`}
             >
@@ -64,10 +76,15 @@ export function QuickActions({ onActionClick, isStartingWorkout }: QuickActionsP
                   <p className="text-sm md:text-xs text-muted-foreground">{action.subtitle}</p>
                 </div>
               </CardContent>
+              {!isPremium && (
+                <PremiumLockOverlay onUnlock={() => setPaywallOpen(true)} message="Assine para usar" />
+              )}
             </Card>
           );
         })}
       </div>
+
+      <PaywallModal open={paywallOpen} onOpenChange={setPaywallOpen} />
     </div>
   );
 }
