@@ -219,7 +219,7 @@ export function PrivacySettings({ open, onOpenChange, type }: PrivacySettingsPro
       if (error) throw error;
 
       if (!data?.success) {
-        throw new Error(data?.error || "Failed to delete account");
+        throw new Error(data?.error || "Não foi possível excluir a conta");
       }
 
       showToast({
