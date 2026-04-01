@@ -54,14 +54,6 @@ export function PaywallModal({ open, onOpenChange }: PaywallModalProps) {
     }
   };
 
-  const benefits = [
-    { icon: Dumbbell, text: 'Treinos personalizados com IA' },
-    { icon: Apple, text: 'Plano alimentar completo' },
-    { icon: TrendingUp, text: 'Acompanhamento de evolução' },
-    { icon: Rocket, text: 'Projetos de 30/60/90 dias' },
-    { icon: Trophy, text: 'Sistema de recompensas e conquistas' },
-    { icon: Sparkles, text: 'Análise inteligente de refeições' },
-  ];
 
   const benefits = [
     'Treinos personalizados com IA',
