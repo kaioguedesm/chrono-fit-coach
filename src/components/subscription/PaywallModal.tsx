@@ -67,7 +67,7 @@ export function PaywallModal({ open, onOpenChange }: PaywallModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-primary/20">
+      <DialogContent className="sm:max-w-md p-0 border-primary/20 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="bg-primary px-6 py-4 flex items-center gap-3">
           <Crown className="w-6 h-6 text-primary-foreground" />
