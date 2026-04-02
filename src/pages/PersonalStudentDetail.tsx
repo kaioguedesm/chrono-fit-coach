@@ -103,6 +103,7 @@ export default function PersonalStudentDetail() {
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [showCreateWorkout, setShowCreateWorkout] = useState(false);
   const [showCreateWorkoutAI, setShowCreateWorkoutAI] = useState(false);
+  const [showTextToWorkout, setShowTextToWorkout] = useState(false);
   const [showCreateNutrition, setShowCreateNutrition] = useState(false);
   const [evaluationNotes, setEvaluationNotes] = useState("");
   const [evaluationId, setEvaluationId] = useState<string | null>(null);
