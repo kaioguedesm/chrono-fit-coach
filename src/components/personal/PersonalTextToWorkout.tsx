@@ -160,7 +160,7 @@ export function PersonalTextToWorkout({
       const updated = [...prev];
       updated[workoutIdx] = {
         ...updated[workoutIdx],
-        exercises: [...updated[workoutIdx].exercises, { name: "", sets: 3, reps: "10-12" }],
+        exercises: [...updated[workoutIdx].exercises, { name: "", sets: 3, reps: "10-12", rest_time: 60 }],
       };
       return updated;
     });
