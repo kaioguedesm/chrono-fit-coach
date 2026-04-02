@@ -493,6 +493,15 @@ export default function PersonalStudentDetail() {
             <Apple className="h-4 w-4 flex-shrink-0" />
             <span className="truncate min-w-0">Criar Dieta com IA para {student.name}</span>
           </Button>
+          <Button
+            onClick={() => setShowTextToWorkout(true)}
+            className="gap-2 min-w-0 max-w-full"
+            variant="outline"
+            title={`Texto para Treino (IA) para ${student.name}`}
+          >
+            <FileText className="h-4 w-4 flex-shrink-0" />
+            <span className="truncate min-w-0">Texto para Treino (IA)</span>
+          </Button>
         </div>
 
         {/* Tabs de treinos e nutrição */}
