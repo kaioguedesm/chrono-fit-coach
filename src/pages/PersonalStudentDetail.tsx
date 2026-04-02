@@ -25,6 +25,7 @@ import {
   Target,
   Plus,
   ClipboardCheck,
+  FileText,
 } from "lucide-react";
 import { LoadingState } from "@/components/common/LoadingState";
 import { WorkoutApprovalBadge } from "@/components/workout/WorkoutApprovalBadge";
