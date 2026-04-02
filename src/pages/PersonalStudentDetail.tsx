@@ -763,7 +763,13 @@ export default function PersonalStudentDetail() {
         onSuccess={fetchStudentData}
       />
 
-      {workoutToEditId && (
+      <PersonalTextToWorkout
+        open={showTextToWorkout}
+        onOpenChange={setShowTextToWorkout}
+        preSelectedStudentId={studentId}
+        onSuccess={fetchStudentData}
+      />
+
         <EditWorkoutModal
           open={editWorkoutModalOpen}
           onOpenChange={(open) => {
