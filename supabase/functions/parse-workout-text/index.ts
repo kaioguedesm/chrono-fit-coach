@@ -78,6 +78,7 @@ Retorne APENAS um JSON válido com esta estrutura exata:
           "name": "Nome do Exercício",
           "sets": 4,
           "reps": "10-12",
+          "rest_time": 60,
           "notes": "observação se houver"
         }
       ]
@@ -86,6 +87,11 @@ Retorne APENAS um JSON válido com esta estrutura exata:
 }
 
 Para o campo "type", escolha o mais adequado entre: hipertrofia, forca, resistencia, funcional, cardio, outro.
+Para o campo "rest_time", informe o tempo de descanso em SEGUNDOS entre séries. Se o personal não especificar, sugira um valor adequado:
+- Exercícios compostos pesados (agachamento, supino, terra): 90-120 segundos
+- Exercícios compostos médios: 60-90 segundos
+- Exercícios isolados: 45-60 segundos
+- Abdominais e cardio: 30-45 segundos
 Se houver apenas um treino sem divisão, use um único objeto no array.
 RETORNE APENAS O JSON, sem texto adicional.`;
 
