@@ -389,14 +389,14 @@ export function PersonalTextToWorkout({
                   {workout.exercises.map((ex, eIdx) => (
                     <div key={eIdx} className="flex items-start gap-2 p-3 bg-muted/30 rounded-lg">
                       <Badge variant="outline" className="mt-1 flex-shrink-0">{eIdx + 1}</Badge>
-                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2">
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
                         <Input
                           value={ex.name}
                           onChange={(e) => updateExercise(wIdx, eIdx, "name", e.target.value)}
                           placeholder="Nome do exercício"
                           className="text-sm"
                         />
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 items-center">
                           <Input
                             type="number"
                             value={ex.sets}
@@ -404,13 +404,23 @@ export function PersonalTextToWorkout({
                             className="w-16 text-sm text-center"
                             min={1}
                           />
-                          <span className="self-center text-xs text-muted-foreground">x</span>
+                          <span className="text-xs text-muted-foreground">x</span>
                           <Input
                             value={ex.reps}
                             onChange={(e) => updateExercise(wIdx, eIdx, "reps", e.target.value)}
                             className="w-20 text-sm text-center"
                             placeholder="reps"
                           />
+                          <span className="text-xs text-muted-foreground">⏱</span>
+                          <Input
+                            type="number"
+                            value={ex.rest_time || 60}
+                            onChange={(e) => updateExercise(wIdx, eIdx, "rest_time", parseInt(e.target.value) || 0)}
+                            className="w-16 text-sm text-center"
+                            min={0}
+                            title="Descanso (segundos)"
+                          />
+                          <span className="text-xs text-muted-foreground">s</span>
                         </div>
                       </div>
                       <Button
