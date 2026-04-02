@@ -226,6 +226,7 @@ export function PersonalTextToWorkout({
           name: ex.name,
           sets: ex.sets,
           reps: ex.reps,
+          rest_time: ex.rest_time || 60,
           notes: ex.notes || null,
           order_in_workout: idx,
         }));
