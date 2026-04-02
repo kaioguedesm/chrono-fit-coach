@@ -32,6 +32,7 @@ import { NutritionApprovalBadge } from "@/components/nutrition/NutritionApproval
 import { PersonalCreateWorkout } from "@/components/personal/PersonalCreateWorkout";
 import { PersonalCreateNutrition } from "@/components/personal/PersonalCreateNutrition";
 import { PersonalCreateWorkoutAI } from "@/components/personal/PersonalCreateWorkoutAI";
+import { PersonalTextToWorkout } from "@/components/personal/PersonalTextToWorkout";
 import { EditWorkoutModal } from "@/components/workout/EditWorkoutModal";
 import { EditNutritionPlanModal } from "@/components/nutrition/EditNutritionPlanModal";
 import {
