@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.swap-food]
 verify_jwt = false
+
+[functions.parse-workout-text]
+verify_jwt = false
