@@ -19,6 +19,7 @@ interface ParsedExercise {
   name: string;
   sets: number;
   reps: string;
+  rest_time?: number;
   notes?: string;
 }
 
