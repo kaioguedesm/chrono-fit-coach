@@ -356,14 +356,16 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess,
                         </div>
 
                         {/* Delete Button */}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeExercise(index)}
-                          className="text-destructive hover:text-destructive flex-shrink-0 mt-2"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        {!readOnly && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeExercise(index)}
+                            className="text-destructive hover:text-destructive flex-shrink-0 mt-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
