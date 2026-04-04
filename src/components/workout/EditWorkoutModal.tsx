@@ -350,6 +350,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess,
                               onChange={(e) => updateExercise(index, 'notes', e.target.value)}
                               placeholder="Dicas ou observações sobre o exercício..."
                               className="resize-none h-16"
+                              disabled={readOnly}
                             />
                           </div>
                         </div>
