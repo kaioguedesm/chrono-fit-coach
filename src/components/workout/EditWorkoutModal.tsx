@@ -311,6 +311,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess,
                                 value={exercise.reps}
                                 onChange={(e) => updateExercise(index, 'reps', e.target.value)}
                                 placeholder="8-12"
+                                disabled={readOnly}
                               />
                             </div>
                             <div className="space-y-1">
