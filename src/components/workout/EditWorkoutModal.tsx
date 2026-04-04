@@ -377,18 +377,20 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess,
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
+            {readOnly ? 'Fechar' : 'Cancelar'}
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? (
-              "Salvando..."
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Alterações
-              </>
-            )}
-          </Button>
+          {!readOnly && (
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? (
+                "Salvando..."
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Salvar Alterações
+                </>
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
