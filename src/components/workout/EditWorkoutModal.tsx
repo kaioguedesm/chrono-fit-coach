@@ -337,6 +337,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess,
                                 value={exercise.rest_time || ''}
                                 onChange={(e) => updateExercise(index, 'rest_time', e.target.value ? parseInt(e.target.value) : null)}
                                 placeholder="60"
+                                disabled={readOnly}
                               />
                             </div>
                           </div>
