@@ -223,9 +223,11 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess,
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Editar Treino</DialogTitle>
+          <DialogTitle className="text-2xl">{readOnly ? 'Visualizar Treino' : 'Editar Treino'}</DialogTitle>
           <DialogDescription>
-            Edite os detalhes e exercícios do seu treino
+            {readOnly 
+              ? 'Este treino foi criado pelo seu Personal Trainer e não pode ser editado'
+              : 'Edite os detalhes e exercícios do seu treino'}
           </DialogDescription>
         </DialogHeader>
 
