@@ -289,6 +289,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess,
                               onChange={(e) => updateExercise(index, 'name', e.target.value)}
                               placeholder="Nome do exercício"
                               className="font-medium"
+                              disabled={readOnly}
                             />
                           </div>
 
