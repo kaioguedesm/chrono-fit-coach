@@ -29,9 +29,10 @@ interface EditWorkoutModalProps {
   onOpenChange: (open: boolean) => void;
   workoutPlanId: string;
   onSuccess: () => void;
+  readOnly?: boolean;
 }
 
-export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess }: EditWorkoutModalProps) {
+export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess, readOnly = false }: EditWorkoutModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
