@@ -242,6 +242,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess,
                   value={workoutName}
                   onChange={(e) => setWorkoutName(e.target.value)}
                   placeholder="Ex: Treino A - Peito e Tríceps"
+                  disabled={readOnly}
                 />
               </div>
               <div className="space-y-2">
@@ -251,6 +252,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess,
                   value={workoutType}
                   onChange={(e) => setWorkoutType(e.target.value)}
                   placeholder="Ex: A, B, C"
+                  disabled={readOnly}
                 />
               </div>
             </div>
