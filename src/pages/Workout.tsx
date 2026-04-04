@@ -563,7 +563,7 @@ export default function Workout() {
                                 }}
                               >
                                 <Edit className="w-4 h-4 mr-2" />
-                                Visualizar e Editar
+                                {plan.created_by === 'personal' ? 'Visualizar Treino' : 'Visualizar e Editar'}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={(e) => {
@@ -575,18 +575,22 @@ export default function Workout() {
                                 <Share2 className="w-4 h-4 mr-2" />
                                 Compartilhar
                               </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setPlanToDelete(plan.id);
-                                  setDeleteDialogOpen(true);
-                                }}
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Excluir treino
-                              </DropdownMenuItem>
+                              {plan.created_by !== 'personal' && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setPlanToDelete(plan.id);
+                                      setDeleteDialogOpen(true);
+                                    }}
+                                  >
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Excluir treino
+                                  </DropdownMenuItem>
+                                </>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}
