@@ -263,10 +263,12 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess,
             <div>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold text-lg">Exercícios ({exercises.length})</h3>
-                <Button onClick={addExercise} size="sm" variant="outline">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Adicionar Exercício
-                </Button>
+                {!readOnly && (
+                  <Button onClick={addExercise} size="sm" variant="outline">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Adicionar Exercício
+                  </Button>
+                )}
               </div>
 
               <div className="space-y-4">
