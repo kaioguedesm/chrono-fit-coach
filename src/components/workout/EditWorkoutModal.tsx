@@ -302,6 +302,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess,
                                 value={exercise.sets}
                                 onChange={(e) => updateExercise(index, 'sets', parseInt(e.target.value))}
                                 min="1"
+                                disabled={readOnly}
                               />
                             </div>
                             <div className="space-y-1">
