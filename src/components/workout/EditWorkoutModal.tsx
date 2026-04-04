@@ -29,9 +29,10 @@ interface EditWorkoutModalProps {
   onOpenChange: (open: boolean) => void;
   workoutPlanId: string;
   onSuccess: () => void;
+  readOnly?: boolean;
 }
 
-export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess }: EditWorkoutModalProps) {
+export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess, readOnly = false }: EditWorkoutModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -222,9 +223,11 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Editar Treino</DialogTitle>
+          <DialogTitle className="text-2xl">{readOnly ? 'Visualizar Treino' : 'Editar Treino'}</DialogTitle>
           <DialogDescription>
-            Edite os detalhes e exercícios do seu treino
+            {readOnly 
+              ? 'Este treino foi criado pelo seu Personal Trainer e não pode ser editado'
+              : 'Edite os detalhes e exercícios do seu treino'}
           </DialogDescription>
         </DialogHeader>
 
@@ -239,6 +242,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
                   value={workoutName}
                   onChange={(e) => setWorkoutName(e.target.value)}
                   placeholder="Ex: Treino A - Peito e Tríceps"
+                  disabled={readOnly}
                 />
               </div>
               <div className="space-y-2">
@@ -248,6 +252,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
                   value={workoutType}
                   onChange={(e) => setWorkoutType(e.target.value)}
                   placeholder="Ex: A, B, C"
+                  disabled={readOnly}
                 />
               </div>
             </div>
@@ -258,10 +263,12 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
             <div>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold text-lg">Exercícios ({exercises.length})</h3>
-                <Button onClick={addExercise} size="sm" variant="outline">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Adicionar Exercício
-                </Button>
+                {!readOnly && (
+                  <Button onClick={addExercise} size="sm" variant="outline">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Adicionar Exercício
+                  </Button>
+                )}
               </div>
 
               <div className="space-y-4">
@@ -282,6 +289,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
                               onChange={(e) => updateExercise(index, 'name', e.target.value)}
                               placeholder="Nome do exercício"
                               className="font-medium"
+                              disabled={readOnly}
                             />
                           </div>
 
@@ -294,6 +302,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
                                 value={exercise.sets}
                                 onChange={(e) => updateExercise(index, 'sets', parseInt(e.target.value))}
                                 min="1"
+                                disabled={readOnly}
                               />
                             </div>
                             <div className="space-y-1">
@@ -302,6 +311,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
                                 value={exercise.reps}
                                 onChange={(e) => updateExercise(index, 'reps', e.target.value)}
                                 placeholder="8-12"
+                                disabled={readOnly}
                               />
                             </div>
                             <div className="space-y-1">
@@ -314,6 +324,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
                                 value={exercise.weight || ''}
                                 onChange={(e) => updateExercise(index, 'weight', e.target.value ? parseFloat(e.target.value) : null)}
                                 placeholder="0"
+                                disabled={readOnly}
                               />
                             </div>
                             <div className="space-y-1">
@@ -326,6 +337,7 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
                                 value={exercise.rest_time || ''}
                                 onChange={(e) => updateExercise(index, 'rest_time', e.target.value ? parseInt(e.target.value) : null)}
                                 placeholder="60"
+                                disabled={readOnly}
                               />
                             </div>
                           </div>
@@ -338,19 +350,22 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
                               onChange={(e) => updateExercise(index, 'notes', e.target.value)}
                               placeholder="Dicas ou observações sobre o exercício..."
                               className="resize-none h-16"
+                              disabled={readOnly}
                             />
                           </div>
                         </div>
 
                         {/* Delete Button */}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeExercise(index)}
-                          className="text-destructive hover:text-destructive flex-shrink-0 mt-2"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        {!readOnly && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeExercise(index)}
+                            className="text-destructive hover:text-destructive flex-shrink-0 mt-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -362,18 +377,20 @@ export function EditWorkoutModal({ open, onOpenChange, workoutPlanId, onSuccess 
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
+            {readOnly ? 'Fechar' : 'Cancelar'}
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? (
-              "Salvando..."
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Alterações
-              </>
-            )}
-          </Button>
+          {!readOnly && (
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? (
+                "Salvando..."
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Salvar Alterações
+                </>
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
