@@ -686,6 +686,7 @@ export default function Workout() {
             onOpenChange={setEditModalOpen}
             workoutPlanId={selectedWorkoutToEdit}
             onSuccess={fetchWorkoutPlans}
+            readOnly={workoutPlans.find(p => p.id === selectedWorkoutToEdit)?.created_by === 'personal'}
           />
         )}
 
