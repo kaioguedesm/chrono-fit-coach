@@ -26,6 +26,8 @@ import {
   Plus,
   ClipboardCheck,
   FileText,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import { LoadingState } from "@/components/common/LoadingState";
 import { WorkoutApprovalBadge } from "@/components/workout/WorkoutApprovalBadge";
