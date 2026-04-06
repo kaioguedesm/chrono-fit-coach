@@ -380,6 +380,29 @@ export default function PersonalStudentDetail() {
     }
   };
 
+  const handleDeleteNutrition = async (nutritionId: string) => {
+    try {
+      setDeletingNutrition(true);
+
+      // Delete meals first, then the plan
+      await supabase.from("meals").delete().eq("nutrition_plan_id", nutritionId);
+      await supabase.from("nutrition_plan_revisions").delete().eq("nutrition_plan_id", nutritionId);
+
+      const { error } = await supabase.from("nutrition_plans").delete().eq("id", nutritionId);
+      if (error) throw error;
+
+      toast.success("Dieta excluída com sucesso!");
+      setShowDeleteNutritionDialog(false);
+      setNutritionToDeleteId(null);
+      fetchStudentData();
+    } catch (error) {
+      console.error("Error deleting nutrition plan:", error);
+      toast.error("Erro ao excluir dieta. Tente novamente.");
+    } finally {
+      setDeletingNutrition(false);
+    }
+  };
+
   if (roleLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
