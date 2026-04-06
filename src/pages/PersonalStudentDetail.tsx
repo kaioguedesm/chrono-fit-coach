@@ -34,6 +34,7 @@ import { PersonalCreateWorkout } from "@/components/personal/PersonalCreateWorko
 import { PersonalCreateNutrition } from "@/components/personal/PersonalCreateNutrition";
 import { PersonalCreateWorkoutAI } from "@/components/personal/PersonalCreateWorkoutAI";
 import { PersonalTextToWorkout } from "@/components/personal/PersonalTextToWorkout";
+import { PersonalTextToNutrition } from "@/components/personal/PersonalTextToNutrition";
 import { EditWorkoutModal } from "@/components/workout/EditWorkoutModal";
 import { EditNutritionPlanModal } from "@/components/nutrition/EditNutritionPlanModal";
 import {
@@ -105,6 +106,7 @@ export default function PersonalStudentDetail() {
   const [showCreateWorkout, setShowCreateWorkout] = useState(false);
   const [showCreateWorkoutAI, setShowCreateWorkoutAI] = useState(false);
   const [showTextToWorkout, setShowTextToWorkout] = useState(false);
+  const [showTextToNutrition, setShowTextToNutrition] = useState(false);
   const [showCreateNutrition, setShowCreateNutrition] = useState(false);
   const [evaluationNotes, setEvaluationNotes] = useState("");
   const [evaluationId, setEvaluationId] = useState<string | null>(null);
@@ -215,7 +217,7 @@ export default function PersonalStudentDetail() {
         `,
         )
         .eq("user_id", studentId)
-        .eq("created_by", "ai")
+        .in("created_by", ["ai", "personal"])
         .order("created_at", { ascending: false });
 
       if (nutritionError) throw nutritionError;
@@ -503,6 +505,15 @@ export default function PersonalStudentDetail() {
             <FileText className="h-4 w-4 flex-shrink-0" />
             <span className="truncate min-w-0">Texto para Treino (IA)</span>
           </Button>
+          <Button
+            onClick={() => setShowTextToNutrition(true)}
+            className="gap-2 min-w-0 max-w-full"
+            variant="outline"
+            title={`Texto para Dieta (IA) para ${student.name}`}
+          >
+            <Apple className="h-4 w-4 flex-shrink-0" />
+            <span className="truncate min-w-0">Texto para Dieta (IA)</span>
+          </Button>
         </div>
 
         {/* Tabs de treinos e nutrição */}
@@ -766,6 +777,13 @@ export default function PersonalStudentDetail() {
       <PersonalTextToWorkout
         open={showTextToWorkout}
         onOpenChange={setShowTextToWorkout}
+        preSelectedStudentId={studentId}
+        onSuccess={fetchStudentData}
+      />
+
+      <PersonalTextToNutrition
+        open={showTextToNutrition}
+        onOpenChange={setShowTextToNutrition}
         preSelectedStudentId={studentId}
         onSuccess={fetchStudentData}
       />

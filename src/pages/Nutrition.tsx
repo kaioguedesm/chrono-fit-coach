@@ -219,50 +219,65 @@ export default function Nutrition() {
                             <span className="line-clamp-2">{plan.title}</span>
                           </CardTitle>
                           <div className="flex items-center gap-1 shrink-0">
-                            {plan.approval_status && plan.created_by === "ai" && (
+                            {plan.approval_status && (plan.created_by === "ai" || plan.created_by === "personal") && (
                               <NutritionApprovalBadge
                                 status={plan.approval_status}
                                 rejectionReason={plan.rejection_reason}
                               />
                             )}
                             {(!plan.approval_status || plan.approval_status === "approved") && (
-                              <Badge variant={plan.created_by === "ai" ? "default" : "secondary"} className="text-xs whitespace-nowrap">
-                                {plan.created_by === "ai" ? "IA" : "Custom"}
+                              <Badge variant={plan.created_by === "ai" ? "default" : plan.created_by === "personal" ? "secondary" : "outline"} className="text-xs whitespace-nowrap">
+                                {plan.created_by === "ai" ? "IA" : plan.created_by === "personal" ? "Personal" : "Custom"}
                               </Badge>
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditPlan(plan.id)}
-                            className="flex-1 gap-1.5 text-xs h-8"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                            Editar
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setPlanToSwap({ id: plan.id, title: plan.title });
-                              setSwapModalOpen(true);
-                            }}
-                            className="flex-1 gap-1.5 text-xs h-8"
-                          >
-                            <Repeat className="w-3.5 h-3.5" />
-                            Trocar
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => confirmDeletePlan(plan.id)}
-                            className="gap-1.5 text-xs h-8 text-destructive border-destructive/30 hover:bg-destructive/10"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
+                        {plan.created_by !== "personal" && (
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditPlan(plan.id)}
+                              className="flex-1 gap-1.5 text-xs h-8"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                              Editar
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setPlanToSwap({ id: plan.id, title: plan.title });
+                                setSwapModalOpen(true);
+                              }}
+                              className="flex-1 gap-1.5 text-xs h-8"
+                            >
+                              <Repeat className="w-3.5 h-3.5" />
+                              Trocar
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => confirmDeletePlan(plan.id)}
+                              className="gap-1.5 text-xs h-8 text-destructive border-destructive/30 hover:bg-destructive/10"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        )}
+                        {plan.created_by === "personal" && (
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditPlan(plan.id)}
+                              className="flex-1 gap-1.5 text-xs h-8"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                              Visualizar
+                            </Button>
+                          </div>
+                        )}
                       </div>
                       {plan.description && <p className="text-sm text-muted-foreground">{plan.description}</p>}
                       {plan.rejection_reason && (
@@ -417,6 +432,7 @@ export default function Nutrition() {
           }}
           nutritionPlanId={planToEdit}
           onSuccess={fetchNutritionPlans}
+          readOnly={nutritionPlans.find(p => p.id === planToEdit)?.created_by === "personal"}
         />
       )}
 
