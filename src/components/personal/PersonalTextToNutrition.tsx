@@ -557,7 +557,46 @@ export function PersonalTextToNutrition({
               </div>
             )}
 
-            {/* Meals */}
+            {/* Refinement area */}
+            <Card className="border-primary/30 bg-primary/5">
+              <CardContent className="pt-4 space-y-3">
+                <Label className="text-xs font-semibold flex items-center gap-2">
+                  <Wand2 className="h-3.5 w-3.5 text-primary" />
+                  Ajustar dieta com IA
+                </Label>
+                <Textarea
+                  placeholder="Ex: Adicione whey protein no pós-treino, troque arroz branco por integral, adicione abacate no lanche da tarde..."
+                  value={refinementText}
+                  onChange={(e) => setRefinementText(e.target.value)}
+                  rows={3}
+                  className="text-sm"
+                />
+                <Button
+                  onClick={handleRefine}
+                  disabled={refining || !refinementText.trim()}
+                  size="sm"
+                  className="w-full gap-2"
+                  variant="outline"
+                >
+                  {refining ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Ajustando dieta...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Ajustar com IA
+                    </>
+                  )}
+                </Button>
+                <p className="text-[10px] text-muted-foreground">
+                  💡 Descreva o que deseja adicionar ou alterar e a IA vai regenerar a dieta com os ajustes.
+                </p>
+              </CardContent>
+            </Card>
+
+
             {parsedDiet.meals.map((meal, mIdx) => (
               <Card key={mIdx}>
                 <CardHeader className="pb-2">
