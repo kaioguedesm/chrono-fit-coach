@@ -81,6 +81,8 @@ export function PersonalTextToNutrition({
   const [students, setStudents] = useState<Student[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [selectedStudentId, setSelectedStudentId] = useState(preSelectedStudentId || "");
+  const [refinementText, setRefinementText] = useState("");
+  const [refining, setRefining] = useState(false);
 
   useEffect(() => {
     if (open) {
