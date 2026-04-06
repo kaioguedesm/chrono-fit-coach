@@ -328,7 +328,56 @@ export default function PersonalStudentDetail() {
     }
   };
 
-  if (roleLoading || loading) {
+  const handleDeleteWorkout = async (workoutId: string) => {
+    try {
+      setDeletingWorkout(true);
+
+      // Cascade delete: exercise_sessions → workout_sessions → workout_schedule → workout_share_invites → workout_shares → workout_plan_revisions → exercises → workout_plans
+      // 1. Get workout_sessions ids
+      const { data: sessions } = await supabase
+        .from("workout_sessions")
+        .select("id")
+        .eq("workout_plan_id", workoutId);
+      const sessionIds = (sessions || []).map(s => s.id);
+
+      if (sessionIds.length > 0) {
+        await supabase.from("exercise_sessions").delete().in("workout_session_id", sessionIds);
+        await supabase.from("workout_sessions").delete().eq("workout_plan_id", workoutId);
+      }
+
+      await supabase.from("workout_schedule").delete().eq("workout_plan_id", workoutId);
+
+      // Get share ids
+      const { data: shares } = await supabase
+        .from("workout_shares")
+        .select("id")
+        .eq("workout_plan_id", workoutId);
+      const shareIds = (shares || []).map(s => s.id);
+
+      if (shareIds.length > 0) {
+        await supabase.from("workout_share_invites").delete().in("share_id", shareIds);
+        await supabase.from("workout_shares").delete().eq("workout_plan_id", workoutId);
+      }
+
+      await supabase.from("workout_plan_revisions").delete().eq("workout_plan_id", workoutId);
+      await supabase.from("exercises").delete().eq("workout_plan_id", workoutId);
+
+      const { error } = await supabase.from("workout_plans").delete().eq("id", workoutId);
+      if (error) throw error;
+
+      toast.success("Treino excluído com sucesso!");
+      setShowDeleteWorkoutDialog(false);
+      setWorkoutToDeleteId(null);
+      fetchStudentData();
+    } catch (error) {
+      console.error("Error deleting workout:", error);
+      toast.error("Erro ao excluir treino. Tente novamente.");
+    } finally {
+      setDeletingWorkout(false);
+    }
+  };
+
+
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         <Header title="Detalhes do Aluno" />
