@@ -266,6 +266,54 @@ export function PersonalTextToNutrition({
     setParsedDiet({ ...parsedDiet, meals });
   };
 
+  const handleRefine = async () => {
+    if (!refinementText.trim()) {
+      toast.error("Descreva o que deseja ajustar na dieta");
+      return;
+    }
+    if (!parsedDiet) return;
+
+    try {
+      setRefining(true);
+      const currentDietSummary = parsedDiet.meals.map(m =>
+        `${mealTypeLabels[m.meal_type] || m.meal_type}: ${m.name} - ${m.ingredients.join(', ')}`
+      ).join('\n');
+
+      const { data, error } = await supabase.functions.invoke("parse-diet-text", {
+        body: {
+          foodsText: `DIETA ATUAL:\n${currentDietSummary}\n\nAJUSTES SOLICITADOS PELO PERSONAL:\n${refinementText.trim()}`,
+          goal,
+          weight: Number(weight),
+          height: Number(height),
+          age: Number(age),
+          activityLevel,
+          mealsPerDay: Number(mealsPerDay),
+          restrictions: restrictions.trim() || undefined,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) {
+        toast.error(typeof data.error === "string" ? data.error : "Erro ao ajustar dieta");
+        return;
+      }
+
+      if (!data?.meals || data.meals.length === 0) {
+        toast.error("Não foi possível ajustar a dieta. Tente reformular.");
+        return;
+      }
+
+      setParsedDiet(data);
+      setRefinementText("");
+      toast.success("Dieta ajustada com sucesso!");
+    } catch (error: any) {
+      console.error("Error refining diet:", error);
+      toast.error("Erro ao ajustar dieta. Tente novamente.");
+    } finally {
+      setRefining(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!selectedStudentId) { toast.error("Selecione um aluno"); return; }
     if (!parsedDiet || parsedDiet.meals.length === 0) { toast.error("Nenhuma refeição para salvar"); return; }
