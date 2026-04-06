@@ -217,7 +217,7 @@ export default function PersonalStudentDetail() {
         `,
         )
         .eq("user_id", studentId)
-        .eq("created_by", "ai")
+        .in("created_by", ["ai", "personal"])
         .order("created_at", { ascending: false });
 
       if (nutritionError) throw nutritionError;
