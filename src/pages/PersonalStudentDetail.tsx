@@ -377,7 +377,7 @@ export default function PersonalStudentDetail() {
     }
   };
 
-
+  if (roleLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         <Header title="Detalhes do Aluno" />
