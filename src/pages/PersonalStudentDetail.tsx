@@ -974,6 +974,35 @@ export default function PersonalStudentDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Dialog de confirmação para excluir dieta */}
+      <AlertDialog open={showDeleteNutritionDialog} onOpenChange={setShowDeleteNutritionDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Dieta</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta dieta? Esta ação é irreversível e a dieta será removida também para o aluno.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingNutrition}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => nutritionToDeleteId && handleDeleteNutrition(nutritionToDeleteId)}
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={deletingNutrition}
+            >
+              {deletingNutrition ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                "Confirmar Exclusão"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
