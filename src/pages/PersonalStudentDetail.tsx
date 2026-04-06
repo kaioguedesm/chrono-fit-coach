@@ -120,6 +120,9 @@ export default function PersonalStudentDetail() {
   const [showDeleteWorkoutDialog, setShowDeleteWorkoutDialog] = useState(false);
   const [workoutToDeleteId, setWorkoutToDeleteId] = useState<string | null>(null);
   const [deletingWorkout, setDeletingWorkout] = useState(false);
+  const [showDeleteNutritionDialog, setShowDeleteNutritionDialog] = useState(false);
+  const [nutritionToDeleteId, setNutritionToDeleteId] = useState<string | null>(null);
+  const [deletingNutrition, setDeletingNutrition] = useState(false);
 
   useEffect(() => {
     if (!roleLoading && !isPersonal) {
@@ -374,6 +377,29 @@ export default function PersonalStudentDetail() {
       toast.error("Erro ao excluir treino. Tente novamente.");
     } finally {
       setDeletingWorkout(false);
+    }
+  };
+
+  const handleDeleteNutrition = async (nutritionId: string) => {
+    try {
+      setDeletingNutrition(true);
+
+      // Delete meals first, then the plan
+      await supabase.from("meals").delete().eq("nutrition_plan_id", nutritionId);
+      await supabase.from("nutrition_plan_revisions").delete().eq("nutrition_plan_id", nutritionId);
+
+      const { error } = await supabase.from("nutrition_plans").delete().eq("id", nutritionId);
+      if (error) throw error;
+
+      toast.success("Dieta excluída com sucesso!");
+      setShowDeleteNutritionDialog(false);
+      setNutritionToDeleteId(null);
+      fetchStudentData();
+    } catch (error) {
+      console.error("Error deleting nutrition plan:", error);
+      toast.error("Erro ao excluir dieta. Tente novamente.");
+    } finally {
+      setDeletingNutrition(false);
     }
   };
 
@@ -763,6 +789,18 @@ export default function PersonalStudentDetail() {
                       >
                         Visualizar / Editar Plano
                       </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        disabled={deletingNutrition}
+                        onClick={() => {
+                          setNutritionToDeleteId(plan.id);
+                          setShowDeleteNutritionDialog(true);
+                        }}
+                        title="Excluir dieta"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
 
                     {plan.approval_status === "pending" && (
@@ -925,6 +963,35 @@ export default function PersonalStudentDetail() {
               disabled={deletingWorkout}
             >
               {deletingWorkout ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                "Confirmar Exclusão"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog de confirmação para excluir dieta */}
+      <AlertDialog open={showDeleteNutritionDialog} onOpenChange={setShowDeleteNutritionDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Dieta</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta dieta? Esta ação é irreversível e a dieta será removida também para o aluno.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingNutrition}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => nutritionToDeleteId && handleDeleteNutrition(nutritionToDeleteId)}
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={deletingNutrition}
+            >
+              {deletingNutrition ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Excluindo...
