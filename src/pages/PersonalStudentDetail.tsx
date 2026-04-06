@@ -26,6 +26,8 @@ import {
   Plus,
   ClipboardCheck,
   FileText,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import { LoadingState } from "@/components/common/LoadingState";
 import { WorkoutApprovalBadge } from "@/components/workout/WorkoutApprovalBadge";
@@ -115,6 +117,9 @@ export default function PersonalStudentDetail() {
   const [workoutToEditId, setWorkoutToEditId] = useState<string | null>(null);
   const [editNutritionModalOpen, setEditNutritionModalOpen] = useState(false);
   const [nutritionPlanToEditId, setNutritionPlanToEditId] = useState<string | null>(null);
+  const [showDeleteWorkoutDialog, setShowDeleteWorkoutDialog] = useState(false);
+  const [workoutToDeleteId, setWorkoutToDeleteId] = useState<string | null>(null);
+  const [deletingWorkout, setDeletingWorkout] = useState(false);
 
   useEffect(() => {
     if (!roleLoading && !isPersonal) {
@@ -320,6 +325,55 @@ export default function PersonalStudentDetail() {
     } catch (error) {
       console.error("Error rejecting:", error);
       toast.error("Erro ao rejeitar");
+    }
+  };
+
+  const handleDeleteWorkout = async (workoutId: string) => {
+    try {
+      setDeletingWorkout(true);
+
+      // Cascade delete: exercise_sessions → workout_sessions → workout_schedule → workout_share_invites → workout_shares → workout_plan_revisions → exercises → workout_plans
+      // 1. Get workout_sessions ids
+      const { data: sessions } = await supabase
+        .from("workout_sessions")
+        .select("id")
+        .eq("workout_plan_id", workoutId);
+      const sessionIds = (sessions || []).map(s => s.id);
+
+      if (sessionIds.length > 0) {
+        await supabase.from("exercise_sessions").delete().in("workout_session_id", sessionIds);
+        await supabase.from("workout_sessions").delete().eq("workout_plan_id", workoutId);
+      }
+
+      await supabase.from("workout_schedule").delete().eq("workout_plan_id", workoutId);
+
+      // Get share ids
+      const { data: shares } = await supabase
+        .from("workout_shares")
+        .select("id")
+        .eq("workout_plan_id", workoutId);
+      const shareIds = (shares || []).map(s => s.id);
+
+      if (shareIds.length > 0) {
+        await supabase.from("workout_share_invites").delete().in("share_id", shareIds);
+        await supabase.from("workout_shares").delete().eq("workout_plan_id", workoutId);
+      }
+
+      await supabase.from("workout_plan_revisions").delete().eq("workout_plan_id", workoutId);
+      await supabase.from("exercises").delete().eq("workout_plan_id", workoutId);
+
+      const { error } = await supabase.from("workout_plans").delete().eq("id", workoutId);
+      if (error) throw error;
+
+      toast.success("Treino excluído com sucesso!");
+      setShowDeleteWorkoutDialog(false);
+      setWorkoutToDeleteId(null);
+      fetchStudentData();
+    } catch (error) {
+      console.error("Error deleting workout:", error);
+      toast.error("Erro ao excluir treino. Tente novamente.");
+    } finally {
+      setDeletingWorkout(false);
     }
   };
 
@@ -615,6 +669,18 @@ export default function PersonalStudentDetail() {
                       >
                         Visualizar / Editar Treino
                       </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        disabled={deletingWorkout}
+                        onClick={() => {
+                          setWorkoutToDeleteId(workout.id);
+                          setShowDeleteWorkoutDialog(true);
+                        }}
+                        title="Excluir treino"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
 
                     {workout.approval_status === "pending" && (
@@ -837,6 +903,35 @@ export default function PersonalStudentDetail() {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleReject} className="bg-destructive hover:bg-destructive/90">
               Confirmar Rejeição
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog de confirmação para excluir treino */}
+      <AlertDialog open={showDeleteWorkoutDialog} onOpenChange={setShowDeleteWorkoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Treino</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este treino? Esta ação é irreversível e o treino será removido também para o aluno.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingWorkout}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => workoutToDeleteId && handleDeleteWorkout(workoutToDeleteId)}
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={deletingWorkout}
+            >
+              {deletingWorkout ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                "Confirmar Exclusão"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
