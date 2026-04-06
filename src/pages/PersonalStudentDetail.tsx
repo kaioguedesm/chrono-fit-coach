@@ -907,6 +907,35 @@ export default function PersonalStudentDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Dialog de confirmação para excluir treino */}
+      <AlertDialog open={showDeleteWorkoutDialog} onOpenChange={setShowDeleteWorkoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Treino</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este treino? Esta ação é irreversível e o treino será removido também para o aluno.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingWorkout}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => workoutToDeleteId && handleDeleteWorkout(workoutToDeleteId)}
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={deletingWorkout}
+            >
+              {deletingWorkout ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                "Confirmar Exclusão"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
