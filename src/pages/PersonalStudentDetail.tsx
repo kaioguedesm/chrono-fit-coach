@@ -669,6 +669,18 @@ export default function PersonalStudentDetail() {
                       >
                         Visualizar / Editar Treino
                       </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        disabled={deletingWorkout}
+                        onClick={() => {
+                          setWorkoutToDeleteId(workout.id);
+                          setShowDeleteWorkoutDialog(true);
+                        }}
+                        title="Excluir treino"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
 
                     {workout.approval_status === "pending" && (
