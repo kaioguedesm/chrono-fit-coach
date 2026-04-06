@@ -5,12 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Wand2, User, Apple, Save, CheckCircle, Trash2, Plus,
+  Wand2, User, Save, CheckCircle, Trash2, Plus,
   ArrowLeft, Loader2, Sparkles, AlertTriangle,
 } from "lucide-react";
 import { LoadingState } from "@/components/common/LoadingState";
