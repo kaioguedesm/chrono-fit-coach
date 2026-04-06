@@ -111,6 +111,7 @@ export function PersonalTextToNutrition({
     setMealsPerDay("4");
     setRestrictions("");
     setParsedDiet(null);
+    setRefinementText("");
   };
 
   const loadStudentProfile = async (studentId: string) => {
