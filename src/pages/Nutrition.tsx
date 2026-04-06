@@ -432,6 +432,7 @@ export default function Nutrition() {
           }}
           nutritionPlanId={planToEdit}
           onSuccess={fetchNutritionPlans}
+          readOnly={nutritionPlans.find(p => p.id === planToEdit)?.created_by === "personal"}
         />
       )}
 
