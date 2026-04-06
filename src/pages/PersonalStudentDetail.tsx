@@ -789,6 +789,18 @@ export default function PersonalStudentDetail() {
                       >
                         Visualizar / Editar Plano
                       </Button>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        disabled={deletingNutrition}
+                        onClick={() => {
+                          setNutritionToDeleteId(plan.id);
+                          setShowDeleteNutritionDialog(true);
+                        }}
+                        title="Excluir dieta"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
 
                     {plan.approval_status === "pending" && (
