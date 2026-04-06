@@ -4,10 +4,13 @@ import { useAuth } from "./useAuth";
 import { useUserRole } from "./useUserRole";
 
 const PORTAL_01_NAME = "Portal 01";
+const MS_CONSULTORIA_NAME = "MS Consultoria";
+const AI_ENABLED_PORTALS = new Set([PORTAL_01_NAME]);
+const AI_DISABLED_PORTALS = new Set([MS_CONSULTORIA_NAME]);
 
 /**
  * Usuários do portal "Portal 01" podem criar treinos e dietas com IA sem aprovação do personal.
- * Os demais precisam do personal como hoje.
+ * O portal "MS Consultoria" (e demais portais) não possui esse acesso.
  */
 export function useCanCreateWithoutPersonal() {
   const { user } = useAuth();
@@ -51,7 +54,11 @@ export function useCanCreateWithoutPersonal() {
           return;
         }
 
-        setIsPortal01(gym.name.trim() === PORTAL_01_NAME);
+        const gymName = gym.name.trim();
+        const hasExplicitBlock = AI_DISABLED_PORTALS.has(gymName);
+        const hasExplicitAccess = AI_ENABLED_PORTALS.has(gymName);
+
+        setIsPortal01(hasExplicitAccess && !hasExplicitBlock);
       } catch {
         setIsPortal01(false);
       } finally {
