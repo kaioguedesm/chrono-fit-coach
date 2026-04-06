@@ -36,6 +36,7 @@ interface EditNutritionPlanModalProps {
   onOpenChange: (open: boolean) => void;
   nutritionPlanId: string;
   onSuccess: () => void;
+  readOnly?: boolean;
 }
 
 const mealTypeLabels: Record<string, string> = {
@@ -52,6 +53,7 @@ export function EditNutritionPlanModal({
   onOpenChange,
   nutritionPlanId,
   onSuccess,
+  readOnly = false,
 }: EditNutritionPlanModalProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -202,9 +204,9 @@ export function EditNutritionPlanModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Editar Plano Nutricional</DialogTitle>
+          <DialogTitle className="text-2xl">{readOnly ? "Visualizar Plano Nutricional" : "Editar Plano Nutricional"}</DialogTitle>
           <DialogDescription>
-            Ajuste o título, descrição e detalhes das refeições antes de liberar para o aluno.
+            {readOnly ? "Este plano foi criado pelo personal e não pode ser editado." : "Ajuste o título, descrição e detalhes das refeições antes de liberar para o aluno."}
           </DialogDescription>
         </DialogHeader>
 
@@ -219,6 +221,7 @@ export function EditNutritionPlanModal({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Ex: Plano Emagrecimento"
+                  disabled={readOnly}
                 />
               </div>
               <div className="space-y-2">
@@ -229,6 +232,7 @@ export function EditNutritionPlanModal({
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Breve resumo do objetivo e diretrizes do plano."
                   className="resize-none h-20"
+                  disabled={readOnly}
                 />
               </div>
             </div>
@@ -257,6 +261,7 @@ export function EditNutritionPlanModal({
                           value={meal.name}
                           onChange={(e) => updateMeal(index, "name", e.target.value)}
                           placeholder="Ex: Frango grelhado com legumes"
+                          disabled={readOnly}
                         />
                       </div>
 
@@ -267,6 +272,7 @@ export function EditNutritionPlanModal({
                           onChange={(e) => updateMeal(index, "ingredientsText", e.target.value)}
                           placeholder="Ex: 150g peito de frango, 100g brócolis, 80g batata doce..."
                           className="resize-none h-20"
+                          disabled={readOnly}
                         />
                       </div>
 
@@ -334,18 +340,20 @@ export function EditNutritionPlanModal({
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
+            {readOnly ? "Fechar" : "Cancelar"}
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? (
-              "Salvando..."
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                Salvar Alterações
-              </>
-            )}
-          </Button>
+          {!readOnly && (
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? (
+                "Salvando..."
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Salvar Alterações
+                </>
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
