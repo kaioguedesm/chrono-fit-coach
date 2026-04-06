@@ -81,6 +81,8 @@ export function PersonalTextToNutrition({
   const [students, setStudents] = useState<Student[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [selectedStudentId, setSelectedStudentId] = useState(preSelectedStudentId || "");
+  const [refinementText, setRefinementText] = useState("");
+  const [refining, setRefining] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -109,6 +111,7 @@ export function PersonalTextToNutrition({
     setMealsPerDay("4");
     setRestrictions("");
     setParsedDiet(null);
+    setRefinementText("");
   };
 
   const loadStudentProfile = async (studentId: string) => {
@@ -261,6 +264,54 @@ export function PersonalTextToNutrition({
       ingredients: [...meals[mealIdx].ingredients, ""],
     };
     setParsedDiet({ ...parsedDiet, meals });
+  };
+
+  const handleRefine = async () => {
+    if (!refinementText.trim()) {
+      toast.error("Descreva o que deseja ajustar na dieta");
+      return;
+    }
+    if (!parsedDiet) return;
+
+    try {
+      setRefining(true);
+      const currentDietSummary = parsedDiet.meals.map(m =>
+        `${mealTypeLabels[m.meal_type] || m.meal_type}: ${m.name} - ${m.ingredients.join(', ')}`
+      ).join('\n');
+
+      const { data, error } = await supabase.functions.invoke("parse-diet-text", {
+        body: {
+          foodsText: `DIETA ATUAL:\n${currentDietSummary}\n\nAJUSTES SOLICITADOS PELO PERSONAL:\n${refinementText.trim()}`,
+          goal,
+          weight: Number(weight),
+          height: Number(height),
+          age: Number(age),
+          activityLevel,
+          mealsPerDay: Number(mealsPerDay),
+          restrictions: restrictions.trim() || undefined,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) {
+        toast.error(typeof data.error === "string" ? data.error : "Erro ao ajustar dieta");
+        return;
+      }
+
+      if (!data?.meals || data.meals.length === 0) {
+        toast.error("Não foi possível ajustar a dieta. Tente reformular.");
+        return;
+      }
+
+      setParsedDiet(data);
+      setRefinementText("");
+      toast.success("Dieta ajustada com sucesso!");
+    } catch (error: any) {
+      console.error("Error refining diet:", error);
+      toast.error("Erro ao ajustar dieta. Tente novamente.");
+    } finally {
+      setRefining(false);
+    }
   };
 
   const handleSave = async () => {
@@ -506,7 +557,46 @@ export function PersonalTextToNutrition({
               </div>
             )}
 
-            {/* Meals */}
+            {/* Refinement area */}
+            <Card className="border-primary/30 bg-primary/5">
+              <CardContent className="pt-4 space-y-3">
+                <Label className="text-xs font-semibold flex items-center gap-2">
+                  <Wand2 className="h-3.5 w-3.5 text-primary" />
+                  Ajustar dieta com IA
+                </Label>
+                <Textarea
+                  placeholder="Ex: Adicione whey protein no pós-treino, troque arroz branco por integral, adicione abacate no lanche da tarde..."
+                  value={refinementText}
+                  onChange={(e) => setRefinementText(e.target.value)}
+                  rows={3}
+                  className="text-sm"
+                />
+                <Button
+                  onClick={handleRefine}
+                  disabled={refining || !refinementText.trim()}
+                  size="sm"
+                  className="w-full gap-2"
+                  variant="outline"
+                >
+                  {refining ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Ajustando dieta...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Ajustar com IA
+                    </>
+                  )}
+                </Button>
+                <p className="text-[10px] text-muted-foreground">
+                  💡 Descreva o que deseja adicionar ou alterar e a IA vai regenerar a dieta com os ajustes.
+                </p>
+              </CardContent>
+            </Card>
+
+
             {parsedDiet.meals.map((meal, mIdx) => (
               <Card key={mIdx}>
                 <CardHeader className="pb-2">
