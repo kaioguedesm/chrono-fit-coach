@@ -120,6 +120,9 @@ export default function PersonalStudentDetail() {
   const [showDeleteWorkoutDialog, setShowDeleteWorkoutDialog] = useState(false);
   const [workoutToDeleteId, setWorkoutToDeleteId] = useState<string | null>(null);
   const [deletingWorkout, setDeletingWorkout] = useState(false);
+  const [showDeleteNutritionDialog, setShowDeleteNutritionDialog] = useState(false);
+  const [nutritionToDeleteId, setNutritionToDeleteId] = useState<string | null>(null);
+  const [deletingNutrition, setDeletingNutrition] = useState(false);
 
   useEffect(() => {
     if (!roleLoading && !isPersonal) {
