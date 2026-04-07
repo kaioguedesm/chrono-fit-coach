@@ -319,6 +319,12 @@ export default function Nutrition() {
                         </div>
                       )}
 
+                      {/* Hydration Card */}
+                      {(() => {
+                        const { hydration } = parseHydrationFromDescription(plan.description);
+                        return hydration ? <HydrationCard hydration={hydration} showTracker={true} /> : null;
+                      })()}
+
                       <div className="space-y-3">
                         {mealTypes.map((mealType) => {
                           const mealsOfType = getMealsByType(plan.meals, mealType.key);
