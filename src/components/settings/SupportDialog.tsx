@@ -268,13 +268,20 @@ export function SupportDialog({ open, onOpenChange, type }: SupportDialogProps) 
                   Resposta rápida e atendimento direto via WhatsApp
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-3">
                 <Button 
-                  onClick={() => window.open('https://wa.me/5511999999999?text=Olá, preciso de ajuda com o Nex Fit!', '_blank')}
+                  onClick={() => window.open('https://wa.me/5583996152821?text=Olá, preciso de ajuda com o Nex Fit!', '_blank')}
                   className="w-full bg-green-500 hover:bg-green-600 text-white"
                 >
                   <MessageCircle className="w-4 h-4 mr-2" />
-                  Abrir WhatsApp
+                  Suporte 1 - (83) 99615-2821
+                </Button>
+                <Button 
+                  onClick={() => window.open('https://wa.me/5583991250316?text=Olá, preciso de ajuda com o Nex Fit!', '_blank')}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Suporte 2 - (83) 99125-0316
                 </Button>
               </CardContent>
             </Card>
