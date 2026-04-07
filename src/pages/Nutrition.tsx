@@ -284,6 +284,12 @@ export default function Nutrition() {
                         const { text } = parseHydrationFromDescription(plan.description);
                         return text ? <p className="text-sm text-muted-foreground">{text}</p> : null;
                       })()}
+                      {plan.rejection_reason && (
+                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 mt-2">
+                          <p className="text-sm font-medium text-destructive mb-1">Motivo da Rejeição:</p>
+                          <p className="text-xs text-muted-foreground">{plan.rejection_reason}</p>
+                        </div>
+                      )}
                     </CardHeader>
 
                     <CardContent className="space-y-4">
