@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Wand2, User, Save, CheckCircle, Trash2, Plus,
-  ArrowLeft, Loader2, Sparkles, AlertTriangle,
+  ArrowLeft, Loader2, Sparkles, AlertTriangle, Droplets,
 } from "lucide-react";
 import { LoadingState } from "@/components/common/LoadingState";
 
@@ -26,6 +26,18 @@ interface ParsedMeal {
   fat: number | null;
 }
 
+interface HydrationDistribution {
+  period: string;
+  amount_ml: number;
+}
+
+interface HydrationData {
+  total_ml: number;
+  total_liters: string;
+  distribution: HydrationDistribution[];
+  tip: string;
+}
+
 interface ParsedDiet {
   plan_title: string;
   description: string;
@@ -35,6 +47,7 @@ interface ParsedDiet {
     carbs: number;
     fat: number;
   };
+  hydration?: HydrationData;
   suggestions: string | null;
   meals: ParsedMeal[];
 }
