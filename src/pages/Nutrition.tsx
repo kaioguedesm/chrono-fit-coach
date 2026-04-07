@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Apple, Upload, Trash2, Pencil, Repeat } from "lucide-react";
+import { HydrationCard, parseHydrationFromDescription } from "@/components/nutrition/HydrationCard";
 import { AINutritionGenerator } from "@/components/nutrition/AINutritionGenerator";
 import { MealPhotoAnalyzer } from "@/components/nutrition/MealPhotoAnalyzer";
 import { DietUploader } from "@/components/nutrition/DietUploader";
@@ -279,7 +280,10 @@ export default function Nutrition() {
                           </div>
                         )}
                       </div>
-                      {plan.description && <p className="text-sm text-muted-foreground">{plan.description}</p>}
+                      {plan.description && (() => {
+                        const { text } = parseHydrationFromDescription(plan.description);
+                        return text ? <p className="text-sm text-muted-foreground">{text}</p> : null;
+                      })()}
                       {plan.rejection_reason && (
                         <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 mt-2">
                           <p className="text-sm font-medium text-destructive mb-1">Motivo da Rejeição:</p>
@@ -320,6 +324,12 @@ export default function Nutrition() {
                           })()}
                         </div>
                       )}
+
+                      {/* Hydration Card */}
+                      {(() => {
+                        const { hydration } = parseHydrationFromDescription(plan.description);
+                        return hydration ? <HydrationCard hydration={hydration} showTracker={true} /> : null;
+                      })()}
 
                       <div className="space-y-3">
                         {mealTypes.map((mealType) => {

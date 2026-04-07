@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Wand2, User, Save, CheckCircle, Trash2, Plus,
-  ArrowLeft, Loader2, Sparkles, AlertTriangle,
+  ArrowLeft, Loader2, Sparkles, AlertTriangle, Droplets,
 } from "lucide-react";
 import { LoadingState } from "@/components/common/LoadingState";
 
@@ -26,6 +26,18 @@ interface ParsedMeal {
   fat: number | null;
 }
 
+interface HydrationDistribution {
+  period: string;
+  amount_ml: number;
+}
+
+interface HydrationData {
+  total_ml: number;
+  total_liters: string;
+  distribution: HydrationDistribution[];
+  tip: string;
+}
+
 interface ParsedDiet {
   plan_title: string;
   description: string;
@@ -35,6 +47,7 @@ interface ParsedDiet {
     carbs: number;
     fat: number;
   };
+  hydration?: HydrationData;
   suggestions: string | null;
   meals: ParsedMeal[];
 }
@@ -328,7 +341,9 @@ export function PersonalTextToNutrition({
         .from("nutrition_plans")
         .insert({
           title: parsedDiet.plan_title || "Plano Alimentar",
-          description: parsedDiet.description || null,
+          description: parsedDiet.hydration
+            ? JSON.stringify({ text: parsedDiet.description || "", hydration: parsedDiet.hydration })
+            : (parsedDiet.description || null),
           user_id: selectedStudentId,
           created_by: "personal",
           approval_status: "approved",
@@ -596,6 +611,35 @@ export function PersonalTextToNutrition({
               </CardContent>
             </Card>
 
+
+            {/* Hydration Section */}
+            {parsedDiet.hydration && (
+              <Card className="border-blue-500/30 bg-blue-500/5">
+                <CardContent className="pt-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Droplets className="h-5 w-5 text-blue-500" />
+                    <p className="text-sm font-semibold">Hidratação Diária Recomendada</p>
+                  </div>
+                  <div className="text-center py-2">
+                    <div className="text-2xl font-bold text-blue-600">{parsedDiet.hydration.total_liters}L</div>
+                    <p className="text-xs text-muted-foreground">
+                      ({parsedDiet.hydration.total_ml}ml por dia)
+                    </p>
+                  </div>
+                  <div className="space-y-1.5">
+                    {parsedDiet.hydration.distribution.map((d, i) => (
+                      <div key={i} className="flex items-center justify-between text-xs bg-blue-500/10 rounded-md px-3 py-1.5">
+                        <span className="text-muted-foreground">{d.period}</span>
+                        <span className="font-semibold text-blue-600">{d.amount_ml}ml</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                    💧 {parsedDiet.hydration.tip}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             {parsedDiet.meals.map((meal, mIdx) => (
               <Card key={mIdx}>

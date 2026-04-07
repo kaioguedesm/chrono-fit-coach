@@ -112,6 +112,14 @@ REGRAS IMPORTANTES:
 - Respeite restrições alimentares
 - O plano deve ter exatamente ${mealsPerDay} refeições: ${mealTypesStr}
 
+CÁLCULO DE HIDRATAÇÃO:
+Calcule a ingestão diária de água recomendada usando:
+- Base: 35ml por kg de peso corporal
+- Se atividade moderada: +500ml
+- Se atividade alta: +1000ml
+- Se objetivo emagrecimento: +300ml
+Sugira uma distribuição ao longo do dia (manhã, treino, tarde, noite).
+
 Retorne APENAS um JSON válido com esta estrutura exata:
 {
   "plan_title": "Plano Alimentar - [Objetivo]",
@@ -121,6 +129,17 @@ Retorne APENAS um JSON válido com esta estrutura exata:
     "protein": 150,
     "carbs": 250,
     "fat": 60
+  },
+  "hydration": {
+    "total_ml": 3000,
+    "total_liters": "3,0",
+    "distribution": [
+      { "period": "Manhã (ao acordar)", "amount_ml": 500 },
+      { "period": "Durante o treino", "amount_ml": 500 },
+      { "period": "Tarde", "amount_ml": 1000 },
+      { "period": "Noite", "amount_ml": 1000 }
+    ],
+    "tip": "Distribua a água ao longo do dia para manter a hidratação constante."
   },
   "suggestions": "Texto com sugestões de melhoria se necessário, ou null",
   "meals": [
