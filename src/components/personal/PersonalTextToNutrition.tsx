@@ -610,6 +610,35 @@ export function PersonalTextToNutrition({
             </Card>
 
 
+            {/* Hydration Section */}
+            {parsedDiet.hydration && (
+              <Card className="border-blue-500/30 bg-blue-500/5">
+                <CardContent className="pt-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Droplets className="h-5 w-5 text-blue-500" />
+                    <p className="text-sm font-semibold">Hidratação Diária Recomendada</p>
+                  </div>
+                  <div className="text-center py-2">
+                    <div className="text-2xl font-bold text-blue-600">{parsedDiet.hydration.total_liters}L</div>
+                    <p className="text-xs text-muted-foreground">
+                      ({parsedDiet.hydration.total_ml}ml por dia)
+                    </p>
+                  </div>
+                  <div className="space-y-1.5">
+                    {parsedDiet.hydration.distribution.map((d, i) => (
+                      <div key={i} className="flex items-center justify-between text-xs bg-blue-500/10 rounded-md px-3 py-1.5">
+                        <span className="text-muted-foreground">{d.period}</span>
+                        <span className="font-semibold text-blue-600">{d.amount_ml}ml</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                    💧 {parsedDiet.hydration.tip}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             {parsedDiet.meals.map((meal, mIdx) => (
               <Card key={mIdx}>
                 <CardHeader className="pb-2">
