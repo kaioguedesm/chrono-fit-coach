@@ -1177,6 +1177,10 @@ export type Database = {
         Args: { p_function_name: string; p_limit: number; p_user_id: string }
         Returns: Json
       }
+      is_personal_of: {
+        Args: { _personal_id: string; _student_id: string }
+        Returns: boolean
+      }
       sync_pending_personal_signups: { Args: never; Returns: undefined }
     }
     Enums: {
