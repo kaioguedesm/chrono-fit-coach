@@ -341,7 +341,9 @@ export function PersonalTextToNutrition({
         .from("nutrition_plans")
         .insert({
           title: parsedDiet.plan_title || "Plano Alimentar",
-          description: parsedDiet.description || null,
+          description: parsedDiet.hydration
+            ? JSON.stringify({ text: parsedDiet.description || "", hydration: parsedDiet.hydration })
+            : (parsedDiet.description || null),
           user_id: selectedStudentId,
           created_by: "personal",
           approval_status: "approved",
