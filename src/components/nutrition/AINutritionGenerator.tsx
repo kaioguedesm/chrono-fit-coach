@@ -114,12 +114,21 @@ export function AINutritionGenerator({ onSuccess }: AINutritionGeneratorProps) {
 
       const approvalStatus = canCreateWithoutPersonal ? "approved" : "pending";
 
+      // Build description with hydration data embedded
+      let planDescription = functionData.description || "";
+      if (functionData.hydration) {
+        planDescription = JSON.stringify({
+          text: functionData.description || "",
+          hydration: functionData.hydration,
+        });
+      }
+
       const { data: plan, error: planError } = await supabase
         .from("nutrition_plans")
         .insert({
           user_id: user.id,
           title: functionData.planName,
-          description: functionData.description,
+          description: planDescription,
           created_by: "ai",
           approval_status: approvalStatus,
         })
