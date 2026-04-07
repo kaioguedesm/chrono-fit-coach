@@ -149,6 +149,23 @@ Retorne APENAS um JSON válido: {"tips": ["dica 1", "dica 2", "dica 3"]}`;
       }
     }
 
+    // Calculate hydration recommendation
+    let hydrationMl = 2500; // default
+    if (userProfile?.weight) {
+      hydrationMl = Math.round(userProfile.weight * 35);
+      // Activity level adjustments
+      const actLevel = userProfile.activityLevel || userProfile.goal || '';
+      if (/alto|intenso|5|6|7/i.test(actLevel)) {
+        hydrationMl += 1000;
+      } else if (/moderado|3|4/i.test(actLevel)) {
+        hydrationMl += 500;
+      }
+      // Goal adjustments
+      if (/emagrecimento|perda|emagrecer/i.test(dietType) || /emagrecimento|perda|emagrecer/i.test(userProfile.goal || '')) {
+        hydrationMl += 300;
+      }
+    }
+
     const systemPrompt = `Você é um nutricionista experiente e certificado, especializado em criar planos alimentares personalizados e cientificamente embasados.
 
 CRÍTICO: Retorne APENAS um objeto JSON válido com a estrutura exata abaixo, sem nenhum texto adicional:
@@ -156,6 +173,17 @@ CRÍTICO: Retorne APENAS um objeto JSON válido com a estrutura exata abaixo, se
 {
   "planName": "Nome criativo e motivador do plano alimentar",
   "description": "Breve descrição do plano e seus benefícios",
+  "hydration": {
+    "total_ml": ${hydrationMl},
+    "total_liters": "${(hydrationMl / 1000).toFixed(1).replace('.', ',')}",
+    "distribution": [
+      { "period": "Manhã (ao acordar)", "amount_ml": 500 },
+      { "period": "Durante o treino", "amount_ml": 500 },
+      { "period": "Tarde", "amount_ml": ${Math.round((hydrationMl - 1500) * 0.6)} },
+      { "period": "Noite", "amount_ml": ${Math.round((hydrationMl - 1500) * 0.4 + 500)} }
+    ],
+    "tip": "Distribua a água ao longo do dia para manter a hidratação constante e melhorar seus resultados."
+  },
   "meals": [
     {
       "meal_type": "tipo_refeicao",
@@ -169,6 +197,10 @@ CRÍTICO: Retorne APENAS um objeto JSON válido com a estrutura exata abaixo, se
     }
   ]
 }
+
+CÁLCULO DE HIDRATAÇÃO:
+A hidratação recomendada é de ${hydrationMl}ml (${(hydrationMl / 1000).toFixed(1).replace('.', ',')}L) por dia.
+Inclua SEMPRE o campo "hydration" no JSON com a distribuição sugerida ao longo do dia.
 
 TIPOS DE REFEIÇÃO permitidos (use exatamente estes):
 - "cafe_da_manha" (Café da Manhã)
