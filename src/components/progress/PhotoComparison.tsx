@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeftRight, Calendar, Columns2, Layers, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
+import { ArrowLeftRight, Calendar, Columns2, Layers, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useStorageUrl } from '@/hooks/useStorageUrl';
@@ -23,9 +22,22 @@ interface PhotoComparisonProps {
   refreshTrigger?: number;
 }
 
+const PHOTO_TYPE_LABELS: Record<string, string> = {
+  front: 'Frontal',
+  side: 'Lateral',
+  back: 'Costas',
+  frente: 'Frontal',
+  lado: 'Lateral',
+  costas: 'Costas',
+};
+
 function ComparisonImage({ photoUrl, label }: { photoUrl: string | null; label: string }) {
-  const { url } = useStorageUrl('progress-photos', photoUrl || null, 3600);
-  if (!url) return <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-sm">Carregando...</div>;
+  const { url, loading } = useStorageUrl('progress-photos', photoUrl || null, 3600);
+  if (loading || !url) return (
+    <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-sm animate-pulse">
+      Carregando...
+    </div>
+  );
   return <img src={url} alt={label} className="w-full h-full object-cover" />;
 }
 
@@ -97,6 +109,12 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
     };
   }, [isDragging, handleSliderMove]);
 
+  const formatPhotoLabel = (photo: ProgressPhoto) => {
+    const date = format(new Date(photo.taken_at), "dd/MM/yyyy", { locale: ptBR });
+    const type = PHOTO_TYPE_LABELS[photo.photo_type] || photo.photo_type;
+    return `${date} · ${type}`;
+  };
+
   if (photos.length < 2) {
     return (
       <Card>
@@ -106,7 +124,9 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
             Comparação Antes/Depois
           </CardTitle>
           <CardDescription>
-            Adicione pelo menos 2 fotos para comparar sua evolução
+            {photos.length === 0
+              ? 'Adicione fotos de progresso para comparar sua evolução'
+              : 'Adicione pelo menos mais 1 foto para comparar sua evolução'}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -166,8 +186,7 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
               <SelectContent>
                 {photos.map(photo => (
                   <SelectItem key={photo.id} value={photo.id}>
-                    {format(new Date(photo.taken_at), "dd/MM/yyyy", { locale: ptBR })}
-                    {photo.photo_type && ` · ${photo.photo_type === 'frente' ? 'Frontal' : photo.photo_type === 'lado' ? 'Lateral' : 'Costas'}`}
+                    {formatPhotoLabel(photo)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -182,8 +201,7 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
               <SelectContent>
                 {photos.map(photo => (
                   <SelectItem key={photo.id} value={photo.id}>
-                    {format(new Date(photo.taken_at), "dd/MM/yyyy", { locale: ptBR })}
-                    {photo.photo_type && ` · ${photo.photo_type === 'frente' ? 'Frontal' : photo.photo_type === 'lado' ? 'Lateral' : 'Costas'}`}
+                    {formatPhotoLabel(photo)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -194,7 +212,6 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
         {beforePhotoData && afterPhotoData && (
           <>
             {viewMode === 'slider' ? (
-              /* SLIDER MODE */
               <div
                 ref={sliderRef}
                 className="relative h-80 md:h-96 rounded-xl overflow-hidden bg-muted cursor-ew-resize select-none touch-none shadow-inner"
@@ -204,31 +221,23 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
                   handleSliderMove(e.touches[0].clientX);
                 }}
               >
-                {/* Before (full background) */}
                 <div className="absolute inset-0">
                   <ComparisonImage photoUrl={beforePhotoData.photo_url} label="Antes" />
                 </div>
-
-                {/* After (clipped) */}
                 <div
                   className="absolute inset-0 overflow-hidden"
                   style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
                 >
                   <ComparisonImage photoUrl={afterPhotoData.photo_url} label="Depois" />
                 </div>
-
-                {/* Slider Line */}
                 <div
                   className="absolute top-0 bottom-0 w-0.5 bg-white/90 z-10 pointer-events-none"
                   style={{ left: `${sliderPosition}%` }}
                 >
-                  {/* Handle */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-xl border-2 border-primary">
                     <ArrowLeftRight className="w-4 h-4 text-primary" />
                   </div>
                 </div>
-
-                {/* Labels */}
                 <div className="absolute top-3 left-3 z-20">
                   <Badge className="bg-black/70 text-white border-0 backdrop-blur-sm text-xs font-bold px-3 py-1">
                     ANTES
@@ -239,8 +248,6 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
                     DEPOIS
                   </Badge>
                 </div>
-
-                {/* Instruction overlay */}
                 {!isDragging && (
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
                     <div className="bg-black/60 text-white text-xs px-3 py-1.5 rounded-full backdrop-blur-sm flex items-center gap-1.5 animate-pulse">
@@ -252,7 +259,6 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
                 )}
               </div>
             ) : (
-              /* SIDE BY SIDE MODE */
               <div className="grid grid-cols-2 gap-2 rounded-xl overflow-hidden">
                 <div className="relative h-80 md:h-96 bg-muted">
                   <ComparisonImage photoUrl={beforePhotoData.photo_url} label="Antes" />
@@ -283,7 +289,7 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
               </div>
             )}
 
-            {/* Timeline Info */}
+            {/* Timeline */}
             <div className="bg-muted/50 rounded-xl p-3">
               <div className="flex items-center justify-between text-sm">
                 <div className="text-center">
@@ -292,7 +298,7 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
                 </div>
                 <div className="flex-1 mx-3 relative">
                   <div className="h-1 bg-muted rounded-full">
-                    <div className="h-full bg-gradient-to-r from-muted-foreground/40 to-primary rounded-full" style={{ width: '100%' }} />
+                    <div className="h-full bg-gradient-to-r from-muted-foreground/40 to-primary rounded-full w-full" />
                   </div>
                   {daysBetween > 0 && (
                     <div className="absolute -top-5 left-1/2 -translate-x-1/2">
@@ -309,7 +315,6 @@ export function PhotoComparison({ refreshTrigger }: PhotoComparisonProps) {
               </div>
             </div>
 
-            {/* Descriptions */}
             {(beforePhotoData.description || afterPhotoData.description) && (
               <div className="grid grid-cols-2 gap-3">
                 {beforePhotoData.description && (
