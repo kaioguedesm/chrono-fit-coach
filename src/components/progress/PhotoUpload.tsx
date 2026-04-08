@@ -1,14 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Camera, Upload, X, Loader2 } from 'lucide-react';
+import { Camera, Upload, X, Loader2, Smartphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { photoUploadSchema } from '@/lib/validations';
 
 interface PhotoUploadProps {
   onSuccess: () => void;
@@ -22,28 +21,26 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
   const [description, setDescription] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    console.log('Arquivo selecionado:', file.name, file.size, file.type);
-
-    // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast({
-        title: "Erro de validação",
-        description: "Arquivo muito grande (máx 10MB)",
+        title: "Arquivo muito grande",
+        description: "O tamanho máximo é 10MB",
         variant: "destructive"
       });
       return;
     }
 
-    // Accept any image type (including HEIC from mobile cameras)
     if (!file.type.startsWith('image/')) {
       toast({
-        title: "Erro de validação",
-        description: "Tipo de arquivo inválido. Selecione uma imagem.",
+        title: "Formato inválido",
+        description: "Selecione uma imagem (JPG, PNG, WEBP, HEIC)",
         variant: "destructive"
       });
       return;
@@ -52,84 +49,65 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
     setSelectedFile(file);
     const objectUrl = URL.createObjectURL(file);
     setPreviewUrl(objectUrl);
-    console.log('Preview URL criada:', objectUrl);
+  };
+
+  const clearSelection = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
   const uploadPhoto = async () => {
     if (!user || !selectedFile) {
-      console.error('Upload cancelado - Usuário ou arquivo não disponível', { user: !!user, selectedFile: !!selectedFile });
       toast({
         title: "Erro",
-        description: "Por favor, selecione uma foto para fazer upload.",
+        description: "Selecione uma foto para fazer upload.",
         variant: "destructive"
       });
       return;
     }
 
-    console.log('Iniciando upload da foto...', { 
-      userId: user.id, 
-      fileName: selectedFile.name,
-      photoType,
-      description 
-    });
-
     setUploading(true);
     try {
-      const fileExt = selectedFile.name.split('.').pop();
+      const fileExt = selectedFile.name.split('.').pop() || 'jpg';
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      console.log('Nome do arquivo no storage:', fileName);
 
-      // Upload to storage
-      console.log('Fazendo upload para o storage...');
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('progress-photos')
         .upload(fileName, selectedFile, {
           cacheControl: '3600',
           upsert: false
         });
 
-      if (uploadError) {
-        console.error('Erro no upload para storage:', uploadError);
-        throw uploadError;
-      }
-      console.log('Upload para storage concluído:', uploadData);
+      if (uploadError) throw uploadError;
 
-      // Use the file path instead of public URL for private bucket
-      const photoPath = fileName;
-
-      // Insert into database with path (we'll generate signed URLs on demand)
-      console.log('Inserindo registro no banco de dados...');
-      const { data: dbData, error: dbError } = await supabase
+      const { error: dbError } = await supabase
         .from('progress_photos')
         .insert({
           user_id: user.id,
-          photo_url: photoPath,
+          photo_url: fileName,
           photo_type: photoType,
           description: description || null,
           taken_at: new Date().toISOString()
-        })
-        .select();
+        });
 
-      if (dbError) {
-        console.error('Erro ao inserir no banco:', dbError);
-        throw dbError;
-      }
-      console.log('Registro criado no banco:', dbData);
+      if (dbError) throw dbError;
 
       toast({
         title: "Foto salva! 📸",
-        description: "Sua foto de progresso foi registrada."
+        description: "Sua foto de progresso foi registrada com sucesso."
       });
 
-      setSelectedFile(null);
-      setPreviewUrl(null);
+      clearSelection();
       setDescription('');
       onSuccess();
     } catch (error: any) {
-      console.error('Erro geral no upload:', error);
+      console.error('Erro no upload:', error);
       toast({
         title: "Erro ao salvar foto",
-        description: error.message || "Não foi possível fazer upload da foto. Tente novamente.",
+        description: error.message || "Não foi possível fazer upload. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -140,68 +118,97 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Adicionar Foto de Progresso</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Camera className="w-5 h-5 text-primary" />
+          Adicionar Foto de Progresso
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label>Tipo de Foto</Label>
-          <Select value={photoType} onValueChange={(v: any) => setPhotoType(v)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="front">Frontal</SelectItem>
-              <SelectItem value="side">Lateral</SelectItem>
-              <SelectItem value="back">Costas</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Descrição (opcional)</Label>
-          <Input
-            placeholder="Ex: 3 meses de treino"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Tipo de Foto</Label>
+            <Select value={photoType} onValueChange={(v: any) => setPhotoType(v)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="front">Frontal</SelectItem>
+                <SelectItem value="side">Lateral</SelectItem>
+                <SelectItem value="back">Costas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Descrição (opcional)</Label>
+            <Input
+              placeholder="Ex: 3 meses de treino"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              maxLength={200}
+            />
+          </div>
         </div>
 
         {previewUrl ? (
-          <div className="relative">
+          <div className="relative rounded-xl overflow-hidden border border-border">
             <img
               src={previewUrl}
               alt="Preview"
-              className="w-full h-64 object-cover rounded-lg"
+              className="w-full h-64 object-contain bg-muted"
             />
             <Button
               variant="destructive"
               size="icon"
-              className="absolute top-2 right-2"
-              onClick={() => {
-                setSelectedFile(null);
-                setPreviewUrl(null);
-              }}
+              className="absolute top-2 right-2 h-8 w-8"
+              onClick={clearSelection}
             >
               <X className="w-4 h-4" />
             </Button>
+            <div className="absolute bottom-2 left-2">
+              <span className="bg-black/60 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
+                {(selectedFile!.size / (1024 * 1024)).toFixed(1)} MB
+              </span>
+            </div>
           </div>
         ) : (
-          <div className="border-2 border-dashed rounded-lg p-8 text-center space-y-4">
-            <Camera className="w-12 h-12 mx-auto text-muted-foreground" />
-            <div>
-              <p className="text-sm font-medium mb-1">Adicione uma foto de progresso</p>
-              <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP (máx. 10MB)</p>
+          <div className="border-2 border-dashed border-border rounded-xl p-8 text-center space-y-4 bg-muted/30">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+              <Camera className="w-8 h-8 text-primary" />
             </div>
-            <Button
-              variant="outline"
-              onClick={() => document.getElementById('photo-upload')?.click()}
-              type="button"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Selecionar Foto
-            </Button>
-            <Input
-              id="photo-upload"
+            <div>
+              <p className="text-sm font-medium mb-1">Registre sua evolução</p>
+              <p className="text-xs text-muted-foreground">JPG, PNG, WEBP ou HEIC (máx. 10MB)</p>
+            </div>
+            <div className="flex gap-3 justify-center">
+              <Button
+                variant="outline"
+                onClick={() => cameraInputRef.current?.click()}
+                type="button"
+                className="gap-2"
+              >
+                <Smartphone className="w-4 h-4" />
+                Tirar Foto
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                type="button"
+                className="gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                Galeria
+              </Button>
+            </div>
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+            <input
+              ref={fileInputRef}
               type="file"
               accept="image/*"
               className="hidden"
@@ -214,6 +221,7 @@ export function PhotoUpload({ onSuccess }: PhotoUploadProps) {
           onClick={uploadPhoto}
           disabled={!selectedFile || uploading}
           className="w-full"
+          size="lg"
         >
           {uploading ? (
             <>

@@ -727,9 +727,8 @@ export default function Progress() {
 
           <TabsContent value="photos" className="space-y-4 animate-fade-in">
             <PhotoUpload onSuccess={() => setRefreshPhotos(prev => prev + 1)} />
-            <div key={refreshPhotos}>
-              <PhotoGallery />
-            </div>
+            <PhotoComparison refreshTrigger={refreshPhotos} />
+            <PhotoGallery refreshTrigger={refreshPhotos} />
           </TabsContent>
         </Tabs>
       </div>
