@@ -197,7 +197,7 @@ export default function Physio() {
           {professionalSections.map((section, idx) => (
             <Card key={idx} className="opacity-60 relative overflow-hidden">
               <div className="absolute inset-0 bg-background/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
-                <Badge variant="outline" className="text-xs gap-1">
+                <Badge variant="outline" className="text-xs gap-1 bg-muted text-muted-foreground">
                   <Lock className="w-3 h-3" />
                   Em breve
                 </Badge>
