@@ -184,7 +184,7 @@ export default function Physio() {
       <div className="space-y-3 pt-4">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold text-foreground">Área Profissional</h2>
-          <Badge className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/30">
+          <Badge className="text-xs bg-accent text-accent-foreground border-border">
             <Lock className="w-3 h-3 mr-1" />
             Em breve
           </Badge>
