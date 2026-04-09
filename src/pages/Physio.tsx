@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Heart, ChevronDown, ChevronUp, Lock, Activity, Bone, CircleDot, ArrowUpDown, Footprints } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import { cn } from "@/lib/utils";
 
 interface Exercise {
