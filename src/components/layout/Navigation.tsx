@@ -125,7 +125,7 @@ export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationPro
         className="overflow-x-auto overflow-y-hidden scrollbar-hide scroll-smooth"
         style={{ scrollBehavior: "smooth" }}
       >
-        <div className="flex items-center gap-1 px-2 py-2 min-w-max">
+        <div className="flex items-center gap-1 px-2 py-2 min-w-max md:min-w-0 md:w-full md:justify-center">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
