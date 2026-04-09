@@ -156,7 +156,7 @@ export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationPro
                   }, 300);
                 }}
                 className={cn(
-                  "flex flex-col items-center gap-1.5 h-auto py-3 px-4 min-w-[70px] rounded-xl transition-all duration-200 flex-shrink-0",
+                  "flex flex-col items-center gap-1.5 h-auto py-3 px-4 min-w-[70px] md:min-w-0 md:px-2 md:flex-1 rounded-xl transition-all duration-200 flex-shrink-0 md:flex-shrink",
                   "active:scale-95 touch-manipulation will-change-transform",
                   isActive
                     ? "text-primary bg-primary/10 shadow-sm"
