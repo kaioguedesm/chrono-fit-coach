@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from "react";
-import { Home, User, Dumbbell, Calendar, Apple, BarChart3, Settings, Shield, Rocket } from "lucide-react";
+import { Home, User, Dumbbell, Calendar, Apple, BarChart3, Settings, Shield, Rocket, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,7 @@ const baseNavigationItems = [
   { id: "nutrition", label: "Nutrição", icon: Apple },
   { id: "progress", label: "Progresso", icon: BarChart3 },
   { id: "transformation", label: "Projeto", icon: Rocket },
+  { id: "physio", label: "Fisio", icon: Heart },
   { id: "settings", label: "Config", icon: Settings },
 ];
 

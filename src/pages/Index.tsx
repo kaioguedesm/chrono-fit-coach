@@ -10,6 +10,7 @@ import Nutrition from "./Nutrition";
 import Progress from "./Progress";
 import Settings from "./Settings";
 import TransformationProjects from "./TransformationProjects";
+import Physio from "./Physio";
 import PersonalArea from "./PersonalArea";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
@@ -69,6 +70,8 @@ const Index = () => {
         return <Progress />;
       case "transformation":
         return <TransformationProjects />;
+      case "physio":
+        return <Physio />;
       case "settings":
         return <Settings />;
       default:
