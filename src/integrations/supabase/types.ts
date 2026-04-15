@@ -122,6 +122,48 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_checkins: {
+        Row: {
+          check_date: string
+          created_at: string
+          diet_followed: string | null
+          energy_level: number | null
+          id: string
+          motivation_level: number | null
+          notes: string | null
+          pain_level: number | null
+          user_id: string
+          water_ml: number | null
+          workout_done: boolean | null
+        }
+        Insert: {
+          check_date?: string
+          created_at?: string
+          diet_followed?: string | null
+          energy_level?: number | null
+          id?: string
+          motivation_level?: number | null
+          notes?: string | null
+          pain_level?: number | null
+          user_id: string
+          water_ml?: number | null
+          workout_done?: boolean | null
+        }
+        Update: {
+          check_date?: string
+          created_at?: string
+          diet_followed?: string | null
+          energy_level?: number | null
+          id?: string
+          motivation_level?: number | null
+          notes?: string | null
+          pain_level?: number | null
+          user_id?: string
+          water_ml?: number | null
+          workout_done?: boolean | null
+        }
+        Relationships: []
+      }
       exercise_sessions: {
         Row: {
           completed_at: string
@@ -791,6 +833,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_levels: {
+        Row: {
+          best_streak: number
+          created_at: string
+          current_level: string
+          current_streak: number
+          id: string
+          last_checkin_date: string | null
+          total_xp: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_streak?: number
+          created_at?: string
+          current_level?: string
+          current_streak?: number
+          id?: string
+          last_checkin_date?: string | null
+          total_xp?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_streak?: number
+          created_at?: string
+          current_level?: string
+          current_streak?: number
+          id?: string
+          last_checkin_date?: string | null
+          total_xp?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           approved: boolean
@@ -874,6 +952,51 @@ export type Database = {
           terms_version?: string
           user_agent?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_missions: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string
+          current_value: number
+          description: string | null
+          id: string
+          mission_type: string
+          reward_badge: string | null
+          target_value: number
+          title: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          description?: string | null
+          id?: string
+          mission_type: string
+          reward_badge?: string | null
+          target_value?: number
+          title: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          description?: string | null
+          id?: string
+          mission_type?: string
+          reward_badge?: string | null
+          target_value?: number
+          title?: string
+          user_id?: string
+          week_start?: string
         }
         Relationships: []
       }
