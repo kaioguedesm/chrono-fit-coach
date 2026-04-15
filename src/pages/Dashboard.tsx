@@ -140,19 +140,6 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
           <p className="text-base text-muted-foreground">Vamos continuar sua jornada fitness hoje?</p>
         </div>
 
-        {/* Check-in diário */}
-        {user && (
-          <Button
-            onClick={() => setCheckinModalOpen(true)}
-            className="w-full"
-            variant={todayCheckin ? "outline" : "default"}
-            size="lg"
-          >
-            <CheckCircle2 className="w-5 h-5 mr-2" />
-            {todayCheckin ? '✅ Check-in feito! Editar' : 'Fazer Check-in Diário'}
-          </Button>
-        )}
-
         {/* Nível do Usuário */}
         {user && userLevel && (
           <UserLevelCard
@@ -170,6 +157,19 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
           totalWorkouts={totalWorkouts}
           totalAchievements={totalAchievements}
         />
+
+        {/* Check-in diário */}
+        {user && (
+          <Button
+            onClick={() => setCheckinModalOpen(true)}
+            className="w-full"
+            variant={todayCheckin ? "outline" : "default"}
+            size="lg"
+          >
+            <CheckCircle2 className="w-5 h-5 mr-2" />
+            {todayCheckin ? '✅ Check-in feito! Editar' : 'Fazer Check-in Diário'}
+          </Button>
+        )}
         
         <QuickActions onActionClick={handleActionClick} isStartingWorkout={isStarting} />
 
