@@ -1,737 +1,507 @@
-import { useState, useEffect } from 'react';
-import { Header } from '@/components/layout/Header';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { TrendingUp, TrendingDown, Scale, Ruler, Plus, Activity, Target, ArrowUp, ArrowDown, Minus } from 'lucide-react';
-import { LoadingState } from '@/components/common/LoadingState';
-import { EmptyState } from '@/components/common/EmptyState';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  Legend,
-  Area,
-  AreaChart,
-  ComposedChart,
-  Bar,
-  ReferenceLine
-} from 'recharts';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { PhotoUpload } from '@/components/progress/PhotoUpload';
-import { PhotoGallery } from '@/components/progress/PhotoGallery';
-import { PhotoComparison } from '@/components/progress/PhotoComparison';
-import { AchievementsBadges } from '@/components/progress/AchievementsBadges';
-import { WeeklySummary } from '@/components/progress/WeeklySummary';
-import { useGoals } from '@/hooks/useGoals';
+import { useState, useEffect, useMemo } from "react";
+import { Header } from "@/components/layout/Header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { TrendingUp, ArrowUp, ArrowDown, Minus, Dumbbell, Camera, BarChart3 } from "lucide-react";
+import { LoadingState } from "@/components/common/LoadingState";
+import { EmptyState } from "@/components/common/EmptyState";
+import {
+  AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, BarChart, Bar,
+} from "recharts";
+import { format, subDays, startOfWeek } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { PhotoUpload } from "@/components/progress/PhotoUpload";
+import { PhotoGallery } from "@/components/progress/PhotoGallery";
+import { PhotoComparison } from "@/components/progress/PhotoComparison";
+import { useAntiStagnation } from "@/hooks/useAntiStagnation";
+import { cn } from "@/lib/utils";
 
-interface BodyMeasurement {
-  id: string;
-  weight: number | null;
-  body_fat_percentage: number | null;
-  muscle_mass: number | null;
-  chest: number | null;
-  waist: number | null;
-  hips: number | null;
-  arm: number | null;
-  thigh: number | null;
-  measured_at: string;
+interface ExerciseLoadData {
+  exerciseName: string;
+  data: { date: string; weight: number; label: string }[];
+  currentWeight: number;
+  previousWeight: number;
+  changePercent: number;
 }
 
-interface NewMeasurement {
-  weight: string;
-  bodyFat: string;
-  muscleMass: string;
-  chest: string;
-  waist: string;
-  hips: string;
-  arm: string;
-  thigh: string;
+interface WeeklyComparison {
+  metric: string;
+  thisWeek: number;
+  lastWeek: number;
+  change: number;
+  unit: string;
 }
 
 export default function Progress() {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const { goals } = useGoals();
-  const [measurements, setMeasurements] = useState<BodyMeasurement[]>([]);
+  
+  const antiStagnation = useAntiStagnation();
+  const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [exerciseLoads, setExerciseLoads] = useState<ExerciseLoadData[]>([]);
+  const [weeklyComparison, setWeeklyComparison] = useState<WeeklyComparison[]>([]);
+  const [volumeByGroup, setVolumeByGroup] = useState<{ group: string; sets: number }[]>([]);
   const [refreshPhotos, setRefreshPhotos] = useState(0);
-  const [newMeasurement, setNewMeasurement] = useState<NewMeasurement>({
-    weight: '',
-    bodyFat: '',
-    muscleMass: '',
-    chest: '',
-    waist: '',
-    hips: '',
-    arm: '',
-    thigh: ''
-  });
+  const [weeklyWorkouts, setWeeklyWorkouts] = useState<{ day: string; count: number }[]>([]);
 
   useEffect(() => {
-    if (user) {
-      fetchMeasurements();
-    }
+    if (user) loadEvolutionData();
+    else setLoading(false);
   }, [user]);
 
-  const fetchMeasurements = async () => {
+  const loadEvolutionData = async () => {
     if (!user) return;
+    setLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from('body_measurements')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('measured_at', { ascending: false });
+      const thirtyDaysAgo = subDays(new Date(), 30);
+      const thisWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+      const lastWeekStart = subDays(thisWeekStart, 7);
+      const lastWeekEnd = subDays(thisWeekStart, 1);
 
-      if (error) throw error;
+      // Fetch sessions
+      const { data: sessions } = await supabase
+        .from("workout_sessions")
+        .select("id, completed_at, workout_plan_id")
+        .eq("user_id", user.id)
+        .not("completed_at", "is", null)
+        .gte("completed_at", thirtyDaysAgo.toISOString())
+        .order("completed_at", { ascending: true });
 
-      setMeasurements(data || []);
-    } catch (error: any) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar as medidas.",
-        variant: "destructive"
+      if (!sessions || sessions.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      // Weekly workouts chart
+      const dayMap: Record<string, number> = {};
+      for (let i = 6; i >= 0; i--) {
+        const d = subDays(new Date(), i);
+        dayMap[format(d, "EEE", { locale: ptBR })] = 0;
+      }
+      sessions.forEach((s) => {
+        const d = new Date(s.completed_at!);
+        const dayDiff = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+        if (dayDiff < 7) {
+          const key = format(d, "EEE", { locale: ptBR });
+          if (key in dayMap) dayMap[key]++;
+        }
       });
+      setWeeklyWorkouts(Object.entries(dayMap).map(([day, count]) => ({ day, count })));
+
+      // Weekly comparison
+      const thisWeekSessions = sessions.filter(
+        (s) => new Date(s.completed_at!) >= thisWeekStart
+      ).length;
+      const lastWeekSessions = sessions.filter(
+        (s) => {
+          const d = new Date(s.completed_at!);
+          return d >= lastWeekStart && d <= lastWeekEnd;
+        }
+      ).length;
+
+      // Fetch exercise sessions
+      const sessionIds = sessions.map((s) => s.id);
+      const { data: exerciseSessions } = await supabase
+        .from("exercise_sessions")
+        .select("exercise_id, weight_used, sets_completed, reps_completed, completed_at, workout_session_id")
+        .in("workout_session_id", sessionIds)
+        .order("completed_at", { ascending: true });
+
+      // Get exercise names
+      const exerciseIds = [...new Set(exerciseSessions?.map((es) => es.exercise_id) || [])];
+      const { data: exercises } = await supabase
+        .from("exercises")
+        .select("id, name")
+        .in("id", exerciseIds);
+
+      const nameMap = new Map(exercises?.map((e) => [e.id, e.name]) || []);
+
+      // Build exercise load evolution
+      const grouped = new Map<string, { date: string; weight: number }[]>();
+      const groupVolume = new Map<string, number>();
+
+      for (const es of exerciseSessions || []) {
+        const name = nameMap.get(es.exercise_id) || "Desconhecido";
+        if (!grouped.has(name)) grouped.set(name, []);
+        grouped.get(name)!.push({
+          date: es.completed_at,
+          weight: es.weight_used || 0,
+        });
+
+        // Volume counting (sets)
+        const current = groupVolume.get(name) || 0;
+        groupVolume.set(name, current + es.sets_completed);
+      }
+
+      const loads: ExerciseLoadData[] = [];
+      for (const [name, entries] of grouped) {
+        if (entries.length < 2) continue;
+        const firstWeight = entries[0].weight;
+        const lastWeight = entries[entries.length - 1].weight;
+        const changePercent = firstWeight > 0
+          ? Math.round(((lastWeight - firstWeight) / firstWeight) * 100)
+          : 0;
+
+        loads.push({
+          exerciseName: name,
+          data: entries.map((e) => ({
+            date: e.date,
+            weight: e.weight,
+            label: format(new Date(e.date), "dd/MM"),
+          })),
+          currentWeight: lastWeight,
+          previousWeight: firstWeight,
+          changePercent,
+        });
+      }
+
+      // Sort by most data points
+      loads.sort((a, b) => b.data.length - a.data.length);
+      setExerciseLoads(loads.slice(0, 8));
+
+      // Volume by group (top exercises by sets)
+      const volumeArr = Array.from(groupVolume.entries())
+        .map(([group, sets]) => ({ group, sets }))
+        .sort((a, b) => b.sets - a.sets)
+        .slice(0, 6);
+      setVolumeByGroup(volumeArr);
+
+      // This week vs last week sets
+      const thisWeekExSessions = (exerciseSessions || []).filter((es) => {
+        const session = sessions.find((s) => s.id === es.workout_session_id);
+        return session && new Date(session.completed_at!) >= thisWeekStart;
+      });
+      const lastWeekExSessions = (exerciseSessions || []).filter((es) => {
+        const session = sessions.find((s) => s.id === es.workout_session_id);
+        if (!session) return false;
+        const d = new Date(session.completed_at!);
+        return d >= lastWeekStart && d <= lastWeekEnd;
+      });
+
+      setWeeklyComparison([
+        {
+          metric: "Treinos",
+          thisWeek: thisWeekSessions,
+          lastWeek: lastWeekSessions,
+          change: lastWeekSessions > 0
+            ? Math.round(((thisWeekSessions - lastWeekSessions) / lastWeekSessions) * 100)
+            : thisWeekSessions > 0 ? 100 : 0,
+          unit: "",
+        },
+        {
+          metric: "Séries totais",
+          thisWeek: thisWeekExSessions.reduce((sum, es) => sum + es.sets_completed, 0),
+          lastWeek: lastWeekExSessions.reduce((sum, es) => sum + es.sets_completed, 0),
+          change: 0,
+          unit: "",
+        },
+      ]);
+
+      // Recalculate change for series
+      setWeeklyComparison((prev) => {
+        const updated = [...prev];
+        if (updated[1] && updated[1].lastWeek > 0) {
+          updated[1].change = Math.round(
+            ((updated[1].thisWeek - updated[1].lastWeek) / updated[1].lastWeek) * 100
+          );
+        }
+        return updated;
+      });
+    } catch (error) {
+      console.error("Error loading evolution:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const saveMeasurement = async () => {
-    if (!user) return;
+  const overallChangePercent = useMemo(() => {
+    if (exerciseLoads.length === 0) return 0;
+    const avg = exerciseLoads.reduce((sum, e) => sum + e.changePercent, 0) / exerciseLoads.length;
+    return Math.round(avg);
+  }, [exerciseLoads]);
 
-    const hasData = Object.values(newMeasurement).some(value => value.trim() !== '');
-    if (!hasData) {
-      toast({
-        title: "Erro",
-        description: "Preencha pelo menos uma medida.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('body_measurements')
-        .insert({
-          user_id: user.id,
-          weight: newMeasurement.weight ? parseFloat(newMeasurement.weight) : null,
-          body_fat_percentage: newMeasurement.bodyFat ? parseFloat(newMeasurement.bodyFat) : null,
-          muscle_mass: newMeasurement.muscleMass ? parseFloat(newMeasurement.muscleMass) : null,
-          chest: newMeasurement.chest ? parseFloat(newMeasurement.chest) : null,
-          waist: newMeasurement.waist ? parseFloat(newMeasurement.waist) : null,
-          hips: newMeasurement.hips ? parseFloat(newMeasurement.hips) : null,
-          arm: newMeasurement.arm ? parseFloat(newMeasurement.arm) : null,
-          thigh: newMeasurement.thigh ? parseFloat(newMeasurement.thigh) : null,
-          measured_at: new Date().toISOString()
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Medidas salvas!",
-        description: "Suas medidas foram registradas com sucesso."
-      });
-
-      setNewMeasurement({
-        weight: '',
-        bodyFat: '',
-        muscleMass: '',
-        chest: '',
-        waist: '',
-        hips: '',
-        arm: '',
-        thigh: ''
-      });
-
-      fetchMeasurements();
-    } catch (error: any) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível salvar as medidas.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const latestMeasurement = measurements[0];
-  const previousMeasurement = measurements[1];
-
-  // Calculate changes
-  const calculateChange = (current: number | null | undefined, previous: number | null | undefined) => {
-    if (!current || !previous) return null;
-    const change = current - previous;
-    const percentage = ((change / previous) * 100).toFixed(1);
-    return { change: change.toFixed(1), percentage, isPositive: change > 0, isNegative: change < 0 };
-  };
-
-  const weightChange = calculateChange(latestMeasurement?.weight, previousMeasurement?.weight);
-  const bodyFatChange = calculateChange(latestMeasurement?.body_fat_percentage, previousMeasurement?.body_fat_percentage);
-  const muscleMassChange = calculateChange(latestMeasurement?.muscle_mass, previousMeasurement?.muscle_mass);
-
-  // Sample data for demonstration
-  const sampleData = [
-    { date: '2024-01-01', weight: 80, bodyFat: 18, muscleMass: 62, chest: 100, waist: 85, arm: 34 },
-    { date: '2024-01-15', weight: 79.5, bodyFat: 17.5, muscleMass: 62.5, chest: 101, waist: 84, arm: 34.5 },
-    { date: '2024-02-01', weight: 79, bodyFat: 17, muscleMass: 63, chest: 102, waist: 83, arm: 35 },
-    { date: '2024-02-15', weight: 78.5, bodyFat: 16.5, muscleMass: 63.5, chest: 103, waist: 82, arm: 35.5 },
-    { date: '2024-03-01', weight: 78, bodyFat: 16, muscleMass: 64, chest: 104, waist: 81, arm: 36 }
-  ];
-
-  const chartData = measurements.length > 0 
-    ? measurements.reverse().map(m => ({
-        date: format(new Date(m.measured_at), 'dd/MM'),
-        fullDate: format(new Date(m.measured_at), "dd 'de' MMM", { locale: ptBR }),
-        weight: m.weight,
-        bodyFat: m.body_fat_percentage,
-        muscleMass: m.muscle_mass,
-        chest: m.chest,
-        waist: m.waist,
-        hips: m.hips,
-        arm: m.arm,
-        thigh: m.thigh
-      }))
-    : sampleData.map(d => ({
-        date: format(new Date(d.date), 'dd/MM'),
-        fullDate: format(new Date(d.date), "dd 'de' MMM", { locale: ptBR }),
-        weight: d.weight,
-        bodyFat: d.bodyFat,
-        muscleMass: d.muscleMass,
-        chest: d.chest,
-        waist: d.waist,
-        arm: d.arm
-      }));
-
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-popover border border-border rounded-lg p-3 shadow-lg">
-          <p className="font-semibold mb-2">{payload[0]?.payload?.fullDate}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: {entry.value}{entry.unit || ''}
-            </p>
-          ))}
+  if (loading) {
+    return (
+      <div className="pb-20">
+        <Header title="Evolução" />
+        <div className="container mx-auto px-4 pt-24 py-8 max-w-lg">
+          <LoadingState type="grid" count={3} />
         </div>
-      );
-    }
-    return null;
-  };
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      <Header title="Progresso" />
-      
-      <div className="container mx-auto px-4 pt-28 py-8 pb-20 max-w-7xl">
+    <div className="pb-20">
+      <Header title="Evolução" />
+      <main className="container mx-auto px-4 pt-24 py-6 space-y-5 max-w-lg">
+        {/* Overall Evolution Badge */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-foreground">Sua Evolução</h2>
+            <p className="text-sm text-muted-foreground">Últimos 30 dias</p>
+          </div>
+          <div className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold",
+            overallChangePercent > 0
+              ? "bg-green-500/10 text-green-600 dark:text-green-400"
+              : overallChangePercent < 0
+                ? "bg-red-500/10 text-red-500"
+                : "bg-muted text-muted-foreground"
+          )}>
+            {overallChangePercent > 0 ? (
+              <ArrowUp className="w-4 h-4" />
+            ) : overallChangePercent < 0 ? (
+              <ArrowDown className="w-4 h-4" />
+            ) : (
+              <Minus className="w-4 h-4" />
+            )}
+            {overallChangePercent > 0 ? "+" : ""}{overallChangePercent}%
+          </div>
+        </div>
+
+        {/* Smart feedback */}
+        {antiStagnation.overallStatus !== "new" && (
+          <Card className={cn(
+            "border",
+            antiStagnation.overallStatus === "progressing"
+              ? "border-green-500/20 bg-green-500/5"
+              : antiStagnation.overallStatus === "stagnated"
+                ? "border-amber-500/20 bg-amber-500/5"
+                : "border-red-500/20 bg-red-500/5"
+          )}>
+            <CardContent className="p-3">
+              <p className="text-sm text-foreground font-medium">
+                {antiStagnation.overallStatus === "progressing" && "🔥 Você está evoluindo — continue assim!"}
+                {antiStagnation.overallStatus === "stagnated" && "⚡ Detectamos estagnação — ajustes sugeridos abaixo"}
+                {antiStagnation.overallStatus === "declining" && "⚠️ Hora de ajustar seu treino para retomar a evolução"}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-            <TabsTrigger value="charts">Gráficos</TabsTrigger>
-            <TabsTrigger value="measurements">Medidas</TabsTrigger>
-            <TabsTrigger value="photos">Fotos</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview" className="text-xs">
+              <BarChart3 className="w-3.5 h-3.5 mr-1" />
+              Geral
+            </TabsTrigger>
+            <TabsTrigger value="loads" className="text-xs">
+              <Dumbbell className="w-3.5 h-3.5 mr-1" />
+              Cargas
+            </TabsTrigger>
+            <TabsTrigger value="photos" className="text-xs">
+              <Camera className="w-3.5 h-3.5 mr-1" />
+              Fotos
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-4 animate-fade-in">
-            <WeeklySummary />
-            
-            <div className="grid gap-4 md:grid-cols-2">
-              <AchievementsBadges />
-              <PhotoComparison refreshTrigger={refreshPhotos} />
-            </div>
-          </TabsContent>
+          {/* OVERVIEW TAB */}
+          <TabsContent value="overview" className="space-y-4 mt-4">
+            {/* Weekly comparison */}
+            {weeklyComparison.length > 0 && (
+              <div className="grid grid-cols-2 gap-3">
+                {weeklyComparison.map((item) => (
+                  <Card key={item.metric}>
+                    <CardContent className="p-4 space-y-2">
+                      <p className="text-xs text-muted-foreground font-medium">{item.metric}</p>
+                      <div className="flex items-end gap-2">
+                        <span className="text-2xl font-bold text-foreground">{item.thisWeek}</span>
+                        <span className="text-xs text-muted-foreground mb-1">vs {item.lastWeek}</span>
+                      </div>
+                      <div className={cn(
+                        "flex items-center gap-1 text-xs font-semibold",
+                        item.change > 0 ? "text-green-500" : item.change < 0 ? "text-red-500" : "text-muted-foreground"
+                      )}>
+                        {item.change > 0 ? <ArrowUp className="w-3 h-3" /> : item.change < 0 ? <ArrowDown className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+                        {item.change > 0 ? "+" : ""}{item.change}% vs semana passada
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
 
-          <TabsContent value="charts" className="space-y-4 animate-fade-in">
-            {loading ? (
-              <LoadingState type="stats" />
-            ) : measurements.length === 0 ? (
-              <EmptyState
-                icon={TrendingUp}
-                title="Nenhuma medida registrada"
-                description="Comece registrando suas medidas corporais para acompanhar seu progresso ao longo do tempo."
-                motivation="Meça para gerenciar!"
-                actionLabel="Registrar Primeira Medida"
-                onAction={() => setActiveTab('measurements')}
-              />
-            ) : (
-              <>
-            {/* Stats Overview */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="hover-scale">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <Scale className="w-5 h-5 text-primary" />
-                    {weightChange && (
-                      <Badge variant={weightChange.isNegative ? "default" : "secondary"} className="text-xs">
-                        {weightChange.isNegative ? <ArrowDown className="w-3 h-3" /> : <ArrowUp className="w-3 h-3" />}
-                        {Math.abs(parseFloat(weightChange.change))}kg
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="text-2xl font-bold">
-                    {latestMeasurement?.weight || 78}kg
-                  </div>
-                  <div className="text-sm text-muted-foreground">Peso atual</div>
-                  {weightChange && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {weightChange.percentage}% vs anterior
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              
-              <Card className="hover-scale">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <TrendingDown className="w-5 h-5 text-blue-600" />
-                    {bodyFatChange && (
-                      <Badge variant={bodyFatChange.isNegative ? "default" : "secondary"} className="text-xs">
-                        {bodyFatChange.isNegative ? <ArrowDown className="w-3 h-3" /> : <ArrowUp className="w-3 h-3" />}
-                        {Math.abs(parseFloat(bodyFatChange.change))}%
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="text-2xl font-bold">
-                    {latestMeasurement?.body_fat_percentage || 16}%
-                  </div>
-                  <div className="text-sm text-muted-foreground">% Gordura</div>
-                  {bodyFatChange && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {bodyFatChange.percentage}% vs anterior
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              
-              <Card className="hover-scale">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <Activity className="w-5 h-5 text-green-600" />
-                    {muscleMassChange && (
-                      <Badge variant={muscleMassChange.isPositive ? "default" : "secondary"} className="text-xs">
-                        {muscleMassChange.isPositive ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
-                        {Math.abs(parseFloat(muscleMassChange.change))}kg
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="text-2xl font-bold">
-                    {latestMeasurement?.muscle_mass || 65}kg
-                  </div>
-                  <div className="text-sm text-muted-foreground">Massa muscular</div>
-                  {muscleMassChange && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {muscleMassChange.percentage}% vs anterior
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              
-              <Card className="hover-scale">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <Target className="w-5 h-5 text-orange-600" />
-                  </div>
-                  <div className="text-2xl font-bold">
-                    {latestMeasurement?.weight 
-                      ? ((latestMeasurement.weight / Math.pow((latestMeasurement as any).height || 175 / 100, 2))).toFixed(1) 
-                      : '24.2'
-                    }
-                  </div>
-                  <div className="text-sm text-muted-foreground">IMC</div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Faixa ideal: 18.5-24.9
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Combined Chart - Weight and Body Composition */}
-            <Card className="animate-scale-in">
-              <CardHeader>
-                <CardTitle>Evolução da Composição Corporal</CardTitle>
-                <CardDescription>
-                  Acompanhe seu peso, gordura corporal e massa muscular ao longo do tempo
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <ComposedChart data={chartData}>
-                    <defs>
-                      <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                    <XAxis 
-                      dataKey="date" 
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      tickLine={{ stroke: 'hsl(var(--muted))' }}
-                    />
-                    <YAxis 
-                      yAxisId="left"
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      tickLine={{ stroke: 'hsl(var(--muted))' }}
-                      label={{ value: 'Peso (kg)', angle: -90, position: 'insideLeft', fill: 'hsl(var(--muted-foreground))' }}
-                    />
-                    <YAxis 
-                      yAxisId="right" 
-                      orientation="right"
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      tickLine={{ stroke: 'hsl(var(--muted))' }}
-                      label={{ value: '% / kg', angle: 90, position: 'insideRight', fill: 'hsl(var(--muted-foreground))' }}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="line"
-                    />
-                    <Area
-                      yAxisId="left"
-                      type="monotone"
-                      dataKey="weight"
-                      name="Peso (kg)"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={3}
-                      fill="url(#colorWeight)"
-                      dot={{ fill: 'hsl(var(--primary))', r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                    <Line
-                      yAxisId="right"
-                      type="monotone"
-                      dataKey="bodyFat"
-                      name="Gordura (%)"
-                      stroke="hsl(220, 70%, 50%)"
-                      strokeWidth={2}
-                      dot={{ fill: 'hsl(220, 70%, 50%)', r: 4 }}
-                      unit="%"
-                    />
-                    <Line
-                      yAxisId="right"
-                      type="monotone"
-                      dataKey="muscleMass"
-                      name="Massa Muscular (kg)"
-                      stroke="hsl(142, 76%, 36%)"
-                      strokeWidth={2}
-                      dot={{ fill: 'hsl(142, 76%, 36%)', r: 4 }}
-                      unit="kg"
-                    />
-                    {/* Goal Lines */}
-                    {goals.find(g => g.goal_type === 'weight' && g.is_active) && (
-                      <ReferenceLine
-                        yAxisId="left"
-                        y={goals.find(g => g.goal_type === 'weight')?.target_value}
-                        stroke="hsl(var(--primary))"
-                        strokeDasharray="5 5"
-                        label={{
-                          value: 'Meta',
-                          fill: 'hsl(var(--primary))',
-                          fontSize: 12,
-                        }}
+            {/* Weekly workouts chart */}
+            {weeklyWorkouts.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Treinos esta semana</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={120}>
+                    <BarChart data={weeklyWorkouts}>
+                      <XAxis
+                        dataKey="day"
+                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                        axisLine={false}
+                        tickLine={false}
                       />
-                    )}
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+                      <Bar
+                        dataKey="count"
+                        fill="hsl(var(--primary))"
+                        radius={[4, 4, 0, 0]}
+                        maxBarSize={28}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            )}
 
-            {/* Body Measurements Chart */}
-            <Card className="animate-scale-in">
-              <CardHeader>
-                <CardTitle>Medidas Corporais (Circunferências)</CardTitle>
-                <CardDescription>
-                  Evolução das principais circunferências do seu corpo em centímetros
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
-                    <XAxis 
-                      dataKey="date"
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                    />
-                    <YAxis 
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      label={{ value: 'cm', angle: -90, position: 'insideLeft', fill: 'hsl(var(--muted-foreground))' }}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend iconType="circle" />
-                    <Line
-                      type="monotone"
-                      dataKey="chest"
-                      name="Peito"
-                      stroke="hsl(262, 83%, 58%)"
-                      strokeWidth={2}
-                      dot={{ r: 3 }}
-                      unit="cm"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="waist"
-                      name="Cintura"
-                      stroke="hsl(24, 95%, 53%)"
-                      strokeWidth={2}
-                      dot={{ r: 3 }}
-                      unit="cm"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="arm"
-                      name="Braço"
-                      stroke="hsl(197, 71%, 52%)"
-                      strokeWidth={2}
-                      dot={{ r: 3 }}
-                      unit="cm"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="thigh"
-                      name="Coxa"
-                      stroke="hsl(47, 95%, 53%)"
-                      strokeWidth={2}
-                      dot={{ r: 3 }}
-                      unit="cm"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            {/* Progress Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Resumo do Progresso</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {measurements.length >= 2 ? (
-                    <>
-                      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <Scale className="w-4 h-4 text-primary" />
-                          <span className="text-sm font-medium">Mudança de Peso</span>
+            {/* Volume by exercise */}
+            {volumeByGroup.length > 0 && (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Volume por exercício (séries)</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {volumeByGroup.map((item) => {
+                    const max = volumeByGroup[0].sets;
+                    const pct = max > 0 ? (item.sets / max) * 100 : 0;
+                    return (
+                      <div key={item.group} className="space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span className="font-medium text-foreground truncate mr-2">{item.group}</span>
+                          <span className="text-muted-foreground flex-shrink-0">{item.sets} séries</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {weightChange && (
-                            <>
-                              <span className={`text-sm font-bold ${weightChange.isNegative ? 'text-green-600' : 'text-orange-600'}`}>
-                                {weightChange.change}kg ({weightChange.percentage}%)
-                              </span>
-                              {weightChange.isNegative ? 
-                                <TrendingDown className="w-4 h-4 text-green-600" /> : 
-                                <TrendingUp className="w-4 h-4 text-orange-600" />
-                              }
-                            </>
-                          )}
+                        <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                          <div
+                            className="bg-primary h-2 rounded-full transition-all duration-700 ease-out"
+                            style={{ width: `${pct}%` }}
+                          />
                         </div>
                       </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            )}
 
-                      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <TrendingDown className="w-4 h-4 text-blue-600" />
-                          <span className="text-sm font-medium">Mudança de Gordura</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {bodyFatChange && (
-                            <>
-                              <span className={`text-sm font-bold ${bodyFatChange.isNegative ? 'text-green-600' : 'text-orange-600'}`}>
-                                {bodyFatChange.change}% ({bodyFatChange.percentage}%)
-                              </span>
-                              {bodyFatChange.isNegative ? 
-                                <TrendingDown className="w-4 h-4 text-green-600" /> : 
-                                <TrendingUp className="w-4 h-4 text-orange-600" />
-                              }
-                            </>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <Activity className="w-4 h-4 text-green-600" />
-                          <span className="text-sm font-medium">Mudança de Massa Muscular</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {muscleMassChange && (
-                            <>
-                              <span className={`text-sm font-bold ${muscleMassChange.isPositive ? 'text-green-600' : 'text-orange-600'}`}>
-                                {muscleMassChange.change}kg ({muscleMassChange.percentage}%)
-                              </span>
-                              {muscleMassChange.isPositive ? 
-                                <TrendingUp className="w-4 h-4 text-green-600" /> : 
-                                <TrendingDown className="w-4 h-4 text-orange-600" />
-                              }
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-center py-6 text-muted-foreground">
-                      <Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>Adicione mais medidas para ver seu progresso comparativo</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-            </>
+            {exerciseLoads.length === 0 && weeklyComparison.length === 0 && (
+              <EmptyState
+                title="Sem dados ainda"
+                description="Complete treinos para ver sua evolução aqui."
+                icon={TrendingUp}
+              />
             )}
           </TabsContent>
 
-          <TabsContent value="measurements" className="space-y-4 animate-fade-in">
-            <Card>
-              <CardHeader>
-                <CardTitle>Registrar Novas Medidas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Peso (kg)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      placeholder="75.5"
-                      value={newMeasurement.weight}
-                      onChange={(e) => setNewMeasurement({...newMeasurement, weight: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>% Gordura</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      placeholder="15.5"
-                      value={newMeasurement.bodyFat}
-                      onChange={(e) => setNewMeasurement({...newMeasurement, bodyFat: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Massa muscular (kg)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      placeholder="65.0"
-                      value={newMeasurement.muscleMass}
-                      onChange={(e) => setNewMeasurement({...newMeasurement, muscleMass: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Peito (cm)</Label>
-                    <Input
-                      type="number"
-                      placeholder="100"
-                      value={newMeasurement.chest}
-                      onChange={(e) => setNewMeasurement({...newMeasurement, chest: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Cintura (cm)</Label>
-                    <Input
-                      type="number"
-                      placeholder="80"
-                      value={newMeasurement.waist}
-                      onChange={(e) => setNewMeasurement({...newMeasurement, waist: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Quadril (cm)</Label>
-                    <Input
-                      type="number"
-                      placeholder="95"
-                      value={newMeasurement.hips}
-                      onChange={(e) => setNewMeasurement({...newMeasurement, hips: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Braço (cm)</Label>
-                    <Input
-                      type="number"
-                      placeholder="35"
-                      value={newMeasurement.arm}
-                      onChange={(e) => setNewMeasurement({...newMeasurement, arm: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Coxa (cm)</Label>
-                    <Input
-                      type="number"
-                      placeholder="55"
-                      value={newMeasurement.thigh}
-                      onChange={(e) => setNewMeasurement({...newMeasurement, thigh: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <Button onClick={saveMeasurement} className="w-full">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Salvar Medidas
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Measurements History */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Histórico de Medidas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {measurements.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Ruler className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">
-                      Nenhuma medida registrada ainda
+          {/* LOADS TAB */}
+          <TabsContent value="loads" className="space-y-4 mt-4">
+            {exerciseLoads.length > 0 ? (
+              exerciseLoads.map((exercise) => (
+                <Card key={exercise.exerciseName}>
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm truncate mr-2">{exercise.exerciseName}</CardTitle>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-[10px] flex-shrink-0",
+                          exercise.changePercent > 0
+                            ? "text-green-500 border-green-500/30"
+                            : exercise.changePercent < 0
+                              ? "text-red-500 border-red-500/30"
+                              : "text-muted-foreground"
+                        )}
+                      >
+                        {exercise.changePercent > 0 ? "+" : ""}{exercise.changePercent}%
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {exercise.previousWeight}kg → {exercise.currentWeight}kg
                     </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {measurements.slice(0, 5).map((measurement) => (
-                      <div key={measurement.id} className="flex justify-between items-center p-3 border rounded">
-                        <div>
-                          <div className="font-medium">
-                            {format(new Date(measurement.measured_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {measurement.weight && `Peso: ${measurement.weight}kg`}
-                            {measurement.body_fat_percentage && ` • Gordura: ${measurement.body_fat_percentage}%`}
-                          </div>
-                        </div>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={100}>
+                      <AreaChart data={exercise.data}>
+                        <defs>
+                          <linearGradient id={`grad-${exercise.exerciseName}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <XAxis
+                          dataKey="label"
+                          tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            background: "hsl(var(--card))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "8px",
+                            fontSize: "11px",
+                          }}
+                          formatter={(value: number) => [`${value}kg`, "Carga"]}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="weight"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth={2}
+                          fill={`url(#grad-${exercise.exerciseName})`}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <EmptyState
+                title="Sem dados de carga"
+                description="Registre cargas nos seus treinos para acompanhar a evolução."
+                icon={Dumbbell}
+              />
+            )}
+
+            {/* Stagnation suggestions */}
+            {antiStagnation.exerciseProgress.filter((e) => e.trend === "stagnated").length > 0 && (
+              <Card className="border-amber-500/20">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-amber-600 dark:text-amber-400">
+                    ⚡ Sugestões de ajuste
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {antiStagnation.exerciseProgress
+                    .filter((e) => e.trend === "stagnated" && e.suggestedWeight)
+                    .slice(0, 4)
+                    .map((e) => (
+                      <div key={e.exerciseName} className="flex items-center justify-between py-1.5 px-2 bg-muted/50 rounded-lg">
+                        <span className="text-xs font-medium truncate mr-2">{e.exerciseName}</span>
+                        <span className="text-xs font-semibold text-primary flex-shrink-0">
+                          {e.lastWeight}kg → {e.suggestedWeight}kg
+                        </span>
                       </div>
                     ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
-          <TabsContent value="photos" className="space-y-4 animate-fade-in">
-            <PhotoUpload onSuccess={() => setRefreshPhotos(prev => prev + 1)} />
-            <PhotoComparison refreshTrigger={refreshPhotos} />
-            <PhotoGallery refreshTrigger={refreshPhotos} />
+          {/* PHOTOS TAB */}
+          <TabsContent value="photos" className="space-y-4 mt-4">
+            {user && (
+              <>
+                <PhotoUpload
+                  onSuccess={() => setRefreshPhotos((p) => p + 1)}
+                />
+                <PhotoComparison refreshTrigger={refreshPhotos} />
+                <PhotoGallery
+                  refreshTrigger={refreshPhotos}
+                />
+              </>
+            )}
           </TabsContent>
         </Tabs>
-      </div>
+      </main>
     </div>
   );
 }

@@ -1,5 +1,4 @@
-import { useRef, useEffect, useState } from "react";
-import { Dumbbell, TrendingUp, User, Shield, Settings } from "lucide-react";
+import { Dumbbell, TrendingUp, Apple, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -11,9 +10,9 @@ interface NavigationProps {
 
 const userNavigationItems = [
   { id: "dashboard", label: "Treino", icon: Dumbbell },
+  { id: "diet", label: "Dieta", icon: Apple },
   { id: "progress", label: "Evolução", icon: TrendingUp },
   { id: "profile", label: "Perfil", icon: User },
-  { id: "settings", label: "Config", icon: Settings },
 ];
 
 const personalItem = { id: "personal", label: "Personal", icon: Shield };
@@ -36,15 +35,15 @@ export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationPro
               variant="ghost"
               onClick={() => onTabChange(item.id)}
               className={cn(
-                "flex flex-col items-center gap-1 h-auto py-2.5 px-4 rounded-xl transition-all duration-200",
+                "flex flex-col items-center gap-1 h-auto py-2.5 px-5 rounded-xl transition-all duration-200",
                 "active:scale-95 touch-manipulation",
                 isActive
                   ? "text-primary bg-primary/10"
-                  : "text-muted-foreground",
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
-              <span className={cn("text-[11px] font-medium", isActive && "font-semibold")}>
+              <Icon className={cn("w-5 h-5 transition-transform", isActive && "scale-110")} strokeWidth={isActive ? 2.5 : 2} />
+              <span className={cn("text-[11px] font-medium", isActive && "font-bold")}>
                 {item.label}
               </span>
             </Button>

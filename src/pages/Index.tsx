@@ -7,6 +7,7 @@ import Profile from "./Profile";
 import Workout from "./Workout";
 import Progress from "./Progress";
 import Settings from "./Settings";
+import SimpleDiet from "./SimpleDiet";
 import PersonalArea from "./PersonalArea";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
@@ -56,6 +57,8 @@ const Index = () => {
         return <Profile />;
       case "workout":
         return <Workout />;
+      case "diet":
+        return <SimpleDiet />;
       case "progress":
         return <Progress />;
       case "settings":
