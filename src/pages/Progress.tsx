@@ -37,7 +37,7 @@ interface WeeklyComparison {
 
 export default function Progress() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const antiStagnation = useAntiStagnation();
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
