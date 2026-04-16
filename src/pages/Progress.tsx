@@ -6,13 +6,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, TrendingDown, ArrowUp, ArrowDown, Minus, Dumbbell, Camera, BarChart3, Loader2 } from "lucide-react";
+import { TrendingUp, ArrowUp, ArrowDown, Minus, Dumbbell, Camera, BarChart3 } from "lucide-react";
 import { LoadingState } from "@/components/common/LoadingState";
 import { EmptyState } from "@/components/common/EmptyState";
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid,
+  AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, BarChart, Bar,
 } from "recharts";
-import { format, subDays, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
+import { format, subDays, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { PhotoUpload } from "@/components/progress/PhotoUpload";
 import { PhotoGallery } from "@/components/progress/PhotoGallery";
