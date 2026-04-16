@@ -5,12 +5,8 @@ import { InstallPWA } from "@/components/common/InstallPWA";
 import { Dashboard } from "@/pages/Dashboard";
 import Profile from "./Profile";
 import Workout from "./Workout";
-import Schedule from "./Schedule";
-import Nutrition from "./Nutrition";
 import Progress from "./Progress";
 import Settings from "./Settings";
-import TransformationProjects from "./TransformationProjects";
-import Physio from "./Physio";
 import PersonalArea from "./PersonalArea";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,7 +25,6 @@ const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
 
-  // Handle checkout redirect
   useEffect(() => {
     const checkoutStatus = searchParams.get("checkout");
     if (checkoutStatus === "success") {
@@ -48,7 +43,6 @@ const Index = () => {
   }, [user, isPersonal, roleLoading, activeTab]);
 
   const renderActiveTab = () => {
-    // Personal trainers não têm acesso ao dashboard
     if (isPersonal && activeTab === "dashboard") {
       return <PersonalArea />;
     }
@@ -62,16 +56,8 @@ const Index = () => {
         return <Profile />;
       case "workout":
         return <Workout />;
-      case "schedule":
-        return <Schedule />;
-      case "nutrition":
-        return <Nutrition />;
       case "progress":
         return <Progress />;
-      case "transformation":
-        return <TransformationProjects />;
-      case "physio":
-        return <Physio />;
       case "settings":
         return <Settings />;
       default:
@@ -79,7 +65,6 @@ const Index = () => {
     }
   };
 
-  // Show loading while auth or role is being determined
   const isLoading = roleLoading || paywallLoading;
 
   if (isLoading) {
