@@ -45,7 +45,7 @@ const mealTypeLabels: Record<string, string> = {
 
 export default function SimpleDiet() {
   const { user } = useAuth();
-  const { toast } = useToast();
+  
   const { isPremium, paywallOpen, setPaywallOpen } = usePaywall();
   const [plan, setPlan] = useState<NutritionPlan | null>(null);
   const [loading, setLoading] = useState(true);
