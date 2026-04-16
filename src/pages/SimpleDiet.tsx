@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Apple, Check, ChefHat, Loader2 } from "lucide-react";
+import { Apple, Check, ChefHat } from "lucide-react";
 import { EmptyState } from "@/components/common/EmptyState";
 import { LoadingState } from "@/components/common/LoadingState";
 import { AINutritionGenerator } from "@/components/nutrition/AINutritionGenerator";
