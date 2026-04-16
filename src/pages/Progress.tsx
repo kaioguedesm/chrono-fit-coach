@@ -387,7 +387,7 @@ export default function Progress() {
               <EmptyState
                 title="Sem dados ainda"
                 description="Complete treinos para ver sua evolução aqui."
-                icon={<TrendingUp className="w-12 h-12 text-muted-foreground" />}
+                icon={TrendingUp}
               />
             )}
           </TabsContent>
@@ -458,7 +458,7 @@ export default function Progress() {
               <EmptyState
                 title="Sem dados de carga"
                 description="Registre cargas nos seus treinos para acompanhar a evolução."
-                icon={<Dumbbell className="w-12 h-12 text-muted-foreground" />}
+                icon={Dumbbell}
               />
             )}
 
@@ -492,12 +492,10 @@ export default function Progress() {
             {user && (
               <>
                 <PhotoUpload
-                  userId={user.id}
-                  onPhotoUploaded={() => setRefreshPhotos((p) => p + 1)}
+                  onSuccess={() => setRefreshPhotos((p) => p + 1)}
                 />
-                <PhotoComparison userId={user.id} />
+                <PhotoComparison refreshTrigger={refreshPhotos} />
                 <PhotoGallery
-                  userId={user.id}
                   refreshTrigger={refreshPhotos}
                 />
               </>

@@ -131,7 +131,7 @@ export default function SimpleDiet() {
             <EmptyState
               title="Sem plano alimentar"
               description="Gere um plano personalizado com IA baseado no seu objetivo."
-              icon={<Apple className="w-12 h-12 text-muted-foreground" />}
+              icon={Apple}
             />
             <div className="relative">
               {!isPremium && (
@@ -158,7 +158,7 @@ export default function SimpleDiet() {
             <Button variant="ghost" onClick={() => setShowGenerator(false)} className="text-sm">
               ← Voltar
             </Button>
-            <AINutritionGenerator onPlanCreated={() => { setShowGenerator(false); loadPlan(); }} />
+            <AINutritionGenerator onSuccess={() => { setShowGenerator(false); loadPlan(); }} />
           </div>
         ) : plan ? (
           <>
