@@ -6,7 +6,7 @@ import { Dashboard } from "@/pages/Dashboard";
 import Profile from "./Profile";
 import Workout from "./Workout";
 import Settings from "./Settings";
-import SimpleDiet from "./SimpleDiet";
+import Nutrition from "./Nutrition";
 import PersonalArea from "./PersonalArea";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
@@ -57,7 +57,7 @@ const Index = () => {
       case "workout":
         return <Workout />;
       case "diet":
-        return <SimpleDiet />;
+        return <Nutrition />;
       case "settings":
         return <Settings />;
       default:
