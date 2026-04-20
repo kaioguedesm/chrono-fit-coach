@@ -1,23 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Header } from "@/components/layout/Header";
-import { TodayWorkoutCard } from "@/components/dashboard/TodayWorkoutCard";
-import { AntiStagnationCard } from "@/components/dashboard/AntiStagnationCard";
-import { StreakCounter } from "@/components/dashboard/StreakCounter";
-import { InsightsCard } from "@/components/dashboard/InsightsCard";
-import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
 import { UserLevelCard } from "@/components/dashboard/UserLevelCard";
 import { DashboardStats } from "@/components/dashboard/DashboardStats";
+import { StreakCounter } from "@/components/dashboard/StreakCounter";
+import { WeeklyMissionsCard } from "@/components/dashboard/WeeklyMissionsCard";
+import { QuickActions } from "@/components/dashboard/QuickActions";
+import { InsightsCard } from "@/components/dashboard/InsightsCard";
+import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
+import { MeasurementModal } from "@/components/dashboard/MeasurementModal";
+import { PhotoUploadModal } from "@/components/dashboard/PhotoUploadModal";
+import { RestTimerModal } from "@/components/dashboard/RestTimerModal";
 import { ActiveWorkoutSession } from "@/components/workout/ActiveWorkoutSession";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/hooks/useProfile";
 import { useQuickStartWorkout } from "@/hooks/useQuickStartWorkout";
 import { useEngagement } from "@/hooks/useEngagement";
-import { useAntiStagnation } from "@/hooks/useAntiStagnation";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LogIn, Loader2 } from "lucide-react";
+import { LogIn } from "lucide-react";
 
 interface DashboardProps {
   onNavigateToTab?: (tab: string) => void;
@@ -31,17 +33,17 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
   const {
     todayCheckin,
     userLevel,
+    weeklyMissions,
     totalWorkouts,
     totalAchievements,
     levelLabel,
     getLevelProgress,
     getNextLevelXp,
   } = useEngagement();
-  const antiStagnation = useAntiStagnation();
 
-  const [nextPlan, setNextPlan] = useState<{ name: string; exerciseCount: number; id: string } | null>(null);
-  const [hasPlans, setHasPlans] = useState(false);
-  const [loadingPlan, setLoadingPlan] = useState(true);
+  const [measureOpen, setMeasureOpen] = useState(false);
+  const [photoOpen, setPhotoOpen] = useState(false);
+  const [timerOpen, setTimerOpen] = useState(false);
   const [activeSession, setActiveSession] = useState<{
     sessionId: string;
     planName: string;
@@ -50,50 +52,27 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
 
   const userName = profile?.name || user?.user_metadata?.name || 'Atleta';
 
-  // Load next workout plan
-  useEffect(() => {
-    if (!user) {
-      setLoadingPlan(false);
-      return;
-    }
-    
-    const loadNextPlan = async () => {
-      try {
-        const { data: plans } = await supabase
-          .from('workout_plans')
-          .select('id, name, exercises(id)')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        if (plans && plans.length > 0) {
-          setNextPlan({
-            name: plans[0].name,
-            exerciseCount: plans[0].exercises?.length || 0,
-            id: plans[0].id,
-          });
-          setHasPlans(true);
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoadingPlan(false);
-      }
-    };
-    loadNextPlan();
-  }, [user]);
-
-  const handleStartWorkout = async () => {
+  const handleQuickAction = async (action: string) => {
     if (!user) {
       navigate('/auth');
       return;
     }
-    const session = await quickStartWorkout();
-    if (session) {
-      setActiveSession(session);
-    } else if (!hasPlans) {
-      onNavigateToTab?.('workout');
+    switch (action) {
+      case 'start-workout': {
+        const session = await quickStartWorkout();
+        if (session) setActiveSession(session);
+        else onNavigateToTab?.('workout');
+        break;
+      }
+      case 'add-measurements':
+        setMeasureOpen(true);
+        break;
+      case 'take-photo':
+        setPhotoOpen(true);
+        break;
+      case 'rest-timer':
+        setTimerOpen(true);
+        break;
     }
   };
 
@@ -126,7 +105,7 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
     <div className="pb-20">
       <Header title="Nex Fit" />
 
-      <main className="container mx-auto px-4 pt-24 py-6 space-y-5 max-w-lg">
+      <main className="container mx-auto px-4 pt-24 py-6 space-y-6 max-w-lg">
         {!user && (
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="py-4">
@@ -176,34 +155,15 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
           />
         )}
 
-        {/* TODAY'S WORKOUT - Main CTA */}
-        {loadingPlan ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : (
-          <TodayWorkoutCard
-            planName={nextPlan?.name || null}
-            exerciseCount={nextPlan?.exerciseCount || 0}
-            isStarting={isStarting}
-            onStart={handleStartWorkout}
-            hasPlans={hasPlans}
-            onCreatePlan={() => onNavigateToTab?.('workout')}
-          />
+        {/* Weekly missions */}
+        {user && weeklyMissions && weeklyMissions.length > 0 && (
+          <WeeklyMissionsCard missions={weeklyMissions} />
         )}
 
-        {/* Anti-Stagnation System */}
-        {user && !antiStagnation.loading && antiStagnation.overallStatus !== 'new' && (
-          <AntiStagnationCard
-            overallStatus={antiStagnation.overallStatus}
-            message={antiStagnation.message}
-            exerciseProgress={antiStagnation.exerciseProgress}
-            averageFrequency={antiStagnation.averageFrequency}
-            totalSessions={antiStagnation.totalSessionsLast30Days}
-          />
-        )}
+        {/* Quick actions */}
+        <QuickActions onActionClick={handleQuickAction} isStartingWorkout={isStarting} />
 
-        {/* Smart Insight */}
+        {/* Insights */}
         {user && (
           <InsightsCard
             currentStreak={userLevel?.current_streak || 0}
@@ -215,6 +175,10 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
         {/* Upgrade */}
         <UpgradePrompt />
       </main>
+
+      <MeasurementModal open={measureOpen} onOpenChange={setMeasureOpen} />
+      <PhotoUploadModal open={photoOpen} onOpenChange={setPhotoOpen} />
+      <RestTimerModal open={timerOpen} onOpenChange={setTimerOpen} />
     </div>
   );
 }
