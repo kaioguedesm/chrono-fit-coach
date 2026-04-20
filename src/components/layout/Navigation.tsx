@@ -34,7 +34,7 @@ export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationPro
               variant="ghost"
               onClick={() => onTabChange(item.id)}
               className={cn(
-                "flex flex-col items-center gap-1 h-auto py-2.5 px-3 rounded-xl transition-all duration-200",
+                "flex flex-col items-center gap-1 h-auto py-2.5 px-5 rounded-xl transition-all duration-200",
                 "active:scale-95 touch-manipulation",
                 isActive
                   ? "text-primary bg-primary/10"
