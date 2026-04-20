@@ -1,4 +1,4 @@
-import { Dumbbell, TrendingUp, Apple, User, Shield } from "lucide-react";
+import { Dumbbell, Apple, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
