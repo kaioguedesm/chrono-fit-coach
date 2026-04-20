@@ -144,23 +144,30 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
           </Card>
         )}
 
-        {/* Greeting - compact */}
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold text-foreground">
-            Olá{user ? `, ${userName}` : ''} 👋
+        {/* Greeting */}
+        <div className="space-y-2">
+          <h2 className="text-3xl font-bold text-foreground leading-tight">
+            Olá{user ? `, ${userName}` : ''} <span className="inline-block">👋</span>
           </h2>
-          <p className="text-sm text-muted-foreground">
-            {antiStagnation.loading
-              ? 'Analisando sua evolução...'
-              : antiStagnation.overallStatus === 'progressing'
-                ? 'Você está evoluindo. Continue assim!'
-                : antiStagnation.overallStatus === 'stagnated'
-                  ? 'Ajustes sugeridos para retomar sua evolução'
-                  : 'Vamos treinar hoje?'}
+          <p className="text-base text-muted-foreground">
+            Vamos continuar sua jornada fitness hoje?
           </p>
         </div>
 
-        {/* Streak - compact */}
+        {/* User Level */}
+        {user && (
+          <UserLevelCard
+            levelLabel={levelLabel}
+            totalXp={userLevel?.total_xp || 0}
+            levelProgress={getLevelProgress()}
+            nextLevelXp={getNextLevelXp()}
+          />
+        )}
+
+        {/* Stats Grid 2x2 */}
+        {user && <DashboardStats />}
+
+        {/* Streak */}
         {user && (
           <StreakCounter
             currentStreak={userLevel?.current_streak || 0}
