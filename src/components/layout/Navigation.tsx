@@ -1,4 +1,4 @@
-import { Dumbbell, Apple, User, Shield } from "lucide-react";
+import { Home, Dumbbell, Apple, User, Settings as SettingsIcon, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -9,9 +9,11 @@ interface NavigationProps {
 }
 
 const userNavigationItems = [
-  { id: "dashboard", label: "Treino", icon: Dumbbell },
-  { id: "diet", label: "Dieta", icon: Apple },
+  { id: "dashboard", label: "Início", icon: Home },
+  { id: "workout", label: "Treino", icon: Dumbbell },
+  { id: "diet", label: "Nutrição", icon: Apple },
   { id: "profile", label: "Perfil", icon: User },
+  { id: "settings", label: "Config", icon: SettingsIcon },
 ];
 
 const personalItem = { id: "personal", label: "Personal", icon: Shield };
@@ -34,7 +36,7 @@ export function Navigation({ activeTab, onTabChange, isPersonal }: NavigationPro
               variant="ghost"
               onClick={() => onTabChange(item.id)}
               className={cn(
-                "flex flex-col items-center gap-1 h-auto py-2.5 px-5 rounded-xl transition-all duration-200",
+                "flex flex-col items-center gap-1 h-auto py-2.5 px-3 rounded-xl transition-all duration-200",
                 "active:scale-95 touch-manipulation",
                 isActive
                   ? "text-primary bg-primary/10"
