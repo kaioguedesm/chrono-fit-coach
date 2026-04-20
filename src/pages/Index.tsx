@@ -57,7 +57,7 @@ const Index = () => {
       case "workout":
         return <Workout />;
       case "diet":
-        return <SimpleDiet />;
+        return <Nutrition />;
       case "settings":
         return <Settings />;
       default:
