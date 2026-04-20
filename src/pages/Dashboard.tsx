@@ -5,6 +5,8 @@ import { AntiStagnationCard } from "@/components/dashboard/AntiStagnationCard";
 import { StreakCounter } from "@/components/dashboard/StreakCounter";
 import { InsightsCard } from "@/components/dashboard/InsightsCard";
 import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
+import { UserLevelCard } from "@/components/dashboard/UserLevelCard";
+import { DashboardStats } from "@/components/dashboard/DashboardStats";
 import { ActiveWorkoutSession } from "@/components/workout/ActiveWorkoutSession";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
