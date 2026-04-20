@@ -58,8 +58,6 @@ const Index = () => {
         return <Workout />;
       case "diet":
         return <SimpleDiet />;
-      case "progress":
-        return <Progress />;
       case "settings":
         return <Settings />;
       default:
