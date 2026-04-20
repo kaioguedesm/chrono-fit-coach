@@ -11,7 +11,6 @@ interface NavigationProps {
 const userNavigationItems = [
   { id: "dashboard", label: "Treino", icon: Dumbbell },
   { id: "diet", label: "Dieta", icon: Apple },
-  { id: "progress", label: "Evolução", icon: TrendingUp },
   { id: "profile", label: "Perfil", icon: User },
 ];
 
