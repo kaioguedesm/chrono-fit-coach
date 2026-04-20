@@ -5,7 +5,6 @@ import { InstallPWA } from "@/components/common/InstallPWA";
 import { Dashboard } from "@/pages/Dashboard";
 import Profile from "./Profile";
 import Workout from "./Workout";
-import Progress from "./Progress";
 import Settings from "./Settings";
 import SimpleDiet from "./SimpleDiet";
 import PersonalArea from "./PersonalArea";
@@ -59,8 +58,6 @@ const Index = () => {
         return <Workout />;
       case "diet":
         return <SimpleDiet />;
-      case "progress":
-        return <Progress />;
       case "settings":
         return <Settings />;
       default:
