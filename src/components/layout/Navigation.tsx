@@ -1,4 +1,4 @@
-import { Dumbbell, Apple, User, Shield } from "lucide-react";
+import { Home, Dumbbell, Apple, User, Settings as SettingsIcon, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -9,9 +9,11 @@ interface NavigationProps {
 }
 
 const userNavigationItems = [
-  { id: "dashboard", label: "Treino", icon: Dumbbell },
-  { id: "diet", label: "Dieta", icon: Apple },
+  { id: "dashboard", label: "Início", icon: Home },
+  { id: "workout", label: "Treino", icon: Dumbbell },
+  { id: "diet", label: "Nutrição", icon: Apple },
   { id: "profile", label: "Perfil", icon: User },
+  { id: "settings", label: "Config", icon: SettingsIcon },
 ];
 
 const personalItem = { id: "personal", label: "Personal", icon: Shield };
