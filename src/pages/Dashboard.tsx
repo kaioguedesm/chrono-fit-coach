@@ -33,6 +33,9 @@ export function Dashboard({ onNavigateToTab }: DashboardProps) {
     userLevel,
     totalWorkouts,
     totalAchievements,
+    levelLabel,
+    getLevelProgress,
+    getNextLevelXp,
   } = useEngagement();
   const antiStagnation = useAntiStagnation();
 
