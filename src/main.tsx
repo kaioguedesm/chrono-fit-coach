@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-const APP_VERSION = "2026-03-24-cache-fix-1";
+const APP_VERSION = "2026-04-20-dashboard-classic-1";
 const VERSION_KEY = "nexfit-app-version";
 const RECOVERY_KEY = "nexfit-cache-recovery";
 
