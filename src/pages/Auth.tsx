@@ -150,7 +150,12 @@ export default function Auth() {
           setLoading(false);
           return;
         }
-        const result = await signUp(email, password, name.trim());
+        if (!gymId.trim()) {
+          toast({ title: "Selecione um portal", description: "Escolha o portal antes de criar sua conta.", variant: "destructive" });
+          setLoading(false);
+          return;
+        }
+        const result = await signUp(email, password, name.trim(), gymId.trim());
         if (result.error) {
           toast({ title: "Erro", description: result.error.message, variant: "destructive" });
         } else {
