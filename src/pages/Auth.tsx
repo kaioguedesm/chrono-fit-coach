@@ -150,7 +150,12 @@ export default function Auth() {
           setLoading(false);
           return;
         }
-        const result = await signUp(email, password, name.trim());
+        if (!gymId.trim()) {
+          toast({ title: "Selecione um portal", description: "Escolha o portal antes de criar sua conta.", variant: "destructive" });
+          setLoading(false);
+          return;
+        }
+        const result = await signUp(email, password, name.trim(), gymId.trim());
         if (result.error) {
           toast({ title: "Erro", description: result.error.message, variant: "destructive" });
         } else {
@@ -278,18 +283,47 @@ export default function Auth() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               {step === "signup" && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Seu nome completo"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    disabled={loading}
-                    required
-                  />
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nome</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Seu nome completo"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      disabled={loading}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-gym">Portal</Label>
+                    {loadingGyms ? (
+                      <div className="flex items-center py-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <span className="ml-2 text-sm text-muted-foreground">Carregando portais...</span>
+                      </div>
+                    ) : gyms.length > 0 ? (
+                      <Select value={gymId} onValueChange={setGymId} disabled={loading}>
+                        <SelectTrigger id="signup-gym" className="w-full">
+                          <SelectValue placeholder="Selecione o portal" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {gyms.map((gym) => (
+                            <SelectItem key={gym.id} value={gym.id}>
+                              {gym.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Nenhum portal cadastrado.</p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Esta escolha não poderá ser alterada depois.
+                    </p>
+                  </div>
+                </>
               )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
