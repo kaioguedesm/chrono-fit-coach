@@ -331,6 +331,7 @@ export type Database = {
           id: string
           ingredients: string[] | null
           instructions: string | null
+          meal_time: string | null
           meal_type: string
           name: string
           nutrition_plan_id: string
@@ -344,6 +345,7 @@ export type Database = {
           id?: string
           ingredients?: string[] | null
           instructions?: string | null
+          meal_time?: string | null
           meal_type: string
           name: string
           nutrition_plan_id: string
@@ -357,6 +359,7 @@ export type Database = {
           id?: string
           ingredients?: string[] | null
           instructions?: string | null
+          meal_time?: string | null
           meal_type?: string
           name?: string
           nutrition_plan_id?: string
