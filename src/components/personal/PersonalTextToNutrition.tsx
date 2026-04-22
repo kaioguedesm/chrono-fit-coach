@@ -364,6 +364,7 @@ export function PersonalTextToNutrition({
           nutrition_plan_id: plan.id,
           meal_type: m.meal_type,
           name: m.name,
+          meal_time: m.meal_time?.trim() || null,
           ingredients: m.ingredients.filter(i => i.trim()),
           instructions: m.instructions || null,
           calories: m.calories || null,
@@ -659,6 +660,16 @@ export function PersonalTextToNutrition({
                     <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => removeMeal(mIdx)}>
                       <Trash2 className="h-3.5 w-3.5 text-destructive" />
                     </Button>
+                  </div>
+                  {/* Meal time (editable) */}
+                  <div className="flex items-center gap-2 pt-2">
+                    <Label className="text-[10px] text-muted-foreground whitespace-nowrap">Horário</Label>
+                    <Input
+                      value={meal.meal_time || ""}
+                      onChange={e => updateMeal(mIdx, "meal_time", e.target.value)}
+                      placeholder="07:00 - 08:00"
+                      className="text-xs h-8"
+                    />
                   </div>
                   {/* Meal macros */}
                   <div className="flex gap-3 text-xs text-muted-foreground pt-1">
