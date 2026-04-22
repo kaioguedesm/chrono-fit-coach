@@ -50,6 +50,7 @@ interface Meal {
   id: string;
   meal_type: string;
   name: string;
+  meal_time?: string | null;
   ingredients: string[];
   calories: number | null;
   protein: number | null;
@@ -341,7 +342,14 @@ export default function Nutrition() {
                               <h4 className="font-medium text-sm text-primary mb-2">{mealType.label}</h4>
                               {mealsOfType.map((meal) => (
                                 <div key={meal.id} className="text-sm">
-                                  <div className="font-medium">{meal.name}</div>
+                                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                                    <div className="font-medium">{meal.name}</div>
+                                    {meal.meal_time && (
+                                      <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+                                        🕒 {meal.meal_time}
+                                      </span>
+                                    )}
+                                  </div>
                                   <div className="text-muted-foreground text-xs">{meal.ingredients.join(", ")}</div>
                                   {meal.calories && (
                                     <div className="text-xs text-muted-foreground">{meal.calories} kcal</div>
