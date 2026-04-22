@@ -18,6 +18,7 @@ import { LoadingState } from "@/components/common/LoadingState";
 interface ParsedMeal {
   meal_type: string;
   name: string;
+  meal_time: string | null;
   ingredients: string[];
   instructions: string | null;
   calories: number | null;
