@@ -153,6 +153,7 @@ Retorne APENAS um JSON válido com esta estrutura exata:
     {
       "meal_type": "cafe_da_manha",
       "name": "Café da Manhã Energético",
+      "meal_time": "07:00 - 08:00",
       "ingredients": ["2 ovos mexidos", "1 banana", "1 fatia de pão integral"],
       "instructions": "Preparar os ovos mexidos...",
       "calories": 400,
