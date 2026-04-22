@@ -112,6 +112,13 @@ REGRAS IMPORTANTES:
 - Respeite restrições alimentares
 - O plano deve ter exatamente ${mealsPerDay} refeições: ${mealTypesStr}
 
+HORÁRIOS DAS REFEIÇÕES (MUITO IMPORTANTE):
+- Se o personal indicar horários no texto (ex: "café às 7h", "almoço de 12 às 13h", "jantar 19:30"), EXTRAIA exatamente esses horários e devolva no campo "meal_time" de cada refeição.
+- O formato OBRIGATÓRIO de "meal_time" é uma faixa "HH:MM - HH:MM" (24h). Ex: "07:00 - 08:00", "12:00 - 13:00", "19:30 - 20:00".
+- Se o personal informar apenas um horário pontual (ex: "café às 7h"), gere uma faixa de 1 hora a partir dele (ex: "07:00 - 08:00").
+- Se o personal NÃO mencionar horário para alguma refeição, sugira uma faixa razoável baseada no tipo da refeição (café 06:30-08:00, lanche manhã 09:30-10:30, almoço 12:00-13:30, lanche tarde 15:30-16:30, jantar 19:00-20:30, ceia 21:30-22:30).
+- NUNCA invente horários conflitantes com o que o personal escreveu. Respeite literalmente o que ele pediu.
+
 CÁLCULO DE HIDRATAÇÃO:
 Calcule a ingestão diária de água recomendada usando:
 - Base: 35ml por kg de peso corporal
