@@ -614,31 +614,105 @@ export function PersonalTextToNutrition({
             </Card>
 
 
-            {/* Hydration Section */}
+            {/* Hydration Section (editável pelo personal) */}
             {parsedDiet.hydration && (
               <Card className="border-blue-500/30 bg-blue-500/5">
                 <CardContent className="pt-4 space-y-3">
                   <div className="flex items-center gap-2">
                     <Droplets className="h-5 w-5 text-blue-500" />
-                    <p className="text-sm font-semibold">Hidratação Diária Recomendada</p>
+                    <p className="text-sm font-semibold">Hidratação Diária (editável)</p>
                   </div>
-                  <div className="text-center py-2">
-                    <div className="text-2xl font-bold text-blue-600">{parsedDiet.hydration.total_liters}L</div>
-                    <p className="text-xs text-muted-foreground">
-                      ({parsedDiet.hydration.total_ml}ml por dia)
+
+                  <div className="space-y-1">
+                    <Label className="text-xs">Total de água por dia (ml)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={100}
+                      value={parsedDiet.hydration.total_ml}
+                      onChange={(e) => {
+                        const ml = Math.max(0, Number(e.target.value) || 0);
+                        const liters = (ml / 1000).toFixed(1).replace(".", ",");
+                        setParsedDiet({
+                          ...parsedDiet,
+                          hydration: { ...parsedDiet.hydration!, total_ml: ml, total_liters: liters },
+                        });
+                      }}
+                      className="text-sm"
+                    />
+                    <p className="text-[10px] text-muted-foreground">
+                      Equivale a {parsedDiet.hydration.total_liters}L por dia
                     </p>
                   </div>
+
                   <div className="space-y-1.5">
+                    <Label className="text-xs">Distribuição ao longo do dia</Label>
                     {parsedDiet.hydration.distribution.map((d, i) => (
-                      <div key={i} className="flex items-center justify-between text-xs bg-blue-500/10 rounded-md px-3 py-1.5">
-                        <span className="text-muted-foreground">{d.period}</span>
-                        <span className="font-semibold text-blue-600">{d.amount_ml}ml</span>
+                      <div key={i} className="flex items-center gap-2 bg-blue-500/10 rounded-md px-2 py-1.5">
+                        <Input
+                          value={d.period}
+                          onChange={(e) => {
+                            const dist = [...parsedDiet.hydration!.distribution];
+                            dist[i] = { ...dist[i], period: e.target.value };
+                            setParsedDiet({ ...parsedDiet, hydration: { ...parsedDiet.hydration!, distribution: dist } });
+                          }}
+                          className="text-xs h-8 flex-1"
+                          placeholder="Ex: Manhã"
+                        />
+                        <Input
+                          type="number"
+                          min={0}
+                          step={50}
+                          value={d.amount_ml}
+                          onChange={(e) => {
+                            const dist = [...parsedDiet.hydration!.distribution];
+                            dist[i] = { ...dist[i], amount_ml: Math.max(0, Number(e.target.value) || 0) };
+                            setParsedDiet({ ...parsedDiet, hydration: { ...parsedDiet.hydration!, distribution: dist } });
+                          }}
+                          className="text-xs h-8 w-20"
+                        />
+                        <span className="text-[10px] text-muted-foreground">ml</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => {
+                            const dist = parsedDiet.hydration!.distribution.filter((_, idx) => idx !== i);
+                            setParsedDiet({ ...parsedDiet, hydration: { ...parsedDiet.hydration!, distribution: dist } });
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3 text-destructive" />
+                        </Button>
                       </div>
                     ))}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full gap-1 text-xs text-muted-foreground"
+                      onClick={() => {
+                        const dist = [...parsedDiet.hydration!.distribution, { period: "", amount_ml: 0 }];
+                        setParsedDiet({ ...parsedDiet, hydration: { ...parsedDiet.hydration!, distribution: dist } });
+                      }}
+                    >
+                      <Plus className="h-3 w-3" />
+                      Adicionar período
+                    </Button>
                   </div>
-                  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                    💧 {parsedDiet.hydration.tip}
-                  </p>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs">Dica de hidratação</Label>
+                    <Textarea
+                      value={parsedDiet.hydration.tip}
+                      onChange={(e) =>
+                        setParsedDiet({
+                          ...parsedDiet,
+                          hydration: { ...parsedDiet.hydration!, tip: e.target.value },
+                        })
+                      }
+                      rows={2}
+                      className="text-xs"
+                    />
+                  </div>
                 </CardContent>
               </Card>
             )}
