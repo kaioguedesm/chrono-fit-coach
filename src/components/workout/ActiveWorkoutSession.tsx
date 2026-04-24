@@ -131,93 +131,61 @@ export function ActiveWorkoutSession({
   const skipExercise = () => {
     const groupId = currentExercise.group_muscle || "default";
     const existingSkipped = skippedByGroup[groupId] || [];
-
-    // Verificar se já foi pulado antes (máximo 1 vez)
     const alreadySkipped = existingSkipped.find((s) => s.exercise.id === currentExercise.id);
 
-    if (alreadySkipped && alreadySkipped.skipCount >= 1) {
-      // Já foi pulado uma vez, perguntar se quer ignorar definitivamente
-      const confirmIgnore = window.confirm(
-        `Você já pulou "${currentExercise.name}" antes. Deseja ignorá-lo definitivamente?`,
-      );
+    // Marcar status como pendente_reagendado
+    setExerciseStatus((prev) => ({
+      ...prev,
+      [currentExercise.id]: "pendente_reagendado",
+    }));
 
-      if (confirmIgnore) {
-        toast({
-          title: "Exercício ignorado",
-          description: `${currentExercise.name} foi removido desta sessão.`,
-        });
-
-        // Remover do array de pulados
-        setSkippedByGroup({
-          ...skippedByGroup,
-          [groupId]: existingSkipped.filter((s) => s.exercise.id !== currentExercise.id),
-        });
-      }
-
-      // Avançar para próximo de qualquer forma
-      if (currentExerciseIndex < exercises.length - 1) {
-        setCurrentExerciseIndex(currentExerciseIndex + 1);
-      }
-      setIsResting(false);
-      return;
-    }
-
-    // Adicionar aos pulados do grupo
+    // Atualizar registro de pulados (somente para badge/feedback)
     const skippedExercise: SkippedExercise = {
       exercise: currentExercise,
       originalIndex: currentExerciseIndex,
       timestamp: Date.now(),
       skipCount: alreadySkipped ? alreadySkipped.skipCount + 1 : 1,
     };
-
     const updatedSkipped = alreadySkipped
       ? existingSkipped.map((s) => (s.exercise.id === currentExercise.id ? skippedExercise : s))
       : [...existingSkipped, skippedExercise];
+    setSkippedByGroup({ ...skippedByGroup, [groupId]: updatedSkipped });
 
-    setSkippedByGroup({
-      ...skippedByGroup,
-      [groupId]: updatedSkipped,
-    });
+    // Reordenar: mover o exercício atual para o FINAL do bloco do mesmo grupamento
+    const list = [...exercises];
+    const [skipped] = list.splice(currentExerciseIndex, 1);
 
-    toast({
-      title: "Exercício pulado",
-      description: "Será reapresentado ao final do grupo muscular.",
-    });
-
-    // Verificar se é o último exercício do grupo atual
-    const nextExercise = exercises[currentExerciseIndex + 1];
-    const isLastOfGroup = !nextExercise || nextExercise.group_muscle !== groupId;
-
-    if (isLastOfGroup && updatedSkipped.length > 0 && !processedGroups.has(groupId)) {
-      // Fim do grupo e há exercícios pulados - reapresentar
-      const incompleteSkipped = updatedSkipped.filter((s) => {
-        const prog = progress[s.exercise.id];
-        return !prog || prog.completedSets < s.exercise.sets;
-      });
-
-      if (incompleteSkipped.length > 0) {
-        // Inserir exercícios pulados após o atual
-        const before = exercises.slice(0, currentExerciseIndex + 1);
-        const after = exercises.slice(currentExerciseIndex + 1);
-        const reinsertedExercises = incompleteSkipped.map((s) => s.exercise);
-
-        setExercises([...before, ...reinsertedExercises, ...after]);
-        setProcessedGroups(new Set([...processedGroups, groupId]));
-
-        toast({
-          title: "Exercícios pendentes",
-          description: `${incompleteSkipped.length} exercício(s) do grupo reapresentado(s).`,
-          duration: 4000,
-        });
+    // Encontrar o último índice de exercício do mesmo grupamento (após a remoção)
+    let lastIndexOfGroup = -1;
+    for (let i = list.length - 1; i >= 0; i--) {
+      const g = list[i].group_muscle || "default";
+      if (g === groupId) {
+        lastIndexOfGroup = i;
+        break;
       }
     }
 
-    // Avançar para próximo exercício
-    if (currentExerciseIndex < exercises.length - 1) {
-      setCurrentExerciseIndex(currentExerciseIndex + 1);
+    let insertAt: number;
+    if (lastIndexOfGroup === -1) {
+      // Não há mais exercícios do mesmo grupo — manter na posição atual (fim do bloco)
+      insertAt = currentExerciseIndex;
+    } else {
+      insertAt = lastIndexOfGroup + 1;
     }
 
+    list.splice(insertAt, 0, skipped);
+    setExercises(list);
+
+    // Avançar: se ainda há exercícios à frente, ir para o próximo da posição atual
+    // Se o exercício pulado foi para a mesma posição (sem deslocamento), avança normalmente
+    const nextIndex = currentExerciseIndex < list.length - 1 ? currentExerciseIndex : currentExerciseIndex;
+    setCurrentExerciseIndex(nextIndex);
     setIsResting(false);
+
+    toast({
+      title: "Exercício adiado",
+      description: "Exercício movido para o final do treino",
+    });
   };
 
   const completeSet = (weight: number, reps: number) => {
