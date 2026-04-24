@@ -201,7 +201,7 @@ RETORNE APENAS O JSON, sem texto adicional.`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.4,
+        temperature: 0.2,
       }),
     });
 

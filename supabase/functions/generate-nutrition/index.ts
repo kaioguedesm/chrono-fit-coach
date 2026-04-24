@@ -166,7 +166,14 @@ Retorne APENAS um JSON válido: {"tips": ["dica 1", "dica 2", "dica 3"]}`;
       }
     }
 
-    const systemPrompt = `Você é um nutricionista experiente e certificado, especializado em criar planos alimentares personalizados e cientificamente embasados.
+    const systemPrompt = `Você é um nutricionista experiente e certificado, especializado em criar planos alimentares personalizados com PRECISÃO CIENTÍFICA nos cálculos de calorias e macronutrientes (baseado nas tabelas TACO/UNICAMP e USDA FoodData Central).
+
+REGRAS DE PRECISÃO (OBRIGATÓRIAS):
+- Calcule os macros de cada refeição pelas porções REAIS dos ingredientes (gramas/ml/unidades), usando valores oficiais TACO/USDA por 100g.
+- VALIDAÇÃO: kcal da refeição = (proteína × 4) + (carbo × 4) + (gordura × 9), com tolerância ±5%.
+- A soma de TODAS as refeições deve bater com a meta calórica diária (±5%).
+- Arredonde os macros para números inteiros (sem decimais).
+- NUNCA invente valores: use a tabela TACO como referência primária para alimentos brasileiros.
 
 CRÍTICO: Retorne APENAS um objeto JSON válido com a estrutura exata abaixo, sem nenhum texto adicional:
 
@@ -288,6 +295,7 @@ LEMBRE-SE: Retorne APENAS o JSON, sem texto adicional antes ou depois!`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
+        temperature: 0.2,
       }),
     });
 

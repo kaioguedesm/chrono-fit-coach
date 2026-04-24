@@ -73,7 +73,13 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .single();
 
-    const systemPrompt = `Você é um nutricionista especialista em análise de dietas. Analise o arquivo de dieta fornecido e gere insights personalizados.
+    const systemPrompt = `Você é um nutricionista especialista em análise de dietas com PRECISÃO CIENTÍFICA. Use as tabelas TACO/UNICAMP (alimentos brasileiros) e USDA FoodData Central como referência obrigatória para os cálculos.
+
+REGRAS DE PRECISÃO (OBRIGATÓRIAS):
+- Identifique cada alimento e sua PORÇÃO REAL (g/ml/unidades) no arquivo.
+- Calcule kcal e macros pelos valores oficiais TACO/USDA por 100g, ajustados pela porção.
+- VALIDAÇÃO: dailyCalories ≈ (protein × 4) + (carbs × 4) + (fat × 9), tolerância ±5%.
+- Arredonde para números inteiros. Não invente valores quando o arquivo for ambíguo: estime pela porção média da TACO e mencione no summary.
 
 IMPORTANTE: Retorne APENAS um objeto JSON válido, sem texto adicional antes ou depois.
 
@@ -126,7 +132,7 @@ ${validatedData.fileContent}`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.7,
+        temperature: 0.2,
       }),
     });
 
