@@ -101,6 +101,19 @@ export function ActiveWorkoutSession({
       if (parsed.skippedByGroup) {
         setSkippedByGroup(parsed.skippedByGroup);
       }
+      if (parsed.exerciseStatus) {
+        setExerciseStatus(parsed.exerciseStatus);
+      }
+      if (parsed.exercisesOrder && Array.isArray(parsed.exercisesOrder)) {
+        // Restaurar ordem reordenada (após pulos)
+        const byId = new Map(initialExercises.map((e) => [e.id, e]));
+        const restored = parsed.exercisesOrder
+          .map((id: string) => byId.get(id))
+          .filter(Boolean) as Exercise[];
+        if (restored.length === initialExercises.length) {
+          setExercises(restored);
+        }
+      }
       if (parsed.isResting && typeof parsed.restTimeLeft === "number") {
         setIsResting(parsed.isResting);
         setRestTimeLeft(parsed.restTimeLeft);
@@ -119,6 +132,8 @@ export function ActiveWorkoutSession({
         progress,
         currentExerciseIndex,
         skippedByGroup,
+        exerciseStatus,
+        exercisesOrder: exercises.map((e) => e.id),
         isResting,
         restTimeLeft,
       };
@@ -126,7 +141,7 @@ export function ActiveWorkoutSession({
     } catch (error) {
       console.error("Erro ao salvar progresso do treino:", error);
     }
-  }, [storageKey, progress, currentExerciseIndex, skippedByGroup, isResting, restTimeLeft]);
+  }, [storageKey, progress, currentExerciseIndex, skippedByGroup, exerciseStatus, exercises, isResting, restTimeLeft]);
 
   const skipExercise = () => {
     const groupId = currentExercise.group_muscle || "default";
