@@ -418,9 +418,9 @@ export function ActiveWorkoutSession({
                 <p className="text-sm text-muted-foreground">
                   Exercício {currentExerciseIndex + 1} de {totalExercises}
                 </p>
-                {currentGroupSkipped > 0 && (
+                {pendingRescheduled > 0 && (
                   <Badge variant="secondary" className="text-xs animate-pulse">
-                    {currentGroupSkipped} pendente{currentGroupSkipped > 1 ? "s" : ""}
+                    {pendingRescheduled} adiado{pendingRescheduled > 1 ? "s" : ""}
                   </Badge>
                 )}
               </div>
@@ -453,11 +453,16 @@ export function ActiveWorkoutSession({
           <CardHeader>
             <div className="flex justify-between items-start">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <CardTitle>{currentExercise.name}</CardTitle>
                   {currentExercise.group_muscle && (
                     <Badge variant="outline" className="text-xs">
                       {currentExercise.group_muscle}
+                    </Badge>
+                  )}
+                  {exerciseStatus[currentExercise.id] === "pendente_reagendado" && (
+                    <Badge variant="secondary" className="text-xs">
+                      Adiado
                     </Badge>
                   )}
                 </div>
