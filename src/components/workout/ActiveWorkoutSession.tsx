@@ -236,6 +236,10 @@ export function ActiveWorkoutSession({
 
     // Move to next exercise if all sets completed
     if (newProgress.completedSets >= currentExercise.sets) {
+      setExerciseStatus((prev) => ({
+        ...prev,
+        [currentExercise.id]: "concluido",
+      }));
       if (currentExerciseIndex < exercises.length - 1) {
         setTimeout(() => setCurrentExerciseIndex(currentExerciseIndex + 1), 1000);
       }
