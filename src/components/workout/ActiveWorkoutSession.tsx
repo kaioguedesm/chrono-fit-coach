@@ -392,12 +392,20 @@ export function ActiveWorkoutSession({
   };
 
   const totalExercises = exercises.length;
-  const completedExercises = Object.values(progress).filter((p, idx) => p.completedSets >= exercises[idx]?.sets).length;
+  const completedExercises = exercises.filter(
+    (ex) => (progress[ex.id]?.completedSets ?? 0) >= ex.sets,
+  ).length;
+  const pendingRescheduled = exercises.filter(
+    (ex) => exerciseStatus[ex.id] === "pendente_reagendado" && (progress[ex.id]?.completedSets ?? 0) < ex.sets,
+  ).length;
   const overallProgress = (completedExercises / totalExercises) * 100;
+  const allDone = completedExercises === totalExercises;
 
-  // Contar exercícios pulados no grupo atual
+  // Contar exercícios pulados no grupo atual (ainda não concluídos)
   const currentGroupId = currentExercise?.group_muscle || "default";
-  const currentGroupSkipped = skippedByGroup[currentGroupId]?.length || 0;
+  const currentGroupSkipped = (skippedByGroup[currentGroupId] || []).filter(
+    (s) => (progress[s.exercise.id]?.completedSets ?? 0) < s.exercise.sets,
+  ).length;
 
   return (
     <div className="space-y-4">
