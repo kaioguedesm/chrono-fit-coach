@@ -92,8 +92,26 @@ serve(async (req) => {
     const mealTypes = mealTypesByCount[mealsPerDay] || mealTypesByCount[4];
     const mealTypesStr = mealTypes.map(t => `"${t}" (${mealLabels[t]})`).join(', ');
 
-    const systemPrompt = `Você é um nutricionista esportivo especialista em montar dietas personalizadas.
-Sua tarefa é receber uma lista de alimentos que o personal trainer deseja usar e criar um plano alimentar completo, estruturado e com valores nutricionais calculados.
+    const systemPrompt = `Você é um nutricionista esportivo especialista em montar dietas personalizadas com PRECISÃO CIENTÍFICA nos cálculos de macronutrientes e calorias.
+Sua tarefa é receber uma lista de alimentos que o personal trainer deseja usar e criar um plano alimentar completo, estruturado e com valores nutricionais EXATOS, calculados com base nas tabelas oficiais TACO (Tabela Brasileira de Composição de Alimentos - UNICAMP) e USDA FoodData Central.
+
+PRECISÃO NUTRICIONAL OBRIGATÓRIA:
+- Para CADA ingrediente, calcule os macros pela porção REAL informada (gramas, ml, unidades padrão).
+- Use os valores de referência por 100g/100ml das tabelas TACO/USDA. Exemplos de referência (por 100g cru/cozido conforme uso típico):
+  • Arroz branco cozido: 128 kcal | 2.5g P | 28g C | 0.2g G
+  • Frango grelhado (peito): 165 kcal | 31g P | 0g C | 3.6g G
+  • Ovo inteiro (1 unid ~50g): 70 kcal | 6g P | 0.5g C | 5g G
+  • Banana (1 unid média ~100g): 89 kcal | 1.1g P | 23g C | 0.3g G
+  • Pão integral (1 fatia ~25g): 65 kcal | 3g P | 12g C | 1g G
+  • Aveia em flocos (30g): 117 kcal | 4g P | 20g C | 2.4g G
+  • Batata doce cozida: 86 kcal | 1.6g P | 20g C | 0.1g G
+  • Feijão cozido: 76 kcal | 4.8g P | 13.6g C | 0.5g G
+  • Azeite (1 colher ~10ml): 90 kcal | 0g P | 0g C | 10g G
+  • Whey protein (30g scoop): 120 kcal | 24g P | 3g C | 1.5g G
+- VALIDAÇÃO MATEMÁTICA: a soma dos macros de cada refeição DEVE bater com as calorias usando 4 kcal/g de proteína, 4 kcal/g de carboidrato e 9 kcal/g de gordura. Tolerância máxima: ±5%.
+- A soma das calorias e macros de TODAS as refeições deve bater com o total_daily (tolerância ±5%).
+- Arredonde valores para números inteiros (sem decimais) para clareza.
+- NUNCA invente valores. Se não souber a porção exata, use a porção padrão da TACO e diga no campo instructions.
 
 DADOS DO ALUNO:
 - Peso: ${weight}kg
@@ -183,7 +201,7 @@ RETORNE APENAS O JSON, sem texto adicional.`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.4,
+        temperature: 0.2,
       }),
     });
 
