@@ -21,6 +21,8 @@ interface Exercise {
   group_muscle?: string; // Grupo muscular (peito, costas, pernas, etc)
 }
 
+type ExerciseStatus = "pendente" | "pendente_reagendado" | "concluido";
+
 interface SkippedExercise {
   exercise: Exercise;
   originalIndex: number;
@@ -55,10 +57,10 @@ export function ActiveWorkoutSession({
   const [exercises, setExercises] = useState(initialExercises);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [progress, setProgress] = useState<Record<string, ExerciseProgress>>({});
+  const [exerciseStatus, setExerciseStatus] = useState<Record<string, ExerciseStatus>>({});
   const [skippedByGroup, setSkippedByGroup] = useState<Record<string, SkippedExercise[]>>({});
   const [isResting, setIsResting] = useState(false);
   const [restTimeLeft, setRestTimeLeft] = useState(0);
-  const [processedGroups, setProcessedGroups] = useState<Set<string>>(new Set());
 
   const storageKey = `active_workout_session_${sessionId}`;
 
