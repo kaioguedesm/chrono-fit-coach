@@ -1,0 +1,1 @@
+INSERT INTO public.gyms (name) VALUES ('Team GS') ON CONFLICT DO NOTHING;

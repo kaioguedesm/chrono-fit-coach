@@ -5,8 +5,9 @@ import { useUserRole } from "./useUserRole";
 
 const PORTAL_01_NAME = "Portal 01";
 const MS_CONSULTORIA_NAME = "MS Consultoria";
+const TEAM_GS_NAME = "Team GS";
 const AI_ENABLED_PORTALS = new Set([PORTAL_01_NAME]);
-const AI_DISABLED_PORTALS = new Set([MS_CONSULTORIA_NAME]);
+const AI_DISABLED_PORTALS = new Set([MS_CONSULTORIA_NAME, TEAM_GS_NAME]);
 
 /**
  * Usuários do portal "Portal 01" podem criar treinos e dietas com IA sem aprovação do personal.
