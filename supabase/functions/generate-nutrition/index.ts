@@ -113,10 +113,10 @@ Retorne APENAS um JSON válido: {"tips": ["dica 1", "dica 2", "dica 3"]}`;
       dietType,
       dietDescription,
       mealsPerDay,
-      restrictions,
-      userProfile,
-      userPreferences
     } = validated;
+    const restrictions = validated.restrictions ?? [];
+    const userProfile: Record<string, any> = validated.userProfile ?? {};
+    const userPreferences = validated.userPreferences;
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
