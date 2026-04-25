@@ -61,15 +61,16 @@ Deno.serve(async (req) => {
     // Delete user data from all tables (in order to respect foreign keys)
     // Note: RLS is bypassed with service role, so we need to filter by user_id
     
+    const { data: workoutSessionRows } = await supabaseAdmin
+      .from("workout_sessions")
+      .select("id")
+      .eq("user_id", userId);
+    const workoutSessionIds = (workoutSessionRows ?? []).map((r: any) => r.id);
+
     const deletionPromises = [
-      supabaseAdmin.from("exercise_sessions")
-        .delete()
-        .in("workout_session_id", 
-          supabaseAdmin
-            .from("workout_sessions")
-            .select("id")
-            .eq("user_id", userId)
-        ),
+      workoutSessionIds.length > 0
+        ? supabaseAdmin.from("exercise_sessions").delete().in("workout_session_id", workoutSessionIds)
+        : Promise.resolve({ error: null }),
       supabaseAdmin.from("workout_sessions").delete().eq("user_id", userId),
       supabaseAdmin.from("meal_logs").delete().eq("user_id", userId),
       supabaseAdmin.from("progress_photos").delete().eq("user_id", userId),
@@ -173,7 +174,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: "An unexpected error occurred",
-        details: error.message 
+        details: error instanceof Error ? error.message : String(error) 
       }),
       {
         status: 500,
