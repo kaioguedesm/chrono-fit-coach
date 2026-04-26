@@ -61,12 +61,12 @@ serve(async (req) => {
 
     logStep("All subscriptions found", { 
       count: subscriptions.data.length, 
-      statuses: subscriptions.data.map(s => s.status) 
+      statuses: subscriptions.data.map((s: any) => s.status) 
     });
 
     // Consider active, trialing, or past_due as valid
     const validStatuses = ["active", "trialing", "past_due"];
-    const activeSub = subscriptions.data.find(s => validStatuses.includes(s.status));
+    const activeSub = subscriptions.data.find((s: any) => validStatuses.includes(s.status));
     
     const hasActiveSub = !!activeSub;
     let subscriptionEnd = null;
