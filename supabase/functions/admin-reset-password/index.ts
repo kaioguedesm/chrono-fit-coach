@@ -5,20 +5,15 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// ⚠️ ONE-SHOT ADMIN UTILITY — DELETE AFTER USE
+// Hardcoded target so it can only reset this specific account.
+const TARGET_EMAIL = "bielbayuex@icloud.com";
+const NEW_PASSWORD = "Biel2200*";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { email, newPassword, secret } = await req.json();
-
-    // Simple guard: must provide an admin secret matching service role
-    if (secret !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -27,7 +22,7 @@ Deno.serve(async (req) => {
     const { data: list, error: listErr } = await admin.auth.admin.listUsers();
     if (listErr) throw listErr;
 
-    const user = list.users.find((u) => u.email?.toLowerCase() === String(email).toLowerCase());
+    const user = list.users.find((u) => u.email?.toLowerCase() === TARGET_EMAIL);
     if (!user) {
       return new Response(JSON.stringify({ error: "User not found" }), {
         status: 404,
@@ -36,13 +31,15 @@ Deno.serve(async (req) => {
     }
 
     const { error: updErr } = await admin.auth.admin.updateUserById(user.id, {
-      password: newPassword,
+      password: NEW_PASSWORD,
+      email_confirm: true,
     });
     if (updErr) throw updErr;
 
-    return new Response(JSON.stringify({ success: true, userId: user.id }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ success: true, email: TARGET_EMAIL, userId: user.id }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (e) {
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : String(e) }),
