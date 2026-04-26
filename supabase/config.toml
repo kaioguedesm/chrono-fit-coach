@@ -38,6 +38,3 @@ verify_jwt = false
 
 [functions.parse-diet-text]
 verify_jwt = false
-
-[functions.admin-reset-password]
-verify_jwt = false
