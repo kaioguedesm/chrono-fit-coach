@@ -1,0 +1,1 @@
+UPDATE public.profiles SET free_access = true WHERE user_id = '12484e99-f3af-4d39-ac92-425fabeef8cf';
