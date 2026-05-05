@@ -38,6 +38,7 @@ import { PersonalCreateWorkoutAI } from "@/components/personal/PersonalCreateWor
 import { PersonalTextToWorkout } from "@/components/personal/PersonalTextToWorkout";
 import { PersonalTextToNutrition } from "@/components/personal/PersonalTextToNutrition";
 import { EditWorkoutModal } from "@/components/workout/EditWorkoutModal";
+import { StudentExerciseLogs } from "@/components/personal/StudentExerciseLogs";
 import { EditNutritionPlanModal } from "@/components/nutrition/EditNutritionPlanModal";
 import {
   AlertDialog,
