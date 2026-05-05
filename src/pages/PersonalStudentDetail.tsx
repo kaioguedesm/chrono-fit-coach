@@ -599,7 +599,7 @@ export default function PersonalStudentDetail() {
 
         {/* Tabs de treinos e nutrição */}
         <Tabs defaultValue="workouts" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="workouts" className="gap-2">
               <Dumbbell className="h-4 w-4" />
               Treinos ({workouts.length})
@@ -608,6 +608,10 @@ export default function PersonalStudentDetail() {
                   {pendingWorkouts}
                 </Badge>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="loads" className="gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Cargas
             </TabsTrigger>
             <TabsTrigger value="nutrition" className="gap-2">
               <Apple className="h-4 w-4" />
