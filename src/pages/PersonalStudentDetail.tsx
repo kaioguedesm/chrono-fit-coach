@@ -739,6 +739,10 @@ export default function PersonalStudentDetail() {
             )}
           </TabsContent>
 
+          <TabsContent value="loads" className="mt-6">
+            {studentId && <StudentExerciseLogs studentId={studentId} />}
+          </TabsContent>
+
           <TabsContent value="nutrition" className="space-y-4 mt-6">
             {nutritionPlans.length === 0 ? (
               <Card>
